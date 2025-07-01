@@ -16,7 +16,7 @@ import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.R
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.ListAlertDialog
-import io.github.depermitto.bullettrain.components.ListItem
+import io.github.depermitto.bullettrain.components.HeroTile
 import io.github.depermitto.bullettrain.components.Ratio
 import io.github.depermitto.bullettrain.components.WorkoutTable
 import io.github.depermitto.bullettrain.database.entities.ExerciseDao
@@ -87,7 +87,7 @@ fun TrainTab(
                     showChangeDayIndexDialog = false
                     programDao.update(program.copy(nextDayIndex = program.workouts.indexOf(day)))
                 }) { day ->
-                ListItem(headlineContent = { Text(day.name) })
+                HeroTile(headlineContent = { Text(day.name) })
             }
         }
 

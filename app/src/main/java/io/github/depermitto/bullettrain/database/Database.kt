@@ -13,8 +13,12 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.util.zip.ZipEntry
+import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
+import kotlin.Result
+import kotlin.Result.Companion.failure
+import kotlin.Result.Companion.success
 
 private const val SETTINGS_FILENAME = "settings"
 private const val HISTORY_FILENAME = "history"
@@ -39,18 +43,17 @@ class Database(private val databaseDirectory: File, private val context: Context
         }
     }
 
-    private val backupFile = File(databaseDirectory, "bullet-train.bk.zip")
-
     val settingsDao = SettingsDao(settingsFile)
     val historyDao = HistoryDao(historyFile)
     val programDao = ProgramDao(programsFile)
     val exerciseDao = ExerciseDao(exercisesFile)
 
     /**
-     * Launch file picker and export the zipped database to it. Returns name the file the database was exported to  if successful.
+     * Launch a file picker, export the zipped database to the selected location, and return the name of the exported file.
      * @see [importDatabase]
      */
-    suspend fun exportDatabase(): String? {
+    suspend fun exportDatabase(): Result<String> {
+        val backupFile = File(databaseDirectory, "bullet-train.bk.zip")
         ZipOutputStream(FileOutputStream(backupFile)).use { zipOutputStream ->
             for (backup in backupFiles) {
                 zipOutputStream.putNextEntry(ZipEntry(backup.file.name))
@@ -61,8 +64,8 @@ class Database(private val databaseDirectory: File, private val context: Context
             bytes = backupFile.readBytes(),
             baseName = backupFile.name.substringBefore('.'),
             extension = backupFile.name.substringAfter('.')
-        )
-        return file?.name
+        ) ?: return failure(Throwable(message = "Creating a data backup cancelled"))
+        return success(file.name)
     }
 
     sealed class ImportType {
@@ -71,40 +74,48 @@ class Database(private val databaseDirectory: File, private val context: Context
     }
 
     /**
-     * Launch file picker and import database from the zipFile. Returns true if successful.
+     * Launch a file picker, import a data backup and return the name of the selected file.
      * @see [exportDatabase]
      */
-    suspend fun importDatabase(importType: ImportType): String? {
+    suspend fun importDatabase(importType: ImportType): Result<String> {
         val (bytes, filename) = when (importType) {
-            is ImportType.FromStream -> importType.stream.readBytes() to "Fallback"
-            ImportType.Interactive -> {
-                val file = FileKit.pickFile(type = PickerType.File()) ?: return null
+            is ImportType.FromStream -> importType.stream.readBytes() to ""
+            is ImportType.Interactive -> {
+                val file = FileKit.pickFile(title = "Pick a data backup", type = PickerType.File())
+                    ?: return failure(Throwable(message = "Restoring a data backup cancelled"))
                 file.readBytes() to file.name
             }
         }
 
         val tmpFile = File(databaseDirectory, "tmp").apply { writeBytes(bytes) }
+        try {
+            ZipFile(tmpFile).use { zipFile ->
+                val entries = zipFile.entries().toList()
+                // we should probably check if file is not corrupt here
+                if (!entries.zip(backupFiles).all { (entry, backup) -> entry.name == backup.file.name }) {
+                    return failure(Throwable(message = "$filename is in an incorrect format"))
+                }
 
-        ZipFile(tmpFile).use { zipFile ->
-            val entries = zipFile.entries().toList()
-            // we should probably check if file is not corrupt here
-            if (!entries.zip(backupFiles).all { (entry, backup) -> entry.name == backup.file.name }) return null
-
-            entries.forEachIndexed { i, entry ->
-                when (val backupFile = backupFiles[i].apply { file.writeBytes(zipFile.getInputStream(entry).readBytes()) }) {
-                    is SettingsFile -> settingsDao.item.update { SettingsDao(backupFile).item.value }
-                    is HistoryFile -> historyDao.items.update { HistoryDao(backupFile).items.value }
-                    is ProgramsFile -> programDao.items.update { ProgramDao(backupFile).items.value }
-                    is ExerciseFile -> exerciseDao.items.update { ExerciseDao(backupFile).items.value }
+                entries.forEachIndexed { i, entry ->
+                    when (val backupFile = backupFiles[i].apply { file.writeBytes(zipFile.getInputStream(entry).readBytes()) }) {
+                        is SettingsFile -> settingsDao.item.update { SettingsDao(backupFile).item.value }
+                        is HistoryFile -> historyDao.items.update { HistoryDao(backupFile).items.value }
+                        is ProgramsFile -> programDao.items.update { ProgramDao(backupFile).items.value }
+                        is ExerciseFile -> exerciseDao.items.update { ExerciseDao(backupFile).items.value }
+                    }
                 }
             }
+        } catch (_: ZipException) {
+            return failure(Throwable(message = "$filename is not a data backup"))
+        } catch (err: Throwable) {
+            return failure(err)
         }
-        return filename
+        return success(filename)
     }
 
     suspend fun factoryReset(): Boolean {
         val inputStream = context.resources.openRawResource(R.raw.fallback)
-        return importDatabase(ImportType.FromStream(inputStream)) != null
+        return importDatabase(ImportType.FromStream(inputStream)).isSuccess
     }
 
     init {

@@ -49,7 +49,7 @@ import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DragButton
 import io.github.depermitto.bullettrain.components.Header
-import io.github.depermitto.bullettrain.components.ListItem
+import io.github.depermitto.bullettrain.components.HeroTile
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
 import io.github.depermitto.bullettrain.components.TextLink
@@ -124,7 +124,7 @@ fun DayScreen(
                 }) {
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround(settings.theme))) {
                         var showTargetEditDropdown by remember { mutableStateOf(false) }
-                        ListItem(headlineContent = {
+                        HeroTile(headlineContent = {
                             TextLink(
                                 exerciseDescriptor.name,
                                 navController = navController,

@@ -41,7 +41,7 @@ fun <T> BasicTable(
     list: List<T>,
     content: (Int, T) -> Pair<@Composable () -> Unit, @Composable () -> Unit>
 ) = Column(modifier) {
-    ListItem(
+    HeroTile(
         headlineContent = headlineContent,
         supportingContent = headlineSupportingContent,
         trailingContent = headlineTrailingContent,

@@ -2,6 +2,7 @@ package io.github.depermitto.bullettrain.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ListItemDefaults
@@ -18,19 +19,25 @@ import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 
+/**
+ * Similar to [androidx.compose.material3.ListItem] but with rectangular shape, customizable padding and no leading content.
+ * @see [RadioTile]
+ */
 @Composable
-fun ListItem(
+fun HeroTile(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     headlineContent: @Composable () -> Unit,
     supportingContent: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     headlineTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
+    supportingTextStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    contentPadding: PaddingValues = PaddingValues(vertical = 12.dp, horizontal = 16.dp)
 ) = Box(if (onClick == null) Modifier else modifier.clickable { onClick() }) {
     ConstraintLayout(
         Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp, horizontal = 16.dp)
+            .padding(contentPadding)
     ) {
         val (headline, supporting, trailing) = createRefs()
         createHorizontalChain(headline, trailing, chainStyle = ChainStyle.SpreadInside)
@@ -50,7 +57,7 @@ fun ListItem(
         if (supportingContent != null) {
             CompositionLocalProvider(
                 LocalContentColor provides ListItemDefaults.colors().supportingTextColor,
-                LocalTextStyle provides LocalTextStyle.current.merge(MaterialTheme.typography.bodyMedium)
+                LocalTextStyle provides LocalTextStyle.current.merge(supportingTextStyle)
             ) {
                 Box(Modifier.constrainAs(supporting) {
                     start.linkTo(parent.start)
@@ -72,8 +79,12 @@ fun ListItem(
     }
 }
 
+/**
+ * Similar to [androidx.compose.material3.ListItem] but with a [androidx.compose.material3.RadioButton] as leading content.
+ * @see [HeroTile]
+ */
 @Composable
-fun ListItem(
+fun RadioTile(
     modifier: Modifier = Modifier,
     selected: Boolean,
     headlineContent: @Composable () -> Unit,

@@ -43,7 +43,7 @@ import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DropdownButton
 import io.github.depermitto.bullettrain.components.Header
-import io.github.depermitto.bullettrain.components.ListItem
+import io.github.depermitto.bullettrain.components.HeroTile
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.Placeholder
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
@@ -83,7 +83,7 @@ fun TrainingScreen(
                 onChoose = { it -> trainViewModel.setExercise(exerciseIndex, exercise.copy(descriptorId = it.id)) })
 
             val lastPerformedSet = exercise.lastPerformedSet()
-            ListItem(headlineContent = {
+            HeroTile(headlineContent = {
                 TextLink(
                     "${exerciseIndex + 1}. ${exerciseDescriptor.name}",
                     navController = navController,

@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
-import io.github.depermitto.bullettrain.components.ListItem
+import io.github.depermitto.bullettrain.components.HeroTile
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.entities.ExerciseDao
 import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
@@ -66,7 +66,7 @@ fun ExercisesListScreen(
         ) {
             items(exercises) { exerciseDescriptor ->
                 val count = exerciseFrequencyMap[exerciseDescriptor.id]
-                ListItem(
+                HeroTile(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { onSelection(exerciseDescriptor) },
                     headlineContent = { Text(exerciseDescriptor.name) },

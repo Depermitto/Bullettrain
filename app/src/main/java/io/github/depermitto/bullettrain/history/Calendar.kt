@@ -24,7 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.ListAlertDialog
-import io.github.depermitto.bullettrain.components.ListItem
+import io.github.depermitto.bullettrain.components.HeroTile
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.train.TrainViewModel
@@ -124,7 +124,7 @@ fun Calendar(
                 selectedProgram = program
             }
         }) { program ->
-        ListItem(headlineContent = { Text(program.name, maxLines = 2, overflow = TextOverflow.Ellipsis) })
+        HeroTile(headlineContent = { Text(program.name, maxLines = 2, overflow = TextOverflow.Ellipsis) })
     }
 
     selectedProgram?.let { program ->
@@ -136,7 +136,7 @@ fun Calendar(
                 selectedProgram = null
                 trainViewModel.startWorkout(day, program.id, date = longClickedDate)
             }) { day ->
-            ListItem(headlineContent = { Text(day.name, maxLines = 2, overflow = TextOverflow.Ellipsis) })
+            HeroTile(headlineContent = { Text(day.name, maxLines = 2, overflow = TextOverflow.Ellipsis) })
         }
     }
 
@@ -149,7 +149,7 @@ fun Calendar(
         var text = relatedProgram.name
         if (relatedProgram correspondsNot Program.EmptyWorkout) text += ", " + record.workout.name
 
-        ListItem(headlineContent = { Text(text, maxLines = 2, overflow = TextOverflow.Ellipsis) }, supportingContent = {
+        HeroTile(headlineContent = { Text(text, maxLines = 2, overflow = TextOverflow.Ellipsis) }, supportingContent = {
             val totalSets = record.workout.entries.sumOf { it.sets.count { it.actualPerfVar != 0f } }
             if (totalSets != 0) Text(text = "$totalSets performed sets")
         })

@@ -26,7 +26,7 @@ import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
-import io.github.depermitto.bullettrain.components.ListItem
+import io.github.depermitto.bullettrain.components.HeroTile
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.components.TransparentCard
 import io.github.depermitto.bullettrain.database.entities.ProgramDao
@@ -60,7 +60,7 @@ fun ProgramsTab(
                         onClick = { closeDropdown(); showProgramDeleteDialog = true })
                 }) {
                 TransparentCard(modifier = Modifier.align(Alignment.Center)) {
-                    ListItem(headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
+                    HeroTile(headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
                         supportingContent = {
                             Column {
                                 Text(text = "${program.workouts.size} day program")
