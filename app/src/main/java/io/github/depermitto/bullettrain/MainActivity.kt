@@ -108,7 +108,7 @@ fun App(db: Database) = MaterialTheme {
             startDestination = if (runBlocking { trainViewModel.restoreWorkout() }) {
                 Destinations.Training
             } else {
-                Destinations.Home(Destinations.Home.Tabs.Programs)
+                Destinations.Home(Destinations.Home.Tabs.Train)
             },
             enterTransition = {
                 scaleIntoContainer()
