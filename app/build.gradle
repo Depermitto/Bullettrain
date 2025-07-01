@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace 'io.github.depermitto'
+    namespace 'io.github.depermitto.bullettrain'
     compileSdk 34
 
     defaultConfig {
-        applicationId "io.github.depermitto"
+        applicationId "io.github.depermitto.bullettrain"
         minSdk 26
         targetSdk 34
         versionCode 1
