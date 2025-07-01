@@ -12,7 +12,7 @@ fun ExerciseChooser(
     onDismissRequest: () -> Unit,
     exerciseDao: ExerciseDao,
     historyDao: HistoryDao,
-    filter: (ExerciseDescriptor) -> Boolean = { true },
+    filter: ((ExerciseDescriptor) -> Boolean)? = null,
     onSelection: (ExerciseDescriptor) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)

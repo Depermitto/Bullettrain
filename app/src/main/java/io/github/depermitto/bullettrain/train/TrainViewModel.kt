@@ -6,7 +6,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
-import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.util.smallListSet
 import kotlinx.serialization.Serializable
@@ -38,7 +37,6 @@ class TrainViewModel(
 
     fun setWorkoutEntry(index: Int, workoutEntry: WorkoutEntry) {
         workoutEntries[index] = workoutEntry
-        backup()
     }
 
     fun setExerciseSet(exerciseIndex: Int, setIndex: Int, set: ExerciseSet) = setWorkoutEntry(
@@ -73,6 +71,7 @@ class TrainViewModel(
         else set.copy(doneTs = null)
 
         setExerciseSet(exerciseIndex, setIndex, set)
+        backup()
     }
 
     fun startWorkout(workout: Workout, programId: Int, date: LocalDate = LocalDate.now()) {
@@ -163,7 +162,7 @@ class TrainViewModel(
         }
     }
 
-    private fun backup() = BackgroundSlave.enqueue {
+    private fun backup() {
         workoutState = workoutState?.let { state ->
             state.copy(workout = state.workout.copy(entries = workoutEntries.toList())).also { historyDao.upsert(it) }
         }

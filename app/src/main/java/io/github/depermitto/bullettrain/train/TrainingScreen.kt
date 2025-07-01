@@ -65,7 +65,7 @@ fun TrainingScreen(
         .padding(bottom = Dp.EmptyScrollSpace), verticalArrangement = Arrangement.spacedBy(Dp.Medium)
 ) {
     val filter = { descriptor: ExerciseDescriptor ->
-        !trainViewModel.getWorkoutEntries().any { it.descriptorId == descriptor.id }
+        trainViewModel.getWorkoutEntries().none { it.descriptorId == descriptor.id }
     }
     val scope = rememberCoroutineScope()
     trainViewModel.getWorkoutEntries().forEachIndexed { exerciseIndex, exercise ->

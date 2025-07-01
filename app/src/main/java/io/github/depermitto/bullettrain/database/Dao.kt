@@ -1,13 +1,18 @@
 package io.github.depermitto.bullettrain.database
 
+import android.util.Log
 import io.github.depermitto.bullettrain.util.bigListSet
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.updateAndGet
 
-abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) {
-    internal val items = MutableStateFlow(storageFile.read())
+/**
+ * Abstraction representing a Data Access Object. Every method executes synchronously.
+ * @param depot instance of [Depot] governing data of interest.
+ */
+abstract class Dao<T : Entity>(protected val depot: Depot<List<T>>) {
+    internal val items = MutableStateFlow(depot.retrieve())
     internal var newId = items.value.maxOfOrNull { it.id } ?: 0
 
     val getAll: StateFlow<List<T>> = items.asStateFlow()
@@ -20,7 +25,8 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
         if (existingIndex == -1) return false
 
         val state = items.updateAndGet { state -> state.bigListSet(existingIndex, item) }
-        BackgroundSlave.enqueue { storageFile.writeLog(state) }
+        depot.stash(state)
+        Log.i("db-${depot.file.name}", state.toString())
         return true
     }
 
@@ -33,7 +39,8 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
             newId += 1
             state + item.clone(id = newId) as T
         }
-        BackgroundSlave.enqueue { storageFile.writeLog(state) }
+        depot.stash(state)
+        Log.i("db-${depot.file.name}", state.toString())
         return newId
     }
 
@@ -44,7 +51,8 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
 
     open fun delete(item: T) {
         val state = items.updateAndGet { state -> state - item }
-        BackgroundSlave.enqueue { storageFile.writeLog(state) }
+        depot.stash(state)
+        Log.i("db-${depot.file.name}", state.toString())
     }
 
     open fun where(id: Int): T = items.value.first { it.id == id }

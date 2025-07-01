@@ -2,12 +2,11 @@ package io.github.depermitto.bullettrain.database.entities
 
 import androidx.compose.runtime.Immutable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
-import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Compressor
 import io.github.depermitto.bullettrain.database.Dao
+import io.github.depermitto.bullettrain.database.Depot
 import io.github.depermitto.bullettrain.database.Entity
 import io.github.depermitto.bullettrain.database.serializers.InstantSerializer
-import io.github.depermitto.bullettrain.database.StorageFile
 import io.github.depermitto.bullettrain.util.BKTree
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerialName
@@ -113,7 +112,7 @@ sealed class PerfVar(val category: PerfVarCategory) {
     }
 }
 
-class ExerciseDao(file: ExerciseFile) : Dao<ExerciseDescriptor>(file) {
+class ExerciseDao(file: ExerciseDepot) : Dao<ExerciseDescriptor>(file) {
     private val bkTree = BKTree("Press") // This is the most frequent word in our database, followed by "Dumbbell" and "Barbell"
 
     val getSortedAlphabetically = getAll.map { it.filterNot { it.obsolete }.sortedBy { it.name } }
@@ -134,10 +133,8 @@ class ExerciseDao(file: ExerciseFile) : Dao<ExerciseDescriptor>(file) {
 
     init {
         // fill BKTree with words from ExerciseDescriptors
-        BackgroundSlave.enqueue {
-            getAll.value.forEach { exercise ->
-                exercise.name.trim().split(' ').filter { word -> word.all { char -> char.isLetter() } }.forEach(bkTree::insert)
-            }
+        getAll.value.forEach { exercise ->
+            exercise.name.trim().split(' ').filter { word -> word.all { char -> char.isLetter() } }.forEach(bkTree::insert)
         }
     }
 
@@ -179,8 +176,8 @@ class ExerciseDao(file: ExerciseFile) : Dao<ExerciseDescriptor>(file) {
     private fun String.prep() = this.trim().split(' ').joinToString(" ") { it.replaceFirstChar { it.uppercaseChar() } }
 }
 
-class ExerciseFile(file: File) : StorageFile<List<ExerciseDescriptor>>(file) {
-    override fun read(): List<ExerciseDescriptor> = Json.decodeFromString(Compressor.uncompress(file.readText()))
-    override fun writeNoLog(obj: List<ExerciseDescriptor>) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
+class ExerciseDepot(file: File) : Depot<List<ExerciseDescriptor>>(file) {
+    override fun retrieve(): List<ExerciseDescriptor> = Json.decodeFromString(Compressor.uncompress(file.readText()))
+    override fun stash(obj: List<ExerciseDescriptor>) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
 }
 

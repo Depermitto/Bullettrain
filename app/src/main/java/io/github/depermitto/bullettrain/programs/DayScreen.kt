@@ -68,7 +68,7 @@ fun DayScreen(
     snackbarHostState: SnackbarHostState
 ) = Box(modifier = modifier.fillMaxSize()) {
     val filter = { descriptor: ExerciseDescriptor ->
-        !programViewModel.getDay(dayIndex).entries.any { it.descriptorId == descriptor.id }
+        programViewModel.getDay(dayIndex).entries.none { it.descriptorId == descriptor.id }
     }
     val view = LocalView.current
     val scope = rememberCoroutineScope()

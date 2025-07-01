@@ -1,11 +1,11 @@
 package io.github.depermitto.bullettrain.database.entities
 
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Compressor
-import io.github.depermitto.bullettrain.database.StorageFile
+import io.github.depermitto.bullettrain.database.Depot
 import io.github.depermitto.bullettrain.database.entities.Theme.Dark
 import io.github.depermitto.bullettrain.theme.palettes.Palette
 import io.github.depermitto.bullettrain.theme.palettes.RhinoButtercupPalette
@@ -43,17 +43,18 @@ data class Settings(
     val trueBlack: Boolean = false
 )
 
-class SettingsDao(private val file: SettingsFile) {
-    internal val item = MutableStateFlow(file.read())
+class SettingsDao(private val depot: SettingsDepot) {
+    internal val item = MutableStateFlow(depot.retrieve())
     val getSettings = item.asStateFlow()
 
     fun update(function: (Settings) -> Settings) {
         val state = item.updateAndGet { state -> function(state) }
-        BackgroundSlave.enqueue { file.writeLog(state) }
+        depot.stash(state)
+        Log.i("db-${depot.file.name}", state.toString())
     }
 }
 
-class SettingsFile(file: File) : StorageFile<Settings>(file) {
-    override fun read(): Settings = Json.decodeFromString(Compressor.uncompress(file.readText()))
-    override fun writeNoLog(obj: Settings) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
+class SettingsDepot(file: File) : Depot<Settings>(file) {
+    override fun retrieve(): Settings = Json.decodeFromString(Compressor.uncompress(file.readText()))
+    override fun stash(obj: Settings) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
 }

@@ -63,7 +63,6 @@ import io.github.depermitto.bullettrain.components.DropdownButton
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.components.TopBarWithBackButton
 import io.github.depermitto.bullettrain.components.TopBarWithSettingsButton
-import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Database
 import io.github.depermitto.bullettrain.database.entities.Program
 import io.github.depermitto.bullettrain.exercises.ExerciseScreen
@@ -100,16 +99,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        BackgroundSlave.waitForAll()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        BackgroundSlave.quit()
     }
 }
 
@@ -263,7 +252,7 @@ fun App(db: Database) = MaterialTheme {
                         TextButton(onClick = {
                             val program = programViewModel.getProgram()
                             if (program.name.isBlank()) {
-                                BackgroundSlave.enqueue {
+                                scope.launch {
                                     snackbarHostState.showSnackbar("Blank Program Name", withDismissAction = true)
                                 }
                                 return@TextButton
@@ -423,6 +412,7 @@ fun App(db: Database) = MaterialTheme {
                         .consumeWindowInsets(paddingValues)
                         .padding(paddingValues),
                     db = db,
+                    scope = scope,
                     snackbarHostState = snackbarHostState
                 )
             }

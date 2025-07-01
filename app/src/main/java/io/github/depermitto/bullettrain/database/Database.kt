@@ -7,8 +7,8 @@ import io.github.depermitto.bullettrain.database.entities.*
 import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerType
 import io.github.vinceglb.filekit.core.pickFile
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -22,43 +22,39 @@ import kotlin.Result
 import kotlin.Result.Companion.failure
 import kotlin.Result.Companion.success
 
-private const val SETTINGS_FILENAME = "settings"
-private const val HISTORY_FILENAME = "history"
-private const val PROGRAMS_FILENAME = "programs"
-private const val EXERCISES_FILENAME = "exercises"
+class Database(private val dir: File, private val context: Context) {
 
-class Database(private val databaseDirectory: File, private val context: Context) {
+    private val settingsDepot = SettingsDepot(File(dir, "settings"))
+    private val historyDepot = HistoryDepot(File(dir, "history"))
+    private val programsDepot = ProgramsDepot(File(dir, "programs"))
+    private val exercisesDepot = ExerciseDepot(File(dir, "exercises"))
 
-    private val settingsFile = SettingsFile(File(databaseDirectory, SETTINGS_FILENAME))
-    private val historyFile = HistoryFile(File(databaseDirectory, HISTORY_FILENAME))
-    private val programsFile = ProgramsFile(File(databaseDirectory, PROGRAMS_FILENAME))
-    private val exercisesFile = ExerciseFile(File(databaseDirectory, EXERCISES_FILENAME))
-
-    private val backupFiles = listOf(settingsFile, historyFile, programsFile, exercisesFile)
+    private val depots = listOf(settingsDepot, historyDepot, programsDepot, exercisesDepot)
 
     init {
-        if (backupFiles.any { !it.file.exists() }) {
-            settingsFile.writeLog(Settings())
-            historyFile.writeLog(emptyList())
-            programsFile.writeLog(listOf(Program.EmptyWorkout))
-            exercisesFile.writeLog(emptyList())
+        if (depots.any { !it.file.exists() }) {
+            settingsDepot.stash(Settings())
+            historyDepot.stash(emptyList())
+            programsDepot.stash(listOf(Program.EmptyWorkout))
+            exercisesDepot.stash(emptyList())
+
+            Log.i("db", "init completed.")
         }
     }
 
-    val settingsDao = SettingsDao(settingsFile)
-    val historyDao = HistoryDao(historyFile)
-    val programDao = ProgramDao(programsFile)
-    val exerciseDao = ExerciseDao(exercisesFile)
+    val settingsDao = SettingsDao(settingsDepot)
+    val historyDao = HistoryDao(historyDepot)
+    val programDao = ProgramDao(programsDepot)
+    val exerciseDao = ExerciseDao(exercisesDepot)
 
     /**
      * Launch a file picker, export the zipped database to the selected location, and return the name of the exported file.
      * @see [importDatabase]
      */
     suspend fun exportDatabase(): Result<String> {
-        val backupFile =
-            File(databaseDirectory, "bullettrain-${LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))}.bk.zip")
+        val backupFile = File(dir, "bullettrain-${LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))}.bk.zip")
         ZipOutputStream(FileOutputStream(backupFile)).use { zipOutputStream ->
-            for (backup in backupFiles) {
+            for (backup in depots) {
                 zipOutputStream.putNextEntry(ZipEntry(backup.file.name))
                 zipOutputStream.write(backup.file.readBytes())
             }
@@ -91,21 +87,21 @@ class Database(private val databaseDirectory: File, private val context: Context
             }
         }
 
-        val tmpFile = File(databaseDirectory, "tmp").apply { writeBytes(bytes) }
+        val tmpFile = File(dir, "tmp").apply { writeBytes(bytes) }
         try {
             ZipFile(tmpFile).use { zipFile ->
                 val entries = zipFile.entries().toList()
                 // we should probably check if file is not corrupt here
-                if (!entries.zip(backupFiles).all { (entry, backup) -> entry.name == backup.file.name }) {
+                if (!entries.zip(depots).all { (entry, backup) -> entry.name == backup.file.name }) {
                     return failure(Throwable(message = "$filename is in an incorrect format"))
                 }
 
                 entries.forEachIndexed { i, entry ->
-                    when (val backupFile = backupFiles[i].apply { file.writeBytes(zipFile.getInputStream(entry).readBytes()) }) {
-                        is SettingsFile -> settingsDao.item.update { SettingsDao(backupFile).item.value }
-                        is HistoryFile -> historyDao.items.update { HistoryDao(backupFile).items.value }
-                        is ProgramsFile -> programDao.items.update { ProgramDao(backupFile).items.value }
-                        is ExerciseFile -> exerciseDao.items.update { ExerciseDao(backupFile).items.value }
+                    when (val backupFile = depots[i].apply { file.writeBytes(zipFile.getInputStream(entry).readBytes()) }) {
+                        is SettingsDepot -> settingsDao.item.update { SettingsDao(backupFile).item.value }
+                        is HistoryDepot -> historyDao.items.update { HistoryDao(backupFile).items.value }
+                        is ProgramsDepot -> programDao.items.update { ProgramDao(backupFile).items.value }
+                        is ExerciseDepot -> exerciseDao.items.update { ExerciseDao(backupFile).items.value }
                     }
                 }
             }
@@ -123,9 +119,9 @@ class Database(private val databaseDirectory: File, private val context: Context
     }
 
     init {
-        BackgroundSlave.enqueue(Dispatchers.Main) {
-            // this could be any StorageFile really
-            if (exercisesFile.read().isEmpty() && factoryReset()) Log.i("db-global", "polluted database with default data")
-        }
+        // this could be any DepotFile really
+        if (exercisesDepot.retrieve().isEmpty() && runBlocking { factoryReset() }) Log.i(
+            "db", "polluted database with default data"
+        )
     }
 }

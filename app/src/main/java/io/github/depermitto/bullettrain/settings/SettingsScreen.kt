@@ -19,17 +19,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.HeroTile
 import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.components.RadioTile
-import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Database
 import io.github.depermitto.bullettrain.database.entities.Theme
 import io.github.depermitto.bullettrain.database.entities.UnitSystem
 import io.github.depermitto.bullettrain.theme.palettes.*
 import io.github.depermitto.bullettrain.util.splitOnUppercase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
     db: Database,
+    scope: CoroutineScope = rememberCoroutineScope(),
     snackbarHostState: SnackbarHostState,
 ) = Column(modifier) {
     val context = LocalContext.current
@@ -73,7 +75,7 @@ fun SettingsScreen(
 
     SettingGroup(headline = "Data Management") {
         Setting(headline = "Export", supporting = "Create a backup and store all your data in a file", onClick = {
-            BackgroundSlave.enqueue {
+            scope.launch {
                 val msg = db.exportDatabase().fold(
                     onSuccess = { filename -> "Successfully saved to $filename" },
                     onFailure = { err -> err.message ?: "Unknown error occurred while exporting to file" },
@@ -82,7 +84,7 @@ fun SettingsScreen(
             }
         })
         Setting(headline = "Import", supporting = "Restore a previously created data backup", onClick = {
-            BackgroundSlave.enqueue {
+            scope.launch {
                 val msg = db.importDatabase(importType = Database.ImportType.Interactive).fold(
                     onSuccess = { filename -> "Successfully Imported $filename" },
                     onFailure = { err -> err.message ?: "Unknown error occurred while restoring from file" },
@@ -101,7 +103,7 @@ fun SettingsScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showConfirmFactoryResetDialog = false
-                    BackgroundSlave.enqueue {
+                    scope.launch {
                         if (db.exportDatabase().isFailure) snackbarHostState.showSnackbar(
                             "You are required to save your data if you want to reset to factory", withDismissAction = true
                         ) else if (db.factoryReset()) snackbarHostState.showSnackbar(

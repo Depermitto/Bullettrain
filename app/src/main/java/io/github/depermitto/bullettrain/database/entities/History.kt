@@ -3,10 +3,10 @@ package io.github.depermitto.bullettrain.database.entities
 import androidx.compose.runtime.Immutable
 import io.github.depermitto.bullettrain.database.Compressor
 import io.github.depermitto.bullettrain.database.Dao
+import io.github.depermitto.bullettrain.database.Depot
 import io.github.depermitto.bullettrain.database.Entity
 import io.github.depermitto.bullettrain.database.serializers.InstantSerializer
 import io.github.depermitto.bullettrain.database.serializers.LocalDateSerializer
-import io.github.depermitto.bullettrain.database.StorageFile
 import io.github.depermitto.bullettrain.train.WorkoutPhase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -32,7 +32,7 @@ data class HistoryRecord(
     override fun clone(id: Int) = copy(id = id)
 }
 
-class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
+class HistoryDao(file: HistoryDepot) : Dao<HistoryRecord>(file) {
     fun getUnfinishedBusiness(): HistoryRecord? =
         items.value.firstOrNull { record -> record.workoutPhase != WorkoutPhase.Completed }
 
@@ -46,8 +46,7 @@ class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
     }
 }
 
-class HistoryFile(file: File) : StorageFile<List<HistoryRecord>>(file) {
-    override fun read(): List<HistoryRecord> = Json.decodeFromString(Compressor.uncompress(file.readText()))
-    override fun writeNoLog(obj: List<HistoryRecord>) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
+class HistoryDepot(file: File) : Depot<List<HistoryRecord>>(file) {
+    override fun retrieve(): List<HistoryRecord> = Json.decodeFromString(Compressor.uncompress(file.readText()))
+    override fun stash(obj: List<HistoryRecord>) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
 }
-

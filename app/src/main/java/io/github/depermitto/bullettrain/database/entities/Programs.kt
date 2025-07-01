@@ -3,9 +3,9 @@ package io.github.depermitto.bullettrain.database.entities
 import androidx.compose.runtime.Immutable
 import io.github.depermitto.bullettrain.database.Compressor
 import io.github.depermitto.bullettrain.database.Dao
+import io.github.depermitto.bullettrain.database.Depot
 import io.github.depermitto.bullettrain.database.Entity
 import io.github.depermitto.bullettrain.database.serializers.LocalDateSerializer
-import io.github.depermitto.bullettrain.database.StorageFile
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -54,7 +54,7 @@ data class Workout(
     val entries: List<WorkoutEntry> = listOf(),
 )
 
-class ProgramDao(file: ProgramsFile) : Dao<Program>(file) {
+class ProgramDao(file: ProgramsDepot) : Dao<Program>(file) {
     val getUserPrograms = getAll.map {
         it.filter { it correspondsNot Program.EmptyWorkout && !it.obsolete }.sortedByDescending { it.mostRecentWorkoutDate }
     }
@@ -67,7 +67,7 @@ class ProgramDao(file: ProgramsFile) : Dao<Program>(file) {
     }
 }
 
-class ProgramsFile(file: File) : StorageFile<List<Program>>(file) {
-    override fun read(): List<Program> = Json.decodeFromString(Compressor.uncompress(file.readText()))
-    override fun writeNoLog(obj: List<Program>) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
+class ProgramsDepot(file: File) : Depot<List<Program>>(file) {
+    override fun retrieve(): List<Program> = Json.decodeFromString(Compressor.uncompress(file.readText()))
+    override fun stash(obj: List<Program>) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
 }
