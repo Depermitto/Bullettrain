@@ -79,12 +79,17 @@ fun ProgramScreen(
                     )
                 }
 
-                val exerciseChooserToggle = exerciseChooser(exerciseDao = exerciseDao, onChoose = {
-                    val exercise = it.copy(sets = it.sets + ExerciseSet(targetPerfVar = PerfVar.of(it.perfVarCategory)))
-                    programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises + exercise))
-                })
-                OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { exerciseChooserToggle() }) {
-                    Text(text = "Add Exercise")
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    val exerciseChooserToggle = exerciseChooser(exerciseDao = exerciseDao, onChoose = {
+                        val exercise = it.copy(sets = it.sets + ExerciseSet(targetPerfVar = PerfVar.of(it.perfVarCategory)))
+                        programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises + exercise))
+                    })
+                    OutlinedButton(onClick = { exerciseChooserToggle() }) {
+                        Text(text = "Add Exercise")
+                    }
+                    OutlinedButton(onClick = { /* TODO */ }) {
+                        Text(text = "Make Supersets")
+                    }
                 }
             }
         }

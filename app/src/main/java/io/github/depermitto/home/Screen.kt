@@ -7,7 +7,7 @@ sealed class Screen(val route: String) {
         enum class Tabs(val icon: Int) {
             History(R.drawable.history),
             Train(R.drawable.weight_lifter),
-            Programs(R.drawable.calendar_month_outline)
+            Programs(R.drawable.notebook_multiple)
         }
 
         fun passTab(tab: Tabs): String {
