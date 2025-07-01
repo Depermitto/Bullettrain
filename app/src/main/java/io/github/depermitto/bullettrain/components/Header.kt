@@ -11,8 +11,5 @@ fun Header(
     modifier: Modifier = Modifier,
     text: String,
 ) = Text(
-    modifier = modifier,
-    text = text,
-    style = MaterialTheme.typography.titleSmall,
-    textAlign = TextAlign.Center
+    modifier = modifier, text = text, style = MaterialTheme.typography.titleSmall, textAlign = TextAlign.Center
 )

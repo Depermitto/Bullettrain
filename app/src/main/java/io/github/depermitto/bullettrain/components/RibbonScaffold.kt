@@ -54,8 +54,7 @@ fun BoxScope.Ribbon(
         text = title,
         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
     )
-    if (settingsGear) IconButton(
-        modifier = Modifier.align(Alignment.TopEnd),
+    if (settingsGear) IconButton(modifier = Modifier.align(Alignment.TopEnd),
         onClick = { navController.navigate(Destinations.Settings) }) {
         Icon(Icons.Filled.Settings, contentDescription = "Settings")
     }

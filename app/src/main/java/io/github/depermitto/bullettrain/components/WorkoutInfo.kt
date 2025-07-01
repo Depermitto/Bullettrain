@@ -50,9 +50,7 @@ fun WorkoutInfo(
         Text(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(ItemPadding),
-            text = "Empty Workout",
-            textAlign = TextAlign.Center
+                .padding(ItemPadding), text = "Empty Workout", textAlign = TextAlign.Center
         )
         return@Column
     }

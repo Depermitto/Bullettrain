@@ -14,7 +14,7 @@ val SwapIcon: @Composable () -> Unit = {
     )
 }
 
-val DuplicateIcon: @Composable () -> Unit = { 
+val DuplicateIcon: @Composable () -> Unit = {
     Image(
         painterResource(id = R.drawable.duplicate),
         contentDescription = "Duplicate",

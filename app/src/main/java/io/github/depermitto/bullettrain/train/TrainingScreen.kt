@@ -55,9 +55,9 @@ import io.github.depermitto.bullettrain.theme.ExerciseSetWideWeight
 import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.ItemSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
+import io.github.depermitto.bullettrain.theme.SwapIcon
 import io.github.depermitto.bullettrain.theme.filledContainerColor
 import io.github.depermitto.bullettrain.theme.numberFieldTextStyle
-import io.github.depermitto.bullettrain.theme.SwapIcon
 import kotlinx.coroutines.launch
 import java.time.Instant
 import kotlin.collections.all
@@ -177,9 +177,7 @@ fun TrainingScreen(
                                 value = set.actualPerfVar,
                                 onValueChange = {
                                     trainViewModel.setExerciseSet(
-                                        exerciseIndex,
-                                        setIndex,
-                                        set.copy(actualPerfVar = it)
+                                        exerciseIndex, setIndex, set.copy(actualPerfVar = it)
                                     )
                                 },
                                 completed = set.completed,

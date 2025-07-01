@@ -99,23 +99,19 @@ fun HistoryTab(
                 Card(
                     modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = filledContainerColor())
                 ) {
-                    WorkoutInfo(
-                        modifier = Modifier.fillMaxWidth(),
+                    WorkoutInfo(modifier = Modifier.fillMaxWidth(),
                         workout = record.workout,
                         program = record.relatedProgram,
                         map = { exercises ->
                             val summaries = exercises.map { exercise ->
-                                val setsGroupedByWeight = exercise.sets
-                                    .groupBy { it.weight }
-                                    .filter { (weight, _) -> weight != 0f }
-                                if (setsGroupedByWeight.isNotEmpty()) setsGroupedByWeight
-                                    .map { (weight, sets) -> "${sets.size}x${weight.encodeToStringOutput()}" }
+                                val setsGroupedByWeight =
+                                    exercise.sets.groupBy { it.weight }.filter { (weight, _) -> weight != 0f }
+                                if (setsGroupedByWeight.isNotEmpty()) setsGroupedByWeight.map { (weight, sets) -> "${sets.size}x${weight.encodeToStringOutput()}" }
                                     .joinToString(", ", postfix = " " + settingsDao.weightUnit())
                                 else ""
                             }
                             summaries.filter { it.isNotBlank() }
-                        }
-                    )
+                        })
                 }
             }
         }

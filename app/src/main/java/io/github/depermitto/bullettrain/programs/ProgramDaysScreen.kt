@@ -20,8 +20,8 @@ import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.theme.CardSpacing
-import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
+import io.github.depermitto.bullettrain.theme.ItemPadding
 
 @Composable
 fun ProgramDaysScreen(

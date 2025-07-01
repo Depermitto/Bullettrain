@@ -103,8 +103,7 @@ fun App(db: Database) = MaterialTheme {
     }, snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { paddingValues ->
         var showDiscardDialog by rememberSaveable { mutableStateOf(false) }
         var showFinishDialog by rememberSaveable { mutableStateOf(false) }
-        NavHost(
-            modifier = Modifier.padding(paddingValues),
+        NavHost(modifier = Modifier.padding(paddingValues),
             navController = navController,
             startDestination = if (runBlocking { trainViewModel.restoreWorkout() }) {
                 Destinations.Training
@@ -122,8 +121,7 @@ fun App(db: Database) = MaterialTheme {
             },
             popExitTransition = {
                 scaleOutOfContainer()
-            }
-        ) {
+            }) {
             composable<Destinations.Home> { navBackStackEntry ->
                 val homeViewModel = viewModel<HomeViewModel>(
                     factory = HomeViewModel.Factory(tab = navBackStackEntry.toRoute<Destinations.Home>().tab)

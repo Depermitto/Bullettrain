@@ -45,8 +45,7 @@ fun TrainTab(
                         dragDirection < 0 -> selectedProgramIndex = min(selectedProgramIndex + 1, programs.size - 1)
                     }
                 }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
-            },
-        colors = CardDefaults.cardColors(containerColor = filledContainerColor())
+            }, colors = CardDefaults.cardColors(containerColor = filledContainerColor())
     ) {
         Box(
             modifier = Modifier
