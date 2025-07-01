@@ -29,7 +29,7 @@ fun HomeScreen(
 ) {
     when (homeViewModel.activeTab) {
         Tab.Exercises -> ExerciseTab(
-            modifier = modifier, exerciseDao = exerciseDao, navController = navController
+            modifier = modifier, exerciseDao = exerciseDao, historyDao = historyDao, navController = navController
         )
 
         Tab.History -> HistoryTab(

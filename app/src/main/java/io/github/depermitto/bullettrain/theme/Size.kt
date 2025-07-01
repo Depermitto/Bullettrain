@@ -12,5 +12,7 @@ val WideSpacing = 8.dp
 val CompactIconSize = 20.dp
 val SqueezableIconSize = 40.dp
 
+val ScrollPadding = 300.dp
+
 const val NarrowWeight = 0.3f
 const val WideWeight = 0.9f

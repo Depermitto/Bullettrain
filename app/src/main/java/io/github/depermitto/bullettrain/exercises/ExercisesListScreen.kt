@@ -14,26 +14,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
-import io.github.depermitto.bullettrain.components.GhostCard
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
+import io.github.depermitto.bullettrain.components.TransparentCard
 import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.ExerciseDao
+import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.RegularSpacing
+import io.github.depermitto.bullettrain.theme.ScrollPadding
 import io.github.depermitto.bullettrain.theme.unlinedColors
+import kotlinx.coroutines.flow.map
+import kotlin.collections.map
+import kotlin.collections.sortedByDescending
 
 @Composable
 fun ExercisesListScreen(
     exerciseDao: ExerciseDao,
+    historyDao: HistoryDao,
     modifier: Modifier = Modifier,
     onSelection: (Exercise) -> Unit,
 ) = Box(modifier = modifier.fillMaxSize()) {
     var searchText by rememberSaveable { mutableStateOf("") }
     val exercises by exerciseDao.where(name = searchText, errorTolerance = 3, ignoreCase = true)
         .collectAsStateWithLifecycle(initialValue = emptyList())
+    val exercisesGrouped by historyDao.getAll.map { records ->
+        exercises.map { exercise -> exercise to records.sumOf { record -> record.workout.exercises.count { it.id == exercise.id && it.sets.any { it.completed } } } }
+            .sortedByDescending { (_, count) -> count }
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
 
     Column(
         modifier = Modifier
@@ -55,12 +66,16 @@ fun ExercisesListScreen(
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Exercises") },
         )
 
-        LazyColumn(contentPadding = PaddingValues(bottom = 100.dp), verticalArrangement = Arrangement.spacedBy(RegularSpacing)) {
-            items(exercises) { exercise ->
-                GhostCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onSelection(exercise) }) {
-                    Text(text = exercise.name, modifier = Modifier.padding(10.dp))
+        LazyColumn(
+            contentPadding = PaddingValues(bottom = ScrollPadding), verticalArrangement = Arrangement.spacedBy(RegularSpacing)
+        ) {
+            items(exercisesGrouped) { (exercise, count) ->
+                TransparentCard(modifier = Modifier.fillMaxWidth(), onClick = { onSelection(exercise) }) {
+                    ListItem(
+                        headlineContent = { Text(exercise.name) },
+                        supportingContent = { if (count != 0) Text("$count ${if (count == 1) "record" else "records"}") },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                    )
                 }
             }
         }

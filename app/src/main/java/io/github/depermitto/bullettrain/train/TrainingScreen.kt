@@ -38,7 +38,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
@@ -51,12 +50,14 @@ import io.github.depermitto.bullettrain.components.TextLink
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.ExerciseSet
+import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
 import io.github.depermitto.bullettrain.theme.CompactIconSize
 import io.github.depermitto.bullettrain.theme.NarrowWeight
 import io.github.depermitto.bullettrain.theme.RegularPadding
+import io.github.depermitto.bullettrain.theme.ScrollPadding
 import io.github.depermitto.bullettrain.theme.SmallPadding
 import io.github.depermitto.bullettrain.theme.SmallSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
@@ -74,6 +75,7 @@ fun TrainingScreen(
     trainViewModel: TrainViewModel,
     settingsDao: SettingsDao,
     exerciseDao: ExerciseDao,
+    historyDao: HistoryDao,
     modifier: Modifier = Modifier,
     navController: NavController,
     snackbarHostState: SnackbarHostState
@@ -81,7 +83,7 @@ fun TrainingScreen(
     modifier = modifier
         .padding(horizontal = RegularPadding)
         .verticalScroll(rememberScrollState(0))
-        .padding(bottom = 100.dp),
+        .padding(bottom = ScrollPadding),
     verticalArrangement = Arrangement.spacedBy(WideSpacing)
 ) {
     val scope = rememberCoroutineScope()
@@ -89,7 +91,7 @@ fun TrainingScreen(
         var showExerciseDeleteDialog by remember { mutableStateOf(false) }
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
             var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
-            if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
+            if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao, historyDao = historyDao,
                 onDismissRequest = { showSwapExerciseChooser = false },
                 onChoose = { it -> trainViewModel.setExercise(exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
 
@@ -99,6 +101,7 @@ fun TrainingScreen(
                     "${exerciseIndex + 1}. ${exercise.name}",
                     navController = navController,
                     destination = Destination.Exercise(exercise.id),
+                    contentPadding = PaddingValues(RegularPadding),
                     style = MaterialTheme.typography.titleMedium,
                 )
             }, trailingContent = {
@@ -137,7 +140,7 @@ fun TrainingScreen(
                     Header(Modifier.weight(NarrowWeight), exercise.intensity.name)
                 }
                 Header(Modifier.weight(NarrowWeight + 0.1f), "Target")
-                Header(Modifier.weight(WideWeight), exercise.perfVarCategory.trainName)
+                Header(Modifier.weight(WideWeight), exercise.perfVarCategory.shortName)
                 Header(Modifier.weight(WideWeight), settingsDao.weightUnit())
                 if (trainViewModel.isWorkoutRunning()) {
                     Header(Modifier.weight(NarrowWeight), "")
@@ -235,7 +238,7 @@ fun TrainingScreen(
     }
 
     var showExerciseChooser by rememberSaveable { mutableStateOf(false) }
-    if (showExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
+    if (showExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao, historyDao = historyDao,
         onDismissRequest = { showExerciseChooser = false },
         onChoose = { trainViewModel.addExercise(it.copy(sets = listOf(ExerciseSet(targetPerfVar = PerfVar.of(it.perfVarCategory))))) })
     OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { showExerciseChooser = true }) {

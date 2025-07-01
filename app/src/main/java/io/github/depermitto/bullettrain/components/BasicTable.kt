@@ -36,10 +36,10 @@ sealed class Ratio {
 fun <T> BasicTable(
     modifier: Modifier = Modifier,
     headlineContent: @Composable () -> Unit,
-    headlineSupportingContent: @Composable (() -> Unit)? = null,
-    headlineTrailingContent: @Composable (() -> Unit)? = null,
-    headlineLeadingContent: @Composable (() -> Unit)? = null,
-    headlineOverlineContent: @Composable (() -> Unit)? = null,
+    supportingContent: @Composable (() -> Unit)? = null,
+    trailingContent: @Composable (() -> Unit)? = null,
+    leadingContent: @Composable (() -> Unit)? = null,
+    overlineContent: @Composable (() -> Unit)? = null,
     emptyMessage: String = "No Information To Present",
     ratio: Ratio = Ratio.Unlimited,
     headers: Pair<String, String>,
@@ -49,10 +49,10 @@ fun <T> BasicTable(
 ) = Column(modifier = modifier) {
     ListItem(
         headlineContent = headlineContent,
-        supportingContent = headlineSupportingContent,
-        overlineContent = headlineOverlineContent,
-        leadingContent = headlineLeadingContent,
-        trailingContent = headlineTrailingContent,
+        supportingContent = supportingContent,
+        overlineContent = overlineContent,
+        leadingContent = leadingContent,
+        trailingContent = trailingContent,
         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
     )
 
@@ -103,6 +103,7 @@ fun WorkoutTable(
     modifier: Modifier = Modifier,
     workout: Day,
     program: Program,
+    headers: Pair<String, String>,
     trailingContent: (@Composable () -> Unit)? = null,
     exstractor: (Exercise) -> String?,
     ratio: Ratio = Ratio.Unlimited,
@@ -119,15 +120,20 @@ fun WorkoutTable(
     BasicTable(
         modifier = modifier,
         headlineContent = { Text(text = header, style = MaterialTheme.typography.titleLarge) },
-        headlineSupportingContent = supportingText?.let { { Text(text = supportingText) } },
-        headlineTrailingContent = trailingContent,
+        supportingContent = supportingText?.let { { Text(text = supportingText) } },
+        trailingContent = trailingContent,
         ratio = ratio,
         emptyMessage = "Empty Workout",
-        headers = Pair("Exercise", "Sets"),
+        headers = headers,
         list = workout.exercises.mapNotNull { exercise -> exstractor(exercise)?.let { text -> exercise to text } },
     ) { _, (exercise, text) ->
         Pair(first = {
-            TextLink(exercise.name, navController, Destination.Exercise(exercise.id), useCard = false, maxLines = 2)
+            TextLink(
+                exercise.name,
+                navController,
+                Destination.Exercise(exercise.id),
+                maxLines = 2
+            )
         }, second = {
             Text(text = text, overflow = TextOverflow.Ellipsis, maxLines = 2)
         })

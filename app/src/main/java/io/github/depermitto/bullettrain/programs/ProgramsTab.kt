@@ -19,18 +19,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
-import io.github.depermitto.bullettrain.components.GhostCard
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
+import io.github.depermitto.bullettrain.components.TransparentCard
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.RegularSpacing
+import io.github.depermitto.bullettrain.theme.ScrollPadding
 import io.github.depermitto.bullettrain.theme.SmallPadding
 
 @Composable
@@ -43,7 +43,7 @@ fun ProgramsTab(
     val programs by programDao.getAlmostAll.collectAsStateWithLifecycle(initialValue = emptyList())
 
     LazyColumn(
-        contentPadding = PaddingValues(start = RegularPadding, end = RegularPadding, bottom = 100.dp),
+        contentPadding = PaddingValues(start = RegularPadding, end = RegularPadding, bottom = ScrollPadding),
         verticalArrangement = Arrangement.spacedBy(RegularSpacing)
     ) {
         items(programs) { program ->
@@ -59,7 +59,7 @@ fun ProgramsTab(
                         onClick = { closeDropdown(); showProgramDeleteDialog = true })
                 }) {
 
-                GhostCard(modifier = Modifier.align(Alignment.Center)) {
+                TransparentCard(modifier = Modifier.align(Alignment.Center)) {
                     ListItem(colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
                         supportingContent = {
@@ -77,7 +77,8 @@ fun ProgramsTab(
 //                                    )
 //                                }
                             }
-                        }, trailingContent = {
+                        },
+                        trailingContent = {
                             if (program.draft) Card {
                                 Text(
                                     text = "Draft",
@@ -92,17 +93,29 @@ fun ProgramsTab(
                     onDismissRequest = { showProgramDeleteDialog = false },
                     onConfirm = { programDao.delete(program) })
 
-                if (showRenameDialog) TextFieldAlertDialog(label = { Text("Program Name") },
-                    onDismissRequest = { showRenameDialog = false },
-                    dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
-                    confirmButton = { name ->
-                        TextButton(onClick = {
-                            programDao.update(program.copy(name = name))
-                            showRenameDialog = false
-                        }) {
-                            Text("Confirm")
-                        }
-                    })
+                if (showRenameDialog) {
+                    var errorMessage by rememberSaveable { mutableStateOf("") }
+                    TextFieldAlertDialog(
+                        label = { Text("Program Name") },
+                        onDismissRequest = { showRenameDialog = false },
+                        dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
+                        confirmButton = { name ->
+                            TextButton(onClick = {
+                                if (name.isBlank()) {
+                                    errorMessage = "Black Program Name"
+                                    return@TextButton
+                                }
+                               
+                                programDao.update(program.copy(name = name))
+                                showRenameDialog = false
+                            }) {
+                                Text("Confirm")
+                            }
+                        },
+                        errorMessage = errorMessage,
+                        isError = errorMessage.isNotEmpty()
+                    )
+                }
             }
         }
     }

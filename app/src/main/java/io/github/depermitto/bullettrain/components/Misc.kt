@@ -20,14 +20,14 @@ fun Header(
 
 
 @Composable
-fun GhostCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) = Card(
+fun TransparentCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) = Card(
     modifier = modifier,
     colors = CardDefaults.cardColors(containerColor = Color.Transparent),
     content = content
 )
 
 @Composable
-fun GhostCard(modifier: Modifier = Modifier, onClick: () -> Unit, content: @Composable ColumnScope.() -> Unit) = Card(
+fun TransparentCard(modifier: Modifier = Modifier, onClick: () -> Unit, content: @Composable ColumnScope.() -> Unit) = Card(
     modifier = modifier,
     onClick = onClick,
     colors = CardDefaults.cardColors(containerColor = Color.Transparent),

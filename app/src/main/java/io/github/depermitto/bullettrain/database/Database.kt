@@ -198,12 +198,12 @@ class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
 
     fun where(exercise: Exercise): Flow<List<Exercise>> = getAll.map { records ->
         records.flatMap { record -> record.workout.exercises.filter { it.id == exercise.id } }
-            .sortedBy { exercise -> exercise.lastPerformedSet()?.doneTs }
+            .sortedByDescending { exercise -> exercise.lastPerformedSet()?.doneTs }
     }
 }
 
 class ProgramDao(file: ProgramsFile) : Dao<Program>(file) {
-    val getAlmostAll = getAll.map { it.filterNot { it corresponds Program.EmptyWorkout } }
+    val getAlmostAll = getAll.map { it.filterNot { it corresponds Program.EmptyWorkout }.sortedByDescending { it.mostRecentWorkoutDate } }
 }
 
 class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {
@@ -249,7 +249,7 @@ class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {
 
     /**
      * Check [name] for duplicates and emptiness.
-     * 
+     *
      * @return Error message if [name] is bad and null if successfully validated.
      */
     fun validateName(name: String): String? {

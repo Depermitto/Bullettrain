@@ -5,10 +5,11 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.database.ExerciseDao
+import io.github.depermitto.bullettrain.database.HistoryDao
 
 @Composable
-fun ExerciseTab(modifier: Modifier = Modifier, exerciseDao: ExerciseDao, navController: NavController) {
-    ExercisesListScreen(modifier = modifier, exerciseDao = exerciseDao) {
+fun ExerciseTab(modifier: Modifier = Modifier, exerciseDao: ExerciseDao, historyDao: HistoryDao, navController: NavController) {
+    ExercisesListScreen(modifier = modifier, exerciseDao = exerciseDao, historyDao = historyDao) {
         navController.navigate(Destination.Exercise(exerciseId = it.id))
     }
 }

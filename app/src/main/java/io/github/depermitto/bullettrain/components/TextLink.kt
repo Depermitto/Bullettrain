@@ -1,6 +1,7 @@
 package io.github.depermitto.bullettrain.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalTextStyle
@@ -25,7 +26,7 @@ fun TextLink(
     text: String,
     navController: NavController,
     destination: Destination,
-    useCard: Boolean = true,
+    contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
     style: TextStyle = LocalTextStyle.current,
     fontSize: TextUnit = TextUnit.Unspecified,
@@ -40,10 +41,10 @@ fun TextLink(
     softWrap: Boolean = true,
     maxLines: Int = 2,
     minLines: Int = 1,
-) = if (useCard) GhostCard(modifier = modifier, onClick = { navController.navigate((destination)) }) {
+) = TransparentCard(modifier = modifier, onClick = { navController.navigate((destination)) }) {
     Text(
         text = text,
-        modifier = Modifier.padding(8.dp),
+        modifier = Modifier.padding(contentPadding),
         style = style,
         fontSize = fontSize,
         fontStyle = fontStyle,
@@ -58,9 +59,30 @@ fun TextLink(
         maxLines = maxLines,
         minLines = minLines
     )
-} else Text(
+}
+
+@Composable
+fun TextLink(
+    text: String,
+    navController: NavController,
+    destination: Destination,
+    modifier: Modifier = Modifier,
+    style: TextStyle = LocalTextStyle.current,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Ellipsis,
+    softWrap: Boolean = true,
+    maxLines: Int = 2,
+    minLines: Int = 1,
+) = Text(
     text = text,
-    modifier = Modifier
+    modifier = modifier
         .clip(shape = RoundedCornerShape(8.dp))
         .clickable { navController.navigate((destination)) },
     style = style,

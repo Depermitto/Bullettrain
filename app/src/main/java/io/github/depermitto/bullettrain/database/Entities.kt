@@ -67,8 +67,7 @@ data class Exercise(
     val alternatives: List<Int>? = null,
     val notes: String = "",
 ) : Entity {
-    val hasIntensity: Boolean
-        get() = intensity != null
+    val hasIntensity get() = intensity != null
 
     fun getPerformedSets(): List<ExerciseSet> = this.sets.filter { it.completed }
     fun lastPerformedSet() = this.sets.lastOrNull { it.completed }
@@ -85,7 +84,7 @@ data class ExerciseSet(
     val weight: Float = 0f,
     @Serializable(with = InstantSerializer::class) val doneTs: Instant? = null,
 ) {
-    val completed = doneTs != null
+    val completed get() = doneTs != null && actualPerfVar != 0f
 }
 
 // TODO implement these as choices
@@ -97,7 +96,13 @@ enum class PerfVarCategory {
     Reps, RepRange, Time, TimeRange;
 
     val prettyName = name.split(regex = Regex("(?=[A-Z])")).joinToString(" ")
-    val trainName get() = if (this == RepRange) "Reps" else name
+    val shortName
+        get() = when (this) {
+            Reps -> name
+            RepRange -> Reps.name
+            Time -> name
+            TimeRange -> Time.name
+        }
 }
 
 @Serializable

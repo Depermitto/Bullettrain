@@ -144,8 +144,8 @@ fun App(db: Database) = MaterialTheme {
             Scaffold(modifier = Modifier.pointerInput(Unit) {
                 detectDragGestures(onDragEnd = {
                     when {
-                        dragDirection > 0 -> homeViewModel.switchTab(tab = homeViewModel.activeTab.prev())
-                        dragDirection < 0 -> homeViewModel.switchTab(tab = homeViewModel.activeTab.next())
+                        dragDirection > 20 -> homeViewModel.switchTab(tab = homeViewModel.activeTab.prev())
+                        dragDirection < 20 -> homeViewModel.switchTab(tab = homeViewModel.activeTab.next())
                     }
                 }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
             }, topBar = {
@@ -231,6 +231,7 @@ fun App(db: Database) = MaterialTheme {
                     trainViewModel = trainViewModel,
                     settingsDao = db.settingsDao,
                     exerciseDao = db.exerciseDao,
+                    historyDao = db.historyDao,
                     navController = navController,
                     snackbarHostState = snackbarHostState
                 )
@@ -312,6 +313,7 @@ fun App(db: Database) = MaterialTheme {
                         .padding(paddingValues),
                     programViewModel = programViewModel,
                     exerciseDao = db.exerciseDao,
+                    historyDao = db.historyDao,
                     dayIndex = dayIndex,
                     navController = navController,
                     snackbarHostState = snackbarHostState
@@ -352,7 +354,7 @@ fun App(db: Database) = MaterialTheme {
 
                 if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
                     text = "Do you want to discard changes made to ${programViewModel.programName}?",
-                    onConfirm = { db.programDao.delete(program); navController.navigateUp() })
+                    onConfirm = { navController.navigateUp() })
 
                 BackHandler(enabled = programViewModel.hasChanged) { showDiscardDialog = true }
             }

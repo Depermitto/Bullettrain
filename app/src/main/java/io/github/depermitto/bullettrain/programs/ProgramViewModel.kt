@@ -37,7 +37,7 @@ class ProgramViewModel(private val baseProgram: Program) : ViewModel() {
 
     fun reorderDays(fromIndex: Int, toIndex: Int) = days.add(toIndex, days.removeAt(fromIndex))
 
-    val hasChanged = getDays() != baseProgram.days
+    val hasChanged get() = getDays() != baseProgram.days
     fun hasContent(ignoreDay1: Boolean = false): Boolean {
         if (programName.isNotBlank()) return true
         return if (!ignoreDay1) {

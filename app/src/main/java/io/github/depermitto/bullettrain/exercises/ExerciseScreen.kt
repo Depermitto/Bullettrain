@@ -10,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.BasicTable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
@@ -19,6 +18,7 @@ import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.RegularSpacing
+import io.github.depermitto.bullettrain.theme.ScrollPadding
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -29,7 +29,7 @@ fun ExerciseScreen(modifier: Modifier = Modifier, historyDao: HistoryDao, settin
 
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(start = RegularPadding, end = RegularPadding, bottom = 100.dp),
+        contentPadding = PaddingValues(start = RegularPadding, end = RegularPadding, bottom = ScrollPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(RegularSpacing),
     ) {
@@ -43,9 +43,15 @@ fun ExerciseScreen(modifier: Modifier = Modifier, historyDao: HistoryDao, settin
                     Text("${setIndex + 1}", maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }, second = {
                     Text(
-                        "${set.actualPerfVar.encodeToStringOutput()} x ${set.weight.encodeToStringOutput()} ${settingsDao.weightUnit()}",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        text = run {
+                            val perfVar = set.actualPerfVar.encodeToStringOutput() // is always non-zero
+                            val weight = set.weight.encodeToStringOutput()
+
+                            when {
+                                weight.isBlank() -> "$perfVar ${set.targetPerfVar.category.shortName.lowercase()}"
+                                else -> "$perfVar x $weight ${settingsDao.weightUnit()}"
+                            }
+                        }, maxLines = 1, overflow = TextOverflow.Ellipsis
                     )
                 })
             }

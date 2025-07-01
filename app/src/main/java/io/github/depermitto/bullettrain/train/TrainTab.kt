@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.components.Ratio
 import io.github.depermitto.bullettrain.components.WorkoutTable
@@ -18,8 +19,6 @@ import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.SmallPadding
 import io.github.depermitto.bullettrain.theme.focalGround
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.runBlocking
 import kotlin.math.max
 import kotlin.math.min
 
@@ -34,7 +33,7 @@ fun TrainTab(
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Center,
 ) {
-    val programs = runBlocking { programDao.getAlmostAll.firstOrNull() ?: emptyList() }
+    val programs by programDao.getAlmostAll.collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedProgramIndex by rememberSaveable { mutableIntStateOf(0) }
     var dragDirection by remember { mutableFloatStateOf(0f) }
 
@@ -45,8 +44,8 @@ fun TrainTab(
             .pointerInput(Unit) {
                 detectDragGestures(onDragEnd = {
                     when {
-                        dragDirection > 0 -> selectedProgramIndex = max(selectedProgramIndex - 1, 0)
-                        dragDirection < 0 -> selectedProgramIndex = min(selectedProgramIndex + 1, programs.size - 1)
+                        dragDirection > 20 -> selectedProgramIndex = max(selectedProgramIndex - 1, 0)
+                        dragDirection < -20 -> selectedProgramIndex = min(selectedProgramIndex + 1, programs.size - 1)
                     }
                 }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
             }, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)
@@ -64,11 +63,10 @@ fun TrainTab(
 
             programs.getOrNull(selectedProgramIndex)?.let { program ->
                 WorkoutTable(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.TopCenter),
+                    modifier = Modifier.align(Alignment.TopCenter),
                     program = program,
                     workout = program.nextDay(),
+                    headers = Pair("Exercise", "Sets"),
                     exstractor = { exercise -> exercise.sets.size.toString() },
                     ratio = Ratio.Strict(0.9f),
                     navController = navController

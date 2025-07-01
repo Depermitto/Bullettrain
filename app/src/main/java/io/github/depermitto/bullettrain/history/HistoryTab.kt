@@ -39,6 +39,7 @@ import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.theme.RegularPadding
+import io.github.depermitto.bullettrain.theme.ScrollPadding
 import io.github.depermitto.bullettrain.theme.WideSpacing
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.train.TrainViewModel
@@ -67,7 +68,7 @@ fun HistoryTab(
         modifier = Modifier
             .padding(horizontal = RegularPadding)
             .verticalScroll(verticalScrollState)
-            .padding(bottom = 100.dp),
+            .padding(bottom = ScrollPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(WideSpacing)
     ) {
@@ -112,18 +113,25 @@ fun HistoryTab(
                     modifier = Modifier.fillMaxWidth(),
                     workout = record.workout,
                     program = record.relatedProgram,
+                    headers = Pair("Exercise", "Best Set"),
                     navController = navController,
-                    exstractor = { exercise ->
-                        val setsGroupedByWeight = exercise.getPerformedSets().groupBy { it.weight }.filter { (weight, _) -> weight != 0f }
-                        if (setsGroupedByWeight.isNotEmpty()) setsGroupedByWeight.map { (weight, sets) -> "${sets.size}x${weight.encodeToStringOutput()}" }
-                            .joinToString(", ", postfix = " " + settingsDao.weightUnit())
-                        else null
-                    },
                     trailingContent = {
                         IconButton(onClick = { trainViewModel.editWorkout(record) }) {
                             Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit Workout")
                         }
-                    }, ratio = Ratio.Strict(0.6f)
+                    },
+                    ratio = Ratio.Strict(0.7f),
+                    exstractor = { exercise ->
+                        exercise.getPerformedSets().maxByOrNull { set -> set.weight * set.actualPerfVar }?.let { bestSet ->
+                            val perfVar = bestSet.actualPerfVar.encodeToStringOutput() // is always non-zero
+                            val weight = bestSet.weight.encodeToStringOutput()
+
+                            when {
+                                weight.isBlank() -> "$perfVar ${bestSet.targetPerfVar.category.shortName.lowercase()}"
+                                else -> "$perfVar x $weight ${settingsDao.weightUnit()}"
+                            }
+                        }
+                    },
                 )
             }
         }

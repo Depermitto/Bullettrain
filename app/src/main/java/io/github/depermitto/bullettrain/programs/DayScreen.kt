@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -55,6 +56,7 @@ import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
 import io.github.depermitto.bullettrain.components.TextLink
 import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.ExerciseSet
+import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.Intensity
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.PerfVarCategory
@@ -65,6 +67,7 @@ import io.github.depermitto.bullettrain.theme.HeartPlusIcon
 import io.github.depermitto.bullettrain.theme.HeartRemoveIcon
 import io.github.depermitto.bullettrain.theme.NarrowWeight
 import io.github.depermitto.bullettrain.theme.RegularPadding
+import io.github.depermitto.bullettrain.theme.ScrollPadding
 import io.github.depermitto.bullettrain.theme.SmallPadding
 import io.github.depermitto.bullettrain.theme.SmallSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
@@ -85,6 +88,7 @@ fun DayScreen(
     programViewModel: ProgramViewModel,
     dayIndex: Int,
     exerciseDao: ExerciseDao,
+    historyDao: HistoryDao,
     navController: NavController,
     snackbarHostState: SnackbarHostState
 ) = Box(modifier = modifier.fillMaxSize()) {
@@ -95,7 +99,7 @@ fun DayScreen(
         .padding(horizontal = RegularPadding)
         .fillMaxSize()
         .verticalScroll(rememberScrollState(0))
-        .padding(bottom = 100.dp),
+        .padding(bottom = ScrollPadding),
         list = day.exercises,
         verticalArrangement = Arrangement.spacedBy(WideSpacing),
         onMove = {
@@ -141,6 +145,7 @@ fun DayScreen(
                                 exercise.name,
                                 navController = navController,
                                 destination = Destination.Exercise(exercise.id),
+                                contentPadding = PaddingValues(RegularPadding),
                                 style = MaterialTheme.typography.titleMedium,
                             )
                         }, trailingContent = {
@@ -295,14 +300,14 @@ fun DayScreen(
                 }
             }
 
-            if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
+            if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao, historyDao = historyDao,
                 onDismissRequest = { showSwapExerciseChooser = false },
                 onChoose = { programViewModel.setExercise(dayIndex, exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
         }
     }
 
     var showAddExerciseChooser by rememberSaveable { mutableStateOf(false) }
-    if (showAddExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
+    if (showAddExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao, historyDao = historyDao,
         onDismissRequest = { showAddExerciseChooser = false },
         onChoose = {
             programViewModel.setDay(
