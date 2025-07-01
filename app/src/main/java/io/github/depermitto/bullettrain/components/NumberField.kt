@@ -17,7 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.github.depermitto.bullettrain.theme.numberFieldTextStyle
+import io.github.depermitto.bullettrain.theme.numeric
 import kotlin.math.roundToInt
 
 @Composable
@@ -30,7 +30,7 @@ fun NumberField(
     singleLine: Boolean = true,
     readOnly: Boolean = false,
     enabled: Boolean = true,
-    textStyle: TextStyle = numberFieldTextStyle(),
+    textStyle: TextStyle = TextStyle.numeric(),
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
     focusedBorderThickness: Dp = OutlinedTextFieldDefaults.FocusedBorderThickness,
     unfocusedBorderThickness: Dp = OutlinedTextFieldDefaults.UnfocusedBorderThickness,

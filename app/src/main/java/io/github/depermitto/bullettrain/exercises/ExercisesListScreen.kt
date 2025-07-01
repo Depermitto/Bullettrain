@@ -21,8 +21,8 @@ import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.theme.CardPadding
 import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.ItemSpacing
-import io.github.depermitto.bullettrain.theme.filledContainerColor
-import io.github.depermitto.bullettrain.theme.notUnderlinedTextFieldColors
+import io.github.depermitto.bullettrain.theme.focalGround
+import io.github.depermitto.bullettrain.theme.unlinedColors
 
 @Composable
 fun ExercisesListScreen(
@@ -45,7 +45,7 @@ fun ExercisesListScreen(
                 .padding(bottom = CardPadding)
                 .clip(shape = MaterialTheme.shapes.medium),
             value = searchText, onValueChange = { searchText = it },
-            colors = notUnderlinedTextFieldColors(),
+            colors = TextFieldDefaults.unlinedColors(),
             maxLines = 1,
             singleLine = true,
             placeholder = { Text(text = "Search Exercises") },
@@ -54,7 +54,7 @@ fun ExercisesListScreen(
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(ItemSpacing), contentPadding = PaddingValues(bottom = 100.dp)) {
             items(exercises) { exercise ->
-                Card(colors = CardDefaults.cardColors(containerColor = filledContainerColor()),
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround),
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { onSelection(exercise) }) {
                     Text(text = exercise.name, modifier = Modifier.padding(10.dp))
@@ -71,13 +71,18 @@ fun ExercisesListScreen(
     )
 
     if (showDialog) {
-        var isError by rememberSaveable { mutableStateOf(false) }
+        var errorMessage by rememberSaveable { mutableStateOf("") }
         TextFieldAlertDialog(onDismissRequest = { showDialog = false },
             dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } },
             confirmButton = { name ->
                 TextButton(onClick = {
-                    if (exercises.any { it.name.trim() == name.trim() }) {
-                        isError = true
+                    if (name.isBlank()) {
+                        errorMessage = "Empty Exercise Name"
+                        return@TextButton
+                    }
+
+                    if (exercises.any { it.name.contentEquals(name.trim(), ignoreCase = true) }) {
+                        errorMessage = "Duplicate Exercise Name"
                         return@TextButton
                     }
 
@@ -87,8 +92,8 @@ fun ExercisesListScreen(
                     Text("Confirm")
                 }
             },
-            errorMessage = "Duplicate Name",
-            isError = isError
+            errorMessage = errorMessage,
+            isError = errorMessage.isNotBlank()
         )
     }
 }

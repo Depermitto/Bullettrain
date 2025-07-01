@@ -16,7 +16,7 @@ import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.ItemSpacing
-import io.github.depermitto.bullettrain.theme.filledContainerColor
+import io.github.depermitto.bullettrain.theme.focalGround
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlin.math.max
@@ -47,7 +47,7 @@ fun TrainTab(
                         dragDirection < 0 -> selectedProgramIndex = min(selectedProgramIndex + 1, programs.size - 1)
                     }
                 }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
-            }, colors = CardDefaults.cardColors(containerColor = filledContainerColor())
+            }, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)
     ) {
         Box(
             modifier = Modifier

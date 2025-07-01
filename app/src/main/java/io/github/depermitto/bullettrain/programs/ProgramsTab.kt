@@ -31,7 +31,7 @@ import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.ItemPadding
-import io.github.depermitto.bullettrain.theme.filledContainerColor
+import io.github.depermitto.bullettrain.theme.focalGround
 
 @Composable
 fun ProgramsTab(
@@ -64,7 +64,7 @@ fun ProgramsTab(
                         .clip(MaterialTheme.shapes.medium)
                         .fillMaxWidth()
                         .align(Alignment.Center),
-                    colors = CardDefaults.cardColors(containerColor = filledContainerColor())
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)
                 ) {
                     ListItem(colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },

@@ -2,7 +2,6 @@ package io.github.depermitto.bullettrain.exercises
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
@@ -22,7 +21,7 @@ import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.ItemPadding
-import io.github.depermitto.bullettrain.theme.filledContainerColor
+import io.github.depermitto.bullettrain.theme.focalGround
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -41,8 +40,7 @@ fun ExerciseScreen(
     ) {
         items(loggedExercises) { exercise ->
             val doneDate = exercise.sets.getOrElse(0) { return@items }.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
-            // TODO standardize this matrix-type pattern, also add TextLink composable to link to ExerciseScreen
-            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
                 BasicTable(
                     headers = Pair("Set", "Completed"), list = exercise.sets, separateHeadersAndContent = false,
                     headlineContent = { Text(dateFormatter.format(doneDate), style = MaterialTheme.typography.titleMedium) },

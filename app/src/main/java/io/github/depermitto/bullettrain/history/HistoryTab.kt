@@ -21,7 +21,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
@@ -40,7 +39,7 @@ import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.ItemPadding
-import io.github.depermitto.bullettrain.theme.filledContainerColor
+import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -62,7 +61,14 @@ fun HistoryTab(
     }
 
     val verticalScrollState = rememberScrollState(0)
-    Scaffold(modifier = Modifier.padding(horizontal = ItemPadding), topBar = {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = ItemPadding)
+            .verticalScroll(verticalScrollState)
+            .padding(bottom = 100.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(CardSpacing)
+    ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = { homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1) }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
@@ -77,55 +83,45 @@ fun HistoryTab(
                 Icon(Icons.AutoMirrored.Filled.ArrowForward, null)
             }
         }
-    }) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .verticalScroll(verticalScrollState)
-                .padding(bottom = 100.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(CardSpacing)
-        ) {
-            var dragDirection by remember { mutableFloatStateOf(0f) }
-            Calendar(
-                homeViewModel = homeViewModel,
-                trainViewModel = trainViewModel,
-                currentHistoryRecords = historyRecords,
-                currentDate = homeViewModel.calendarDate,
-                programDao = programDao,
-                historyDao = historyDao,
-                modifier = Modifier
-                    .heightIn(0.dp, 400.dp)
-                    .pointerInput(Unit) {
-                        detectDragGestures(onDragEnd = {
-                            when {
-                                dragDirection > 20 -> homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1)
-                                dragDirection < -20 -> homeViewModel.calendarDate = homeViewModel.calendarDate.plusMonths(1)
-                            }
-                        }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
-                    },
-            )
 
-            selectedHistoryRecords.forEach { record ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = filledContainerColor())
-                ) {
-                    WorkoutTable(modifier = Modifier.fillMaxWidth(),
-                        workout = record.workout,
-                        program = record.relatedProgram,
-                        exstractor = { exercise ->
-                            val setsGroupedByWeight = exercise.sets.groupBy { it.weight }.filter { (weight, _) -> weight != 0f }
-                            if (setsGroupedByWeight.isNotEmpty()) setsGroupedByWeight.map { (weight, sets) -> "${sets.size}x${weight.encodeToStringOutput()}" }
-                                .joinToString(", ", postfix = " " + settingsDao.weightUnit())
-                            else null
-                        },
-                        trailingContent = {
-                            IconButton(onClick = { trainViewModel.editWorkout(record) }) {
-                                Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit Workout")
-                            }
-                        }, ratio = Ratio.Strict(0.5f)
-                    )
-                }
+        var dragDirection by remember { mutableFloatStateOf(0f) }
+        Calendar(
+            homeViewModel = homeViewModel,
+            trainViewModel = trainViewModel,
+            currentHistoryRecords = historyRecords,
+            currentDate = homeViewModel.calendarDate,
+            programDao = programDao,
+            historyDao = historyDao,
+            modifier = Modifier
+                .heightIn(0.dp, 400.dp)
+                .pointerInput(Unit) {
+                    detectDragGestures(onDragEnd = {
+                        when {
+                            dragDirection > 20 -> homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1)
+                            dragDirection < -20 -> homeViewModel.calendarDate = homeViewModel.calendarDate.plusMonths(1)
+                        }
+                    }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
+                },
+        )
+
+        selectedHistoryRecords.forEach { record ->
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
+                WorkoutTable(
+                    modifier = Modifier.fillMaxWidth(),
+                    workout = record.workout,
+                    program = record.relatedProgram,
+                    exstractor = { exercise ->
+                        val setsGroupedByWeight = exercise.sets.groupBy { it.weight }.filter { (weight, _) -> weight != 0f }
+                        if (setsGroupedByWeight.isNotEmpty()) setsGroupedByWeight.map { (weight, sets) -> "${sets.size}x${weight.encodeToStringOutput()}" }
+                            .joinToString(", ", postfix = " " + settingsDao.weightUnit())
+                        else null
+                    },
+                    trailingContent = {
+                        IconButton(onClick = { trainViewModel.editWorkout(record) }) {
+                            Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit Workout")
+                        }
+                    }, ratio = Ratio.Strict(0.5f)
+                )
             }
         }
     }

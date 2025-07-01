@@ -70,7 +70,7 @@ import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.ItemSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.SwapIcon
-import io.github.depermitto.bullettrain.theme.filledContainerColor
+import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.util.reorder
 import io.github.depermitto.bullettrain.util.smallListSet
 import kotlinx.coroutines.launch
@@ -130,7 +130,7 @@ fun DayScreen(
                         }
                     }
                 }) {
-                    Card(colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
+                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
                         Column(modifier = Modifier.padding(ItemPadding)) {
                             var showTargetEditDropdown by remember { mutableStateOf(false) }
                             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -219,7 +219,7 @@ fun DayScreen(
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .background(color = filledContainerColor())
+                                            .background(color = MaterialTheme.colorScheme.focalGround)
                                             .padding(vertical = ItemPadding), verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
@@ -270,7 +270,7 @@ fun DayScreen(
 
                             OutlinedButton(modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.outlinedButtonColors()
-                                    .copy(contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
+                                    .copy(contentColor = MaterialTheme.colorScheme.tertiary),
                                 onClick = {
                                     programViewModel.setExercise(
                                         dayIndex, exerciseIndex, exercise.copy(

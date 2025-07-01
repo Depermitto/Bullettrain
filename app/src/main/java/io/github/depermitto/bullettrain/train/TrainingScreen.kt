@@ -32,6 +32,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -59,8 +60,8 @@ import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.ItemSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.SwapIcon
-import io.github.depermitto.bullettrain.theme.filledContainerColor
-import io.github.depermitto.bullettrain.theme.numberFieldTextStyle
+import io.github.depermitto.bullettrain.theme.focalGround
+import io.github.depermitto.bullettrain.theme.numeric
 import kotlinx.coroutines.launch
 import java.time.Instant
 import kotlin.collections.all
@@ -81,10 +82,10 @@ fun TrainingScreen(
         .padding(bottom = 100.dp),
     verticalArrangement = Arrangement.spacedBy(CardSpacing)
 ) {
-    var showExerciseDeleteDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    var showExerciseDeleteDialog by remember { mutableStateOf(false) }
     trainViewModel.getExercises().forEachIndexed { exerciseIndex, exercise ->
-        Card(modifier = Modifier, colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
+        Card(modifier = Modifier, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
             var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
             if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
                 onDismissRequest = { showSwapExerciseChooser = false },
@@ -100,7 +101,7 @@ fun TrainingScreen(
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Spacer(Modifier.weight(1f))
-                    lastPerformedSet?.let { exerciseSet ->
+                    if (!trainViewModel.isWorkoutEditing()) lastPerformedSet?.let { exerciseSet ->
                         Card {
                             Text(
                                 modifier = Modifier.padding(4.dp),
@@ -160,7 +161,7 @@ fun TrainingScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(color = filledContainerColor())
+                                .background(color = MaterialTheme.colorScheme.focalGround)
                                 .padding(vertical = ItemPadding), verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
@@ -224,7 +225,7 @@ fun TrainingScreen(
 
                 OutlinedButton(modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.outlinedButtonColors()
-                        .copy(contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
+                        .copy(contentColor = MaterialTheme.colorScheme.tertiary),
                     onClick = {
                         trainViewModel.setExercise(
                             exerciseIndex, exercise.copy(
@@ -262,7 +263,7 @@ fun CompletableNumberField(
     placeholder: @Composable () -> Unit,
 ) {
     val (textStyle, unfocusedBorderThickness, colors) = if (completed) Triple(
-        numberFieldTextStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold),
+        TextStyle.numeric(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold),
         OutlinedTextFieldDefaults.FocusedBorderThickness,
         OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -270,7 +271,7 @@ fun CompletableNumberField(
             disabledBorderColor = MaterialTheme.colorScheme.primary,
         )
     ) else Triple(
-        numberFieldTextStyle(), OutlinedTextFieldDefaults.UnfocusedBorderThickness, OutlinedTextFieldDefaults.colors()
+        TextStyle.numeric(), OutlinedTextFieldDefaults.UnfocusedBorderThickness, OutlinedTextFieldDefaults.colors()
     )
 
     NumberField(

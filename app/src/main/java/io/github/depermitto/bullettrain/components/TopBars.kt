@@ -1,7 +1,6 @@
 package io.github.depermitto.bullettrain.components
 
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
-import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
@@ -14,31 +13,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 
-@Composable
-fun Scaffold(
-    modifier: Modifier = Modifier,
-    ribbon: @Composable BoxScope.() -> Unit,
-    floatingActionButton: (@Composable () -> Unit)? = null,
-    content: @Composable BoxScope.() -> Unit,
-) {
-    Scaffold(floatingActionButton = floatingActionButton ?: {}, topBar = {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            ribbon()
-        }
-    }) { paddingValues ->
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            content()
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HeaderWithSettingsButton(
+fun TopBarWithSettingsButton(
     navController: NavController,
     title: String,
 ) = TopAppBar(title = {
@@ -56,7 +33,7 @@ fun HeaderWithSettingsButton(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HeaderWithBackButton(
+fun TopBarWithBackButton(
     modifier: Modifier = Modifier,
     navController: NavController,
     topEndContent: (@Composable () -> Unit)? = null,
