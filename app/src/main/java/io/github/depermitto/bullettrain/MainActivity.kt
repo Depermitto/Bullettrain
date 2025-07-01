@@ -73,7 +73,7 @@ import io.github.depermitto.bullettrain.programs.ProgramScreen
 import io.github.depermitto.bullettrain.programs.ProgramViewModel
 import io.github.depermitto.bullettrain.settings.SettingsScreen
 import io.github.depermitto.bullettrain.theme.BigSpacing
-import io.github.depermitto.bullettrain.theme.GymAppTheme
+import io.github.depermitto.bullettrain.theme.BullettrainTheme
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.ScaleTransitionDirection
 import io.github.depermitto.bullettrain.theme.scaleIntoContainer
@@ -90,8 +90,8 @@ class MainActivity : ComponentActivity() {
         FileKit.init(this)
 
         setContent {
-            GymAppTheme(dynamicColor = false) {
-                // This is for color flashing during navigating
+            BullettrainTheme(dynamicColor = false) {
+                // this is for color flashing during navigating
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     App(Database(application.filesDir, applicationContext))
                 }
