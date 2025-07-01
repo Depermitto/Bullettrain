@@ -12,17 +12,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -276,7 +277,12 @@ fun TrainingScreen(
           )
         },
       )
-    OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { showExerciseChooser = true }) {
+    TextButton(
+      modifier = Modifier.fillMaxWidth(),
+      onClick = { showExerciseChooser = true },
+      colors =
+        ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onBackground),
+    ) {
       Text(text = "Add Exercise")
     }
   }

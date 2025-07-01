@@ -45,7 +45,7 @@ class TrainViewModel(
 ) : ViewModel() {
   // HistoryRecord-related
   private var id by Delegates.notNull<Int>()
-  private var relatedProgramId by Delegates.notNull<Int>()
+  private var relatedProgramId: Int? = null
   private lateinit var workoutStartTs: Timestamp
   private lateinit var workoutPhase: Phase
 
@@ -96,10 +96,10 @@ class TrainViewModel(
   fun getRecord(): HistoryRecord =
     HistoryRecord.newBuilder()
       .setId(id)
-      .setRelatedProgramId(relatedProgramId)
       .setWorkoutStartTs(workoutStartTs)
       .setWorkoutPhase(workoutPhase)
       .setWorkout(Workout.newBuilder().setName(workoutName).addAllExercises(exercises.toList()))
+      .apply { this@TrainViewModel.relatedProgramId?.let { setRelatedProgramId(it) } }
       .build()
 
   private fun init(historyRecord: HistoryRecord) {
@@ -112,7 +112,7 @@ class TrainViewModel(
       }
 
     id = record.id
-    relatedProgramId = record.relatedProgramId
+    if (record.hasRelatedProgramId()) relatedProgramId = record.relatedProgramId
     workoutStartTs = record.workoutStartTs
     workoutPhase = record.workoutPhase
 
@@ -153,13 +153,13 @@ class TrainViewModel(
     setExerciseSet(exerciseIndex, setIndex, builder)
   }
 
-  fun startWorkout(workout: Workout, programId: Int, workoutStartTs: Timestamp) {
+  fun startWorkout(workout: Workout, programId: Int?, workoutStartTs: Timestamp) {
     val record =
       HistoryRecord.newBuilder()
         .setWorkout(workout)
-        .setRelatedProgramId(programId)
         .setWorkoutStartTs(workoutStartTs)
         .setWorkoutPhase(Phase.During)
+        .apply { programId?.let { setRelatedProgramId(it) } }
         .build()
     init(record)
     navController.navigate(Destination.Training)
@@ -192,7 +192,9 @@ class TrainViewModel(
   }
 
   fun completeWorkout() = endWorkout {
-    val relatedProgram = programDao.where(relatedProgramId)
+    historyDao.upsert(getRecord().toBuilder().setWorkoutPhase(Phase.Completed).build())
+
+    val relatedProgram = programDao.where(relatedProgramId ?: return@endWorkout)
     val nextDayIndex =
       (relatedProgram.workoutsList.indexOfFirst { workoutName == it.name } + 1) %
         relatedProgram.workoutsCount
@@ -203,8 +205,6 @@ class TrainViewModel(
         .setLastWorkoutTs(date.atTimeNow().toTimestamp())
         .build()
     )
-
-    historyDao.upsert(getRecord().toBuilder().setWorkoutPhase(Phase.Completed).build())
   }
 
   fun cancelWorkout() = endWorkout { historyDao.delete(id) }

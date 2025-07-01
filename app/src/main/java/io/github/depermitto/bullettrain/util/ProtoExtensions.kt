@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import com.google.protobuf.Timestamp
 import io.github.depermitto.bullettrain.protos.ExercisesProto.Exercise
 import io.github.depermitto.bullettrain.protos.HistoryProto.HistoryRecord
+import io.github.depermitto.bullettrain.protos.ProgramsProto.*
 import io.github.depermitto.bullettrain.protos.SettingsProto.Theme
 import io.github.depermitto.bullettrain.protos.SettingsProto.UnitSystem
 import java.time.Instant

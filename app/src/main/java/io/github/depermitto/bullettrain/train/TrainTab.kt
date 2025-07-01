@@ -175,7 +175,11 @@ fun TrainTab(
       OutlinedButton(
         modifier = Modifier.fillMaxWidth(),
         onClick = {
-          trainViewModel.startWorkout(Workout.getDefaultInstance(), -1, Instant.now().toTimestamp())
+          trainViewModel.startWorkout(
+            Workout.getDefaultInstance(),
+            null,
+            Instant.now().toTimestamp(),
+          )
         },
         shape = RoundedCornerShape(16.dp, 16.dp, 4.dp, 4.dp),
       ) {

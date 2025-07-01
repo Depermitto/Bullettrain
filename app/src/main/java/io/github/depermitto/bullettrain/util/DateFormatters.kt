@@ -8,6 +8,7 @@ object DateFormatters {
   val MMMM_yyyy: DateTimeFormatter = ofPattern("MMMM yyyy")
   val MMMM_d_yyyy: DateTimeFormatter = ofPattern("MMMM d, yyyy")
   val MMM_dd_yyyy: DateTimeFormatter = ofPattern("MMM dd yyyy")
+  val MMM_dd: DateTimeFormatter = ofPattern("MMM dd")
   val EEEE_MMM_dd_yyyy: DateTimeFormatter = ofPattern("EEEE, MMM dd yyyy")
   val yyyy_MM_dd: DateTimeFormatter = ofPattern("yyy-MM-dd")
 

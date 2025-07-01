@@ -7,15 +7,12 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -23,13 +20,13 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -46,12 +43,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -65,9 +61,9 @@ import androidx.navigation.toRoute
 import io.github.depermitto.bullettrain.Destination.Home.Tab
 import io.github.depermitto.bullettrain.components.ConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DropdownButton
+import io.github.depermitto.bullettrain.components.HomeScreenTopBar
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.components.TopBarWithBackButton
-import io.github.depermitto.bullettrain.components.HomeScreenTopBar
 import io.github.depermitto.bullettrain.db.Db
 import io.github.depermitto.bullettrain.exercises.ExercisesSetsListings
 import io.github.depermitto.bullettrain.home.HomeScreen
@@ -79,7 +75,6 @@ import io.github.depermitto.bullettrain.programs.ProgramViewModel
 import io.github.depermitto.bullettrain.protos.ProgramsProto.*
 import io.github.depermitto.bullettrain.settings.SettingsScreen
 import io.github.depermitto.bullettrain.theme.BullettrainTheme
-import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.ScaleTransitionDirection
 import io.github.depermitto.bullettrain.theme.scaleIntoContainer
 import io.github.depermitto.bullettrain.theme.scaleOutOfContainer
@@ -177,7 +172,7 @@ fun App(db: Db) = MaterialTheme {
                 },
                 icon = { Icon(painterResource(id = tab.icon), tab.name) },
                 label = { Text(text = tab.name) },
-                alwaysShowLabel = false
+                alwaysShowLabel = false,
               )
             }
           }
@@ -202,29 +197,27 @@ fun App(db: Db) = MaterialTheme {
 
       Scaffold(
         topBar = {
-          OutlinedCard(
-            modifier =
-              Modifier.windowInsetsPadding(TopAppBarDefaults.windowInsets)
-                .padding(start = Dp.Medium, end = Dp.Medium, bottom = Dp.Medium)
-          ) {
-            Box(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp, horizontal = 4.dp)) {
+          CenterAlignedTopAppBar(
+            title = {
+              Text(
+                text = trainViewModel.elapsed(),
+                maxLines = 1,
+                style = MaterialTheme.typography.titleMedium,
+              )
+            },
+            navigationIcon = {
               TextButton(
-                modifier = Modifier.align(Alignment.CenterStart),
                 onClick = { showDiscardOrDeleteDialog = true },
                 colors =
                   ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
               ) {
                 Icon(Icons.Filled.Close, "Cancel Workout", Modifier.size(ButtonDefaults.IconSize))
                 Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                Text("Discard")
+                Text("Drop")
               }
-              Text(
-                modifier = Modifier.align(Alignment.Center),
-                text = trainViewModel.elapsed(),
-                style = MaterialTheme.typography.titleMedium,
-              )
+            },
+            actions = {
               TextButton(
-                modifier = Modifier.align(Alignment.CenterEnd),
                 onClick = { showFinishDialog = true },
                 colors =
                   ButtonDefaults.textButtonColors(
@@ -233,8 +226,9 @@ fun App(db: Db) = MaterialTheme {
               ) {
                 Text("Finish")
               }
-            }
-          }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+          )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
       ) { paddingValues ->
@@ -296,6 +290,12 @@ fun App(db: Db) = MaterialTheme {
                   if (program.name.isBlank()) {
                     scope.launch {
                       snackbarHostState.showSnackbar("Blank Program Name", withDismissAction = true)
+                    }
+                    return@TextButton
+                  }
+                  if (program.workoutsCount == 0) {
+                    scope.launch {
+                      snackbarHostState.showSnackbar("No Workout Created", withDismissAction = true)
                     }
                     return@TextButton
                   }
@@ -519,7 +519,13 @@ fun App(db: Db) = MaterialTheme {
         topBar = {
           TopBarWithBackButton(
             navController = navController,
-            title = "${record.workout.name}, ${record.getDate().format(DateFormatters.MMM_dd_yyyy)}",
+            title =
+              if (record.hasRelatedProgramId()) {
+                val relatedProgram = db.programDao.where(record.relatedProgramId)
+                "${relatedProgram.name}, ${record.workout.name}"
+              } else {
+                DateFormatters.MMM_dd.format(record.getDate()) + " Workout"
+              },
           )
         }
       ) { paddingValues ->

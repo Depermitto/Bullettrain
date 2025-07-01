@@ -42,6 +42,7 @@ import io.github.depermitto.bullettrain.db.ExerciseDao
 import io.github.depermitto.bullettrain.db.HistoryDao
 import io.github.depermitto.bullettrain.db.ProgramDao
 import io.github.depermitto.bullettrain.home.HomeViewModel
+import io.github.depermitto.bullettrain.protos.ExercisesProto.*
 import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Large
@@ -117,23 +118,32 @@ fun HistoryTab(
         modifier = Modifier.heightIn(0.dp, 400.dp),
       )
 
-      selectedHistoryRecords.forEach { record ->
+      for (record in selectedHistoryRecords) {
+        val workoutName: String
+        val plannedExercises: List<Exercise>
+        if (record.hasRelatedProgramId()) {
+          val relatedProgram = programDao.where(record.relatedProgramId)
+          workoutName = relatedProgram.name
+          plannedExercises =
+            relatedProgram.workoutsList.first { it.name == record.workout.name }.exercisesList
+        } else {
+          workoutName = DateFormatters.MMM_dd.format(record.getDate()) + " Workout"
+          plannedExercises = record.workout.exercisesList
+        }
+
         var showRecordDeleteDialog by rememberSaveable { mutableStateOf(false) }
-        val relatedProgram = programDao.where(record.relatedProgramId)
-        val plannedWorkout = relatedProgram.workoutsList.first { it.name == record.workout.name }
         DataPanel(
           modifier = Modifier.fillMaxWidth(),
           items =
             record.workout.exercisesList.filter { exercise ->
               val skipped = exercise.setsList.all { set -> !set.hasDoneTs() }
-              val planned =
-                plannedWorkout.exercisesList.any { it.descriptorId == exercise.descriptorId }
+              val planned = plannedExercises.any { it.descriptorId == exercise.descriptorId }
               !skipped || planned
             },
           backgroundColor = focalGround(settings.theme),
           headline = {
             ExtendedListItem(
-              headlineContent = { Text(text = relatedProgram.name) },
+              headlineContent = { Text(text = workoutName) },
               headlineTextStyle = MaterialTheme.typography.titleLarge,
               supportingContent = { Text(text = record.workout.name) },
               trailingContent = {
@@ -160,10 +170,10 @@ fun HistoryTab(
                 if (showRecordDeleteDialog) {
                   val date = record.getDate().format(DateFormatters.MMMM_d_yyyy)
                   val text =
-                    if (relatedProgram.id != -1) {
-                      "Do you definitely want to delete the ${record.workout.name} workout from ${relatedProgram.name} on $date?"
+                    if (record.hasRelatedProgramId()) {
+                      "Do you definitely want to delete the ${record.workout.name} workout from $workoutName on $date?"
                     } else {
-                      "Do you definitely want to delete an ${relatedProgram.name} on $date?"
+                      "Do you definitely want to delete an $workoutName on $date?"
                     }
 
                   ConfirmationAlertDialog(
@@ -184,6 +194,7 @@ fun HistoryTab(
           },
           contentPadding = PaddingValues(horizontal = Dp.Large),
         ) { _, exercise ->
+          val notPerformedLabel = "skipped"
           val bestSet =
             exercise.setsList
               .filter { it.hasDoneTs() }
@@ -192,6 +203,7 @@ fun HistoryTab(
                 val actual = bestSet.actual.format()
                 val weight = bestSet.weight.format()
                 when {
+                  actual.isBlank() && weight.isBlank() -> notPerformedLabel
                   actual.isBlank() -> "$weight ${settings.unitSystem.weightUnit()}"
                   weight.isBlank() -> "$actual ${exercise.type}"
                   else -> "$actual x $weight ${settings.unitSystem.weightUnit()}"
@@ -202,7 +214,11 @@ fun HistoryTab(
           ExtendedListItem(
             headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
             trailingContent = {
-              Text(text = bestSet ?: "skipped", overflow = TextOverflow.Ellipsis, maxLines = 2)
+              Text(
+                text = bestSet ?: notPerformedLabel,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 2,
+              )
             },
             modifier = Modifier.clip(MaterialTheme.shapes.small),
             onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },

@@ -8,7 +8,7 @@ import "programs.proto";
 
 message HistoryRecord {
   uint32 id = 1;
-  uint32 relatedProgramId = 2;
+  optional uint32 relatedProgramId = 2;
   Workout workout = 3;
   Workout.Phase workoutPhase = 4;
   google.protobuf.Timestamp workoutStartTs = 5;

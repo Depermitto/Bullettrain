@@ -6,28 +6,25 @@ import io.github.depermitto.bullettrain.util.bigListSet
 import kotlin.Result.Companion.failure
 import kotlin.Result.Companion.success
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
 /** Abstraction representing a Data Access Object. Every method executes synchronously. */
 class ExerciseDao(exerciseDescriptors: List<Exercise.Descriptor>) {
   internal val items = MutableStateFlow(exerciseDescriptors)
-  var idTrack = items.value.maxOfOrNull { it.id } ?: 0
-    private set
+  private var idTrack = items.value.maxOfOrNull { it.id } ?: 0
 
   private val bkTree =
     BKTree("Press") // Most frequent word in our database, followed by "Dumbbell" and "Barbell"
 
-  private val getAll = items.asStateFlow()
   val getSortedAlphabetically =
-    getAll.map { exerciseDescriptors ->
+    items.map { exerciseDescriptors ->
       exerciseDescriptors.filterNot { it.obsolete }.sortedBy { it.name }
     }
 
   init {
     // fill BKTree with words from ExerciseDescriptors
-    getAll.value.forEach { exercise ->
+    items.value.forEach { exercise ->
       exercise.name
         .trim()
         .split(' ')
@@ -67,7 +64,7 @@ class ExerciseDao(exerciseDescriptors: List<Exercise.Descriptor>) {
   fun delete(descriptor: Exercise.Descriptor) =
     update(descriptor.toBuilder().setObsolete(true).build())
 
-  fun where(id: Int): Exercise.Descriptor = items.value.first { it.id == id }
+  fun where(id: Int): Exercise.Descriptor = items.value[id - 1]
 
   /**
    * Filter out exercises by name. This function provides an autocorrect/typo correcting algorithm
@@ -94,7 +91,7 @@ class ExerciseDao(exerciseDescriptors: List<Exercise.Descriptor>) {
       return failure(Throwable(message = "Empty Exercise Name"))
     }
 
-    if (getAll.value.any { !it.obsolete && it.name == name.capitalizeWords() }) {
+    if (items.value.any { !it.obsolete && it.name == name.capitalizeWords() }) {
       return failure(Throwable(message = "Duplicate Exercise Name"))
     }
 

@@ -38,6 +38,9 @@ fun <T> DataPanel(
 ) {
   Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = backgroundColor)) {
     headline.invoke()
+
+    if (items.isEmpty()) return@Card
+
     CompositionLocalProvider(
       LocalTextStyle provides LocalTextStyle.current.merge(headerTextStyle)
     ) {

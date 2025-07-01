@@ -19,9 +19,14 @@ class HomeViewModel(initialPage: Tab, private val historyDao: HistoryDao) : View
   var selectedDate by mutableStateOf<LocalDate?>(null)
 
   fun resetDate() {
-    val mostRecentDate = historyDao.where(historyDao.idTrack).getDate()
-    selectedDate = mostRecentDate
-    calendarDate = mostRecentDate
+    if (historyDao.idTrack == 0) {
+      calendarDate = LocalDate.now()
+      selectedDate = null
+    } else {
+      val mostRecentDate = historyDao.where(historyDao.idTrack).getDate()
+      calendarDate = mostRecentDate
+      selectedDate = mostRecentDate
+    }
   }
 
   companion object {
