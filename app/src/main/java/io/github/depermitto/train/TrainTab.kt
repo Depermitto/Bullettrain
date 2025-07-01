@@ -71,7 +71,7 @@ fun TrainTab(
 
         item {
             AddExerciseButton(exerciseDao = exerciseDao, onChoose = {
-                trainViewModel.trainDay.exercises += mutableStateListOf(mutableStateListOf(it.copy(exerciseTarget = it.exerciseTarget.toTrainMode())))
+                trainViewModel.trainDay.exercises += mutableStateListOf(mutableStateListOf(it.copy(target = it.target.toTrainMode())))
             })
         }
     }

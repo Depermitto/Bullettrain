@@ -23,7 +23,7 @@ enum class WorkoutState { NotStartedYet, Started, Done }
 class TrainViewModel(day: Day) : ViewModel() {
     var targetDay = MutableDay.of(day)
     var trainDay = MutableDay.of(day).apply {
-        exercises.forEach { exerciseSets -> exerciseSets.replaceAll { it.copy(exerciseTarget = it.exerciseTarget.toTrainMode()) } }
+        exercises.forEach { exerciseSets -> exerciseSets.replaceAll { it.copy(target = it.target.toTrainMode()) } }
     }
 
     private lateinit var countingJob: Job
