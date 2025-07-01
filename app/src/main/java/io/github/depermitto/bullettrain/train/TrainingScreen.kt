@@ -80,9 +80,9 @@ fun TrainingScreen(
     val scope = rememberCoroutineScope()
     trainViewModel.getExercises().forEachIndexed { exerciseIndex, exercise ->
         Card(modifier = Modifier, colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
-            var showExerciseChooserSwapper by rememberSaveable { mutableStateOf(false) }
-            if (showExerciseChooserSwapper) ExerciseChooser(exerciseDao = exerciseDao,
-                onDismissRequest = { showExerciseChooserSwapper = false },
+            var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
+            if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
+                onDismissRequest = { showSwapExerciseChooser = false },
                 onChoose = { it -> trainViewModel.setExercise(exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
 
             Column(modifier = Modifier.padding(ItemPadding)) {
@@ -117,7 +117,7 @@ fun TrainingScreen(
                             })
                         DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
                             showDropdownButton = false
-                            showExerciseChooserSwapper = true
+                            showSwapExerciseChooser = true
                         })
                     }
                 }

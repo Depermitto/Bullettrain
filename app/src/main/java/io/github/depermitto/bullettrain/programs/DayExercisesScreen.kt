@@ -65,6 +65,7 @@ import io.github.depermitto.bullettrain.theme.HeartRemoveIcon
 import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.ItemSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
+import io.github.depermitto.bullettrain.theme.SwapIcon
 import io.github.depermitto.bullettrain.theme.filledContainerColor
 import io.github.depermitto.bullettrain.util.reorder
 import io.github.depermitto.bullettrain.util.smallListSet
@@ -97,6 +98,7 @@ fun DayExercisesScreen(
     }) { exerciseIndex, exercise, isDragging ->
         key(exercise.id) {
             val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
+            var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
 
             Surface(shadowElevation = elevation, shape = MaterialTheme.shapes.medium) {
                 SwipeToDeleteBox(modifier = Modifier.clip(MaterialTheme.shapes.medium), threshold = 0.9f, onDelete = {
@@ -133,6 +135,11 @@ fun DayExercisesScreen(
                                         exercise.copy(intensityCategory = cat,
                                             sets = exercise.sets.map { it.copy(intensity = intensity) })
                                     )
+                                }
+
+                                IconButton(modifier = Modifier.size(SqueezableIconSize),
+                                    onClick = { showSwapExerciseChooser = true }) {
+                                    SwapIcon()
                                 }
 
                                 if (!exercise.hasIntensity) IconButton(modifier = Modifier.size(SqueezableIconSize),
@@ -272,12 +279,16 @@ fun DayExercisesScreen(
                     }
                 }
             }
+
+            if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
+                onDismissRequest = { showSwapExerciseChooser = false },
+                onChoose = { programViewModel.setExercise(dayIndex, exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
         }
     }
 
-    var showExerciseChooser by rememberSaveable { mutableStateOf(false) }
-    if (showExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
-        onDismissRequest = { showExerciseChooser = false },
+    var showAddExerciseChooser by rememberSaveable { mutableStateOf(false) }
+    if (showAddExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
+        onDismissRequest = { showAddExerciseChooser = false },
         onChoose = {
             programViewModel.setDay(
                 dayIndex,
@@ -286,5 +297,5 @@ fun DayExercisesScreen(
         })
     AnchoredFloatingActionButton(text = { Text("Add Exercise") },
         icon = { Icon(Icons.Filled.Add, null) },
-        onClick = { showExerciseChooser = true })
+        onClick = { showAddExerciseChooser = true })
 }
