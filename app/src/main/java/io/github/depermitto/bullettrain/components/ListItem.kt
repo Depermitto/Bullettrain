@@ -62,12 +62,10 @@ fun ListItem(
         }
 
         if (trailingContent != null) {
-            Box(Modifier
-                .constrainAs(trailing) {
-                    end.linkTo(parent.end)
-                    centerVerticallyTo(parent)
-                }
-                .padding(start = 16.dp)) {
+            Box(Modifier.constrainAs(trailing) {
+                end.linkTo(parent.end)
+                centerVerticallyTo(parent)
+            }) {
                 trailingContent()
             }
         }

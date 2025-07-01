@@ -20,11 +20,11 @@ fun HomeScreen(
     homeViewModel: HomeViewModel,
     trainViewModel: TrainViewModel,
     programViewModel: ProgramViewModel,
-    pagerState: PagerState,
     exerciseDao: ExerciseDao,
     programDao: ProgramDao,
     historyDao: HistoryDao,
     settings: Settings,
+    pagerState: PagerState,
     navController: NavController,
 ) = HorizontalPager(modifier = modifier, state = pagerState) { page ->
     when (Tab.entries[page]) {

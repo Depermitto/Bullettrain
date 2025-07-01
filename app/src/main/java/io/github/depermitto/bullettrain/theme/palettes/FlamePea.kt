@@ -76,8 +76,8 @@ private val surfaceContainerDark = Color(0xFF231F17)
 private val surfaceContainerHighDark = Color(0xFF2D2A21)
 private val surfaceContainerHighestDark = Color(0xFF38342B)
 
-val CreamCanFlamePeaPalette = Palette(
-    name = "Cream Can Flame Pea",
+val FlamePeaPalette = Palette(
+    name = "Flame Pea",
     lightScheme = lightColorScheme(
         primary = primaryLight,
         onPrimary = onPrimaryLight,

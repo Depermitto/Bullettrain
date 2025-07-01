@@ -3,6 +3,7 @@ package io.github.depermitto.bullettrain.settings
 import android.os.Build
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -16,7 +17,7 @@ import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.database.Database
 import io.github.depermitto.bullettrain.database.entities.Theme
 import io.github.depermitto.bullettrain.database.entities.UnitSystem
-import io.github.depermitto.bullettrain.theme.palettes.CreamCanFlamePeaPalette
+import io.github.depermitto.bullettrain.theme.palettes.FlamePeaPalette
 import io.github.depermitto.bullettrain.theme.palettes.Palette
 import io.github.depermitto.bullettrain.theme.palettes.RhinoButtercupPalette
 import io.github.depermitto.bullettrain.util.splitOnUppercase
@@ -35,7 +36,7 @@ fun SettingsScreen(
 
     SettingList(headline = "Palette",
         supporting = settings.palette.name,
-        list = listOfNotNull(dynamicPalette, RhinoButtercupPalette, CreamCanFlamePeaPalette),
+        list = listOfNotNull(dynamicPalette, RhinoButtercupPalette, FlamePeaPalette),
         onClick = { db.settingsDao.update { state -> state.copy(palette = it) } }) { palette ->
         ListItem(headlineContent = { Text(palette.name) }, selected = palette.name == settings.palette.name)
     }
@@ -53,6 +54,11 @@ fun SettingsScreen(
         onClick = { db.settingsDao.update { state -> state.copy(theme = it) } }) { theme ->
         ListItem(headlineContent = { Text(theme.name.splitOnUppercase()) }, selected = theme == settings.theme)
     }
+
+    SettingSwitch(headline = "True Black",
+        supporting = "Recommended for OLED screens",
+        checked = settings.trueBlack,
+        onChecked = { db.settingsDao.update { state -> state.copy(trueBlack = it) } })
 
 //        Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
 //            Button(onClick = {
@@ -113,4 +119,12 @@ fun <T> SettingList(headline: String, supporting: String, list: List<T>, onClick
         onDismissRequest = { showDialog = false },
         dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } },
         content = { content(it) })
+}
+
+@Composable
+fun SettingSwitch(headline: String, supporting: String, onChecked: (Boolean) -> Unit, checked: Boolean) {
+    ListItem(headlineContent = { Text(headline) },
+        supportingContent = { Text(supporting) },
+        onClick = { onChecked(!checked) },
+        trailingContent = { Switch(checked = checked, onCheckedChange = null) })
 }

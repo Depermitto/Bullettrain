@@ -39,6 +39,7 @@ data class Settings(
     val theme: Theme = Theme.FollowSystem,
     val palette: Palette = RhinoButtercupPalette,
     val dynamicColor: Boolean = false,
+    val trueBlack: Boolean = false
 )
 
 class SettingsDao(private val file: SettingsFile) {
