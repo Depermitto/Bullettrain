@@ -41,24 +41,12 @@ data class Program(
 ) : Entity {
     override fun clone(id: Int) = copy(id = id)
 
-    override fun equals(other: Any?): Boolean = other is Program && this.id == other.id
+    infix fun corresponds(other: Program) = this.id == other.id
 
     fun nextDay() = days[nextDayIndex]
 
     companion object {
         val EmptyWorkout = Program(id = -1, name = "Empty Workout")
-    }
-
-    override fun hashCode(): Int {
-        var result = super.hashCode()
-        result = 31 * result + id
-        result = 31 * result + name.hashCode()
-        result = 31 * result + days.hashCode()
-        result = 31 * result + nextDayIndex
-        result = 31 * result + followed.hashCode()
-        result = 31 * result + draft.hashCode()
-        result = 31 * result + (mostRecentWorkoutDate?.hashCode() ?: 0)
-        return result
     }
 }
 

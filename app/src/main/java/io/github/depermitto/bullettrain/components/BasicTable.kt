@@ -108,7 +108,7 @@ fun WorkoutTable(
     var header = program.name
     var supportingText: String? = workout.name
 
-    if (program == Program.EmptyWorkout) {
+    if (program corresponds Program.EmptyWorkout) {
         header = "Impromptu Workout"
         supportingText = null
     }

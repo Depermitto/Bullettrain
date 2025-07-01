@@ -203,7 +203,7 @@ class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
 }
 
 class ProgramDao(file: ProgramsFile) : Dao<Program>(file) {
-    val getAlmostAll = getAll.map { it.filterNot { it.id == Program.EmptyWorkout.id && it.name == Program.EmptyWorkout.name } }
+    val getAlmostAll = getAll.map { it.filterNot { it corresponds Program.EmptyWorkout } }
 }
 
 class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {

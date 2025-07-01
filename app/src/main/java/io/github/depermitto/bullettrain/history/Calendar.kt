@@ -123,7 +123,7 @@ fun Calendar(
         confirmButton = {
             TextButton(onClick = {
                 showProgramListDialog = false
-                if (it == Program.EmptyWorkout) {
+                if (it corresponds Program.EmptyWorkout) {
                     trainViewModel.startWorkout(Day(), Program.EmptyWorkout, date = longClickedDate)
                 } else {
                     selectedProgram = it
@@ -166,7 +166,7 @@ fun Calendar(
             }
         }) { record ->
         var text = record.relatedProgram.name
-        if (record.relatedProgram != Program.EmptyWorkout) text += ", " + record.workout.name
+        if (!(record.relatedProgram corresponds Program.EmptyWorkout)) text += ", " + record.workout.name
 
         ListItem(headlineContent = {
             Text(text, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
