@@ -70,9 +70,6 @@ fun TrainingScreen(
         .verticalScroll(rememberScrollState())
         .padding(bottom = Dp.EmptyScrollSpace)
   ) {
-    val duplicateExerciseFilter = { descriptor: Exercise.Descriptor ->
-      trainViewModel.getExercises().none { it.descriptorId == descriptor.id }
-    }
     val scope = rememberCoroutineScope()
 
     var showReorderExerciseDialog by rememberSaveable { mutableStateOf(false) }
@@ -109,7 +106,7 @@ fun TrainingScreen(
             exerciseDao = exerciseDao,
             historyDao = historyDao,
             onDismissRequest = { showSwapExerciseChooser = false },
-            filter = duplicateExerciseFilter,
+            exclude = trainViewModel.getExercises().map { e -> e.descriptorId },
             onSelection = {
               trainViewModel.setExercise(
                 exerciseIndex,
@@ -269,7 +266,7 @@ fun TrainingScreen(
         exerciseDao = exerciseDao,
         historyDao = historyDao,
         onDismissRequest = { showExerciseChooser = false },
-        filter = duplicateExerciseFilter,
+        exclude = trainViewModel.getExercises().map { e -> e.descriptorId },
         onSelection = { trainViewModel.addExercise(it) },
       )
     TextButton(

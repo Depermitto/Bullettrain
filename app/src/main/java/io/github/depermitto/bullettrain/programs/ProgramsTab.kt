@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.ConfirmationAlertDialog
+import io.github.depermitto.bullettrain.components.EmptyScreen
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
@@ -44,8 +45,25 @@ fun ProgramsTab(
   settings: Settings,
   navController: NavController,
 ) {
-  Box(modifier = modifier.fillMaxSize()) {
+  Box(modifier = Modifier.fillMaxHeight() then modifier) {
+    AnchoredFloatingActionButton(
+      icon = { Icon(Icons.Filled.Add, contentDescription = "Create program") },
+      text = { Text("Create") },
+      onClick = {
+        programViewModel.revertToDefault()
+        navController.navigate(Destination.ProgramCreation)
+      },
+    )
+
     val programs by programDao.getUserPrograms.collectAsStateWithLifecycle(emptyList())
+
+    if (programs.isEmpty()) {
+      EmptyScreen(
+        "No programs found. After creating a program it will appear here.",
+        modifier = modifier,
+      )
+      return
+    }
 
     LazyColumn(
       contentPadding =
@@ -131,14 +149,5 @@ fun ProgramsTab(
         }
       }
     }
-
-    AnchoredFloatingActionButton(
-      icon = { Icon(Icons.Filled.Add, contentDescription = "Create program") },
-      text = { Text("Create") },
-      onClick = {
-        programViewModel.revertToDefault()
-        navController.navigate(Destination.ProgramCreation)
-      },
-    )
   }
 }

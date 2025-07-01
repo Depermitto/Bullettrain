@@ -23,7 +23,6 @@ import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.db.ExerciseDao
 import io.github.depermitto.bullettrain.db.HistoryDao
 import io.github.depermitto.bullettrain.protos.ExercisesProto.*
-import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.unlinedColors
 import io.github.depermitto.bullettrain.util.capwords
@@ -36,24 +35,21 @@ fun ExercisesListScreen(
   exerciseDao: ExerciseDao,
   historyDao: HistoryDao,
   modifier: Modifier = Modifier,
-  filter: ((Exercise.Descriptor) -> Boolean)?,
+  exclude: List<Int> = emptyList(),
   onSelection: (Exercise.Descriptor) -> Unit,
 ) {
-  Box(modifier = modifier) {
+  Box(modifier = Modifier.fillMaxHeight() then modifier) {
     val exerciseFrequencyMap by
       historyDao.getSortedByFrequency.collectAsStateWithLifecycle(emptyMap())
 
     var searchText by rememberSaveable { mutableStateOf("") }
-    val exercises by
+    val descriptors by
       exerciseDao
         .getByName(name = searchText, errorTolerance = 3, ignoreCase = true)
-        .map { exercises ->
-          if (filter != null) {
-              exercises.filter(filter)
-            } else {
-              exercises
-            }
-            .sortedByDescending { exerciseFrequencyMap[it.id] }
+        .map { descriptors ->
+          descriptors
+            .filterNot { d -> exclude.contains(d.id) }
+            .sortedByDescending { d -> exerciseFrequencyMap[d.id] }
         }
         .collectAsStateWithLifecycle(emptyList())
 
@@ -74,11 +70,8 @@ fun ExercisesListScreen(
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search exercises") },
       )
 
-      LazyColumn(
-        contentPadding = PaddingValues(bottom = Dp.EmptyScrollSpace),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-      ) {
-        items(exercises) { descriptor ->
+      LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        items(descriptors) { descriptor ->
           val count = exerciseFrequencyMap[descriptor.id]
           ExtendedListItem(
             modifier = Modifier.fillMaxWidth(),

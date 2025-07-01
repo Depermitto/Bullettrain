@@ -80,6 +80,7 @@ import com.patrykandpatrick.vico.core.common.component.ShapeComponent
 import com.patrykandpatrick.vico.core.common.component.TextComponent
 import com.patrykandpatrick.vico.core.common.shader.ShaderProvider
 import com.patrykandpatrick.vico.core.common.shape.CorneredShape
+import io.github.depermitto.bullettrain.components.EmptyScreen
 import io.github.depermitto.bullettrain.db.HistoryDao
 import io.github.depermitto.bullettrain.protos.ExercisesProto.Exercise
 import io.github.depermitto.bullettrain.protos.SettingsProto.Settings
@@ -101,6 +102,24 @@ fun ExerciseScreen(
   descriptor: Exercise.Descriptor,
   settings: Settings,
 ) {
+  val exercises by
+    historyDao
+      .map { records ->
+        records
+          .sortedBy { r -> r.workoutStartTs.seconds }
+          .flatMap { r -> r.workout.exercisesList.filter { e -> e.descriptorId == descriptor.id } }
+          .filter { e -> e.setsList.any { s -> s.hasDoneTs() } }
+      }
+      .collectAsStateWithLifecycle(emptyList())
+
+  if (exercises.isEmpty()) {
+    EmptyScreen(
+      "No records found for this exercise. History will appear after completing the exercise at least once.",
+      modifier = modifier,
+    )
+    return
+  }
+
   val scope = rememberCoroutineScope()
   val pager = rememberPagerState { Tab.entries.size }
 
@@ -149,18 +168,6 @@ fun ExerciseScreen(
     }
 
     Spacer(Modifier.height(Dp.Medium))
-
-    val exercises by
-      historyDao
-        .map { records ->
-          records
-            .sortedBy { r -> r.workoutStartTs.seconds }
-            .flatMap { r ->
-              r.workout.exercisesList.filter { e -> e.descriptorId == descriptor.id }
-            }
-            .filter { e -> e.setsList.any { s -> s.hasDoneTs() } }
-        }
-        .collectAsStateWithLifecycle(emptyList())
 
     val scroll = rememberScrollState()
     var selectedPeriod by remember { mutableStateOf(Period.Yearly) }
@@ -437,15 +444,8 @@ private fun rememberCustomCartesianMarker(data: List<CharSequence>): CartesianMa
       background = labelBackground,
       minWidth = TextComponent.MinWidth.fixed(40.dp),
     )
-  val indicatorFrontComponent =
-    rememberShapeComponent(fill(MaterialTheme.colorScheme.surface), CorneredShape.Pill)
-  val indicatorRearComponent = rememberShapeComponent(shape = CorneredShape.Pill)
   val indicator =
-    LayeredComponent(
-      back = indicatorRearComponent,
-      front = indicatorFrontComponent,
-      padding = insets(5.dp),
-    )
+    rememberShapeComponent(fill(MaterialTheme.colorScheme.surface), CorneredShape.Pill)
   val guideline = rememberAxisGuidelineComponent()
   val formatter = remember { DefaultCartesianMarker.ValueFormatter.default() }
   return remember(label, indicator, guideline, formatter) {
@@ -470,7 +470,7 @@ private fun rememberCustomCartesianMarker(data: List<CharSequence>): CartesianMa
                 shape = CorneredShape.Pill,
                 shadow = Shadow(radiusDp = 6F, color = color),
               ),
-            front = indicatorFrontComponent,
+            front = indicator,
             padding = insets(5.dp),
           )
         },

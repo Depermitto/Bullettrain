@@ -22,6 +22,7 @@ import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.Destination.Home.Tab.*
 import io.github.depermitto.bullettrain.R
 import io.github.depermitto.bullettrain.components.DataPanel
+import io.github.depermitto.bullettrain.components.EmptyScreen
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.db.ExerciseDao
@@ -56,7 +57,6 @@ fun TrainTab(
   ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       val programs by programDao.getUserPrograms.collectAsStateWithLifecycle(emptyList())
-      var showChangeDayIndexDialog by rememberSaveable { mutableStateOf(false) }
       var selectedProgramIndex by rememberSaveable { mutableIntStateOf(0) }
 
       Card(
@@ -65,9 +65,11 @@ fun TrainTab(
       ) {
         val program =
           programs.getOrElse(selectedProgramIndex) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-              Text("No Program Found")
-            }
+            EmptyScreen(
+              "No program found. Please create one first to start training.",
+              modifier = modifier,
+              showIcon = false,
+            )
             return@Card
           }
 
@@ -103,6 +105,25 @@ fun TrainTab(
 
         Spacer(Modifier.weight(1F))
 
+        var showChangeDayIndexDialog by rememberSaveable { mutableStateOf(false) }
+        if (showChangeDayIndexDialog)
+          ListAlertDialog(
+            title = "Which day would you like to swap with?",
+            onDismissRequest = { showChangeDayIndexDialog = false },
+            dismissButton = {
+              TextButton(onClick = { showChangeDayIndexDialog = false }) { Text("Cancel") }
+            },
+            list = program.workoutsList,
+            onClick = { day ->
+              showChangeDayIndexDialog = false
+              programDao.update(
+                program.toBuilder().setNextDayIndex(program.workoutsList.indexOf(day)).build()
+              )
+            },
+          ) { day ->
+            ExtendedListItem(headlineContent = { Text(day.name) })
+          }
+
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
           ElevatedButton(
             onClick = { showChangeDayIndexDialog = true },
@@ -136,29 +157,12 @@ fun TrainTab(
             Text("Start ${program.getWorkouts(program.nextDayIndex).name}")
           }
         }
-
-        if (showChangeDayIndexDialog)
-          ListAlertDialog(
-            title = "Which day would you like to swap with?",
-            onDismissRequest = { showChangeDayIndexDialog = false },
-            dismissButton = {
-              TextButton(onClick = { showChangeDayIndexDialog = false }) { Text("Cancel") }
-            },
-            list = program.workoutsList,
-            onClick = { day ->
-              showChangeDayIndexDialog = false
-              programDao.update(
-                program.toBuilder().setNextDayIndex(program.workoutsList.indexOf(day)).build()
-              )
-            },
-          ) { day ->
-            ExtendedListItem(headlineContent = { Text(day.name) })
-          }
       }
 
       Row {
         val (lo, hi) =
           when {
+            programs.size < 2 -> return@Row
             programs.size < 5 -> 0 to programs.size
             selectedProgramIndex < 2 -> 0 to 5
             selectedProgramIndex >= programs.size - 2 -> programs.size - 5 to programs.size

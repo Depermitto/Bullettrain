@@ -63,9 +63,6 @@ fun DayScreen(
   snackbarHostState: SnackbarHostState,
 ) {
   Box(modifier = modifier.fillMaxSize()) {
-    val duplicateExerciseFilter = { descriptor: Exercise.Descriptor ->
-      programViewModel.getExercises(dayIndex).none { it.descriptorId == descriptor.id }
-    }
     val scope = rememberCoroutineScope()
     val day = programViewModel.getDay(dayIndex)
 
@@ -322,7 +319,7 @@ fun DayScreen(
             exerciseDao = exerciseDao,
             historyDao = historyDao,
             onDismissRequest = { showSwapExerciseChooser = false },
-            filter = duplicateExerciseFilter,
+            exclude = programViewModel.getExercises(dayIndex).map { e -> e.descriptorId },
             onSelection = {
               programViewModel.setExercise(
                 dayIndex,
@@ -340,7 +337,7 @@ fun DayScreen(
         exerciseDao = exerciseDao,
         historyDao = historyDao,
         onDismissRequest = { showAddExerciseChooser = false },
-        filter = duplicateExerciseFilter,
+        exclude = programViewModel.getExercises(dayIndex).map { e -> e.descriptorId },
         onSelection = {
           programViewModel.setDay(
             dayIndex,

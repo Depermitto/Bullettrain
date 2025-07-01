@@ -17,7 +17,7 @@ fun ExerciseChooser(
   onDismissRequest: () -> Unit,
   exerciseDao: ExerciseDao,
   historyDao: HistoryDao,
-  filter: ((Exercise.Descriptor) -> Boolean)? = null,
+  exclude: List<Int> = emptyList(),
   onSelection: (Exercise.Descriptor) -> Unit,
 ) {
   val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -31,7 +31,7 @@ fun ExerciseChooser(
     ExercisesListScreen(
       exerciseDao = exerciseDao,
       historyDao = historyDao,
-      filter = filter,
+      exclude = exclude,
       onSelection = {
         onSelection(it)
         onDismissRequest()

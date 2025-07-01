@@ -14,12 +14,7 @@ fun ExerciseTab(
   historyDao: HistoryDao,
   navController: NavController,
 ) {
-  ExercisesListScreen(
-    modifier = modifier,
-    exerciseDao = exerciseDao,
-    historyDao = historyDao,
-    filter = null,
-  ) {
+  ExercisesListScreen(modifier = modifier, exerciseDao = exerciseDao, historyDao = historyDao) {
     navController.navigate(Destination.Exercise(descriptorId = it.id))
   }
 }
