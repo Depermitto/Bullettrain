@@ -12,6 +12,7 @@ import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerType
 import io.github.vinceglb.filekit.core.pickFile
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.depermitto.DB_FILENAME
 import org.depermitto.database.GymDatabase
@@ -27,7 +28,7 @@ fun Settings(
 ) = Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
     Column(modifier = Modifier.weight(1.0f)) {
         Button(onClick = {
-            scope.launch {
+            scope.launch(Dispatchers.IO) {
                 db.checkpoint()
                 dbFile.writeBytes(fallbackBytes)
             }
@@ -36,9 +37,10 @@ fun Settings(
         }
 
         Button(onClick = {
-            scope.launch {
+            scope.launch(Dispatchers.IO) {
                 val dbBytes: ByteArray? = FileKit.pickFile(type = PickerType.File())?.readBytes()
-                if (dbBytes != null && db.checkpoint() == 0) {
+                if (dbBytes != null) {
+                    db.checkpoint()
                     dbFile.writeBytes(dbBytes)
                 }
             }
@@ -47,7 +49,7 @@ fun Settings(
         }
 
         Button(onClick = {
-            scope.launch {
+            scope.launch(Dispatchers.IO) {
                 db.checkpoint()
                 FileKit.saveFile(
                     bytes = dbFile.readBytes(),
@@ -58,9 +60,11 @@ fun Settings(
         }) {
             Text(text = "Export")
         }
-    }
+    } // Import/Export
 
     Button(onClick = { navController.navigate(Screen.ExercisesScreen.route) }) {
         Text("Goto exercises")
     }
 }
+
+        

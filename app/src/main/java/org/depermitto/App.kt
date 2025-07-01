@@ -6,8 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -26,10 +25,10 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
     val exerciseDao = db.getExerciseDao()
-
+    
     NavHost(navController = navController, startDestination = Screen.ExercisesScreen.route) {
         composable(Screen.ExercisesScreen.route) {
-            Exercises(exerciseDao = exerciseDao, scope = scope, navController = navController)
+            Exercises(exerciseDao = exerciseDao, navController = navController)
         }
 
         composable(Screen.CreateExerciseScreen.route) {
@@ -44,7 +43,6 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
                 ExerciseCreationWizard(
                     modifier = Modifier.padding(paddingValues),
                     exerciseDao = exerciseDao,
-                    scope = scope,
                     navController = navController
                 )
             }

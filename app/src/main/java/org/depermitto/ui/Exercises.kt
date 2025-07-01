@@ -10,15 +10,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.depermitto.database.ExerciseDao
 
 @Composable
-fun Exercises(exerciseDao: ExerciseDao, scope: CoroutineScope, navController: NavController) {
+fun Exercises(exerciseDao: ExerciseDao, navController: NavController) {
+    val scope = rememberCoroutineScope { Dispatchers.IO }
+
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         val exercises by exerciseDao.getAllFlow().collectAsState(emptyList())
         LazyColumn(modifier = Modifier.weight(1.0f)) {

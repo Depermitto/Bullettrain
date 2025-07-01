@@ -1,5 +1,6 @@
 package org.depermitto.database
 
+import android.database.Cursor
 import androidx.room.*
 import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.flow.Flow
@@ -10,7 +11,7 @@ import kotlinx.serialization.json.Json
 import java.util.*
 
 @Database(
-    entities = [ExerciseListing::class, HistoryEntry::class, Program::class], version = 4, exportSchema = true
+    entities = [ExerciseListing::class, HistoryEntry::class, Program::class], version = 5, exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class GymDatabase : RoomDatabase() {
@@ -18,8 +19,8 @@ abstract class GymDatabase : RoomDatabase() {
     abstract fun getExerciseDao(): ExerciseDao
     abstract fun getHistoryDao(): HistoryDao
     abstract fun getProgramDao(): ProgramDao
-    
-    fun checkpoint(): Int = getGymDao().rawQuery(SimpleSQLiteQuery("pragma wal_checkpoint(full)"))
+
+    fun checkpoint() = getGymDao().rawQuery(SimpleSQLiteQuery("pragma wal_checkpoint(full)"))
 }
 
 @Entity(tableName = "exercises")
@@ -32,7 +33,7 @@ data class ExerciseListing(
 @Dao
 interface GymDao {
     @RawQuery
-    fun rawQuery(query: SimpleSQLiteQuery): Int
+    fun rawQuery(query: SimpleSQLiteQuery): Cursor
 }
 
 @Dao

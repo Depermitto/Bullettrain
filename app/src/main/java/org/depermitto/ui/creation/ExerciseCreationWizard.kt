@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.depermitto.database.ExerciseDao
 import org.depermitto.database.ExerciseListing
@@ -16,9 +17,10 @@ import org.depermitto.database.ExerciseListing
 fun ExerciseCreationWizard(
     modifier: Modifier,
     exerciseDao: ExerciseDao,
-    scope: CoroutineScope,
     navController: NavController,
 ) {
+    val scope = rememberCoroutineScope { Dispatchers.IO }
+    
     Column(modifier = modifier) {
         var name by remember { mutableStateOf("") }
         TextField(value = name, onValueChange = { name = it })
