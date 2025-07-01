@@ -1,8 +1,6 @@
 package io.github.depermitto.data
 
 import android.database.Cursor
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.room.*
 import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +11,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.time.Instant
 
-@Database(entities = [ExerciseSet::class, HistoryEntry::class, Program::class], version = 11, exportSchema = true)
+@Database(entities = [ExerciseSet::class, HistoryEntry::class, Program::class], version = 13, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class GymDatabase : RoomDatabase() {
     abstract fun getGymDao(): GymDao
@@ -35,14 +33,71 @@ interface GymDao {
 data class ExerciseSet(
     @SerialName("exercise-id") @ColumnInfo(name = "exercise_id") @PrimaryKey(autoGenerate = true) val exerciseId: Long = 0,
     var name: String,
-    val reps: Float = 0f, // TODO allow for rep ranges, time, etc
-    val rpe: Float = 0f, // TODO make this an optional field
+    val exerciseTarget: ExerciseTarget = ExerciseTarget.RepRange(),
+    val intensity: Float? = null, // TODO make this an optional field
     val weight: Float = 0f,
     val superset: List<Int>? = null,
     val alternatives: List<Int>? = null,
     val notes: String = "",
     @Contextual val date: Instant? = null,
 )
+
+@Serializable
+sealed class ExerciseTarget {
+    @Serializable
+    data class Reps(val reps: Int = 0) : ExerciseTarget() {
+        override fun toString(): String {
+            return super.toString()
+        }
+    }
+
+    @Serializable
+    data class Time(val time: Long = 0) : ExerciseTarget() {
+        override fun toString(): String {
+            return super.toString()
+        }
+    }
+
+    @Serializable
+    data class RepRange(val min: Int = 0, val max: Int = 0) : ExerciseTarget() {
+        override fun toString(): String {
+            return super.toString()
+        }
+    }
+
+    fun zero() = when (this) {
+        is RepRange -> RepRange()
+        is Reps -> Reps()
+        is Time -> Time()
+    }
+
+    fun name(): String = when (this) {
+        is RepRange -> "Rep Range"
+        is Reps -> "Reps"
+        is Time -> "Time"
+    }
+
+    fun toTrainMode(): ExerciseTarget = when (this) {
+        is RepRange -> Reps()
+        is Reps -> Reps()
+        is Time -> Time()
+    }
+
+    override fun toString(): String = when (this) {
+        is RepRange -> "$min - $max"
+        is Reps -> reps.toString()
+        is Time -> "${time / 60}:${time % 60}"
+    }
+}
+
+//@Serializable
+//sealed class Intensity {
+//    data class RPE(val rpe: Int) : Intensity()
+//    data object AMRAP : Intensity()
+//
+//    @SerialName(value = "1RM%")
+//    data class OneRepMaxPercent(val percent: Float) : Intensity()
+//}
 
 @Dao
 interface ExerciseDao {
@@ -58,10 +113,10 @@ interface ExerciseDao {
 
 @Entity(tableName = "history")
 data class HistoryEntry(
-    @SerialName("history-entry-id") @ColumnInfo(name = "history_entry_id") @PrimaryKey(autoGenerate = true) val historyEntryId: Long = 0,
-    val reps: Float,
+    @ColumnInfo(name = "history_entry_id") @PrimaryKey(autoGenerate = true) val historyEntryId: Long = 0,
+    val target: ExerciseTarget,
+    val intensity: Float?,
     val weight: Float,
-    val rpe: Float,
     val date: Instant,
 )
 
@@ -106,11 +161,9 @@ interface ProgramDao {
 }
 
 class Converters {
-    @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
     fun dateFromTimestamp(value: Long): Instant = Instant.ofEpochMilli(value)
 
-    @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
     fun dateToTimestamp(date: Instant): Long = date.toEpochMilli()
 
@@ -119,6 +172,18 @@ class Converters {
 
     @TypeConverter
     fun listOfDaysToString(days: List<Day>): String = Json.encodeToString(days)
+
+    @TypeConverter
+    fun exerciseTargetFromString(value: String?): ExerciseTarget? = value?.let(Json::decodeFromString)
+
+    @TypeConverter
+    fun exerciseTargetToString(target: ExerciseTarget?): String? = target?.let(Json::encodeToString)
+
+//    @TypeConverter
+//    fun intensityFromString(value: String?): Intensity? = value?.let(Json::decodeFromString)
+//
+//    @TypeConverter
+//    fun intensityToString(intensity: Intensity?): String? = intensity?.let(Json::encodeToString)
 
     @TypeConverter
     fun listOfIntsFromString(value: String): List<Int>? = null

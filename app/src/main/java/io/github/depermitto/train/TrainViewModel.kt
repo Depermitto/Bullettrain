@@ -21,7 +21,10 @@ import kotlin.math.min
 enum class WorkoutState { NotStartedYet, Started, Done }
 
 class TrainViewModel(day: Day) : ViewModel() {
-    var trainDay = MutableDay.of(day)
+    var targetDay = MutableDay.of(day)
+    var trainDay = MutableDay.of(day).apply {
+        exercises.forEach { exerciseSets -> exerciseSets.replaceAll { it.copy(exerciseTarget = it.exerciseTarget.toTrainMode()) } }
+    }
 
     private lateinit var countingJob: Job
     private lateinit var start: Instant

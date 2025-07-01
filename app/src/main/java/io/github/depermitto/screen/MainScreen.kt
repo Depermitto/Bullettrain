@@ -34,7 +34,7 @@ fun MainScreen(
     exerciseDao: ExerciseDao,
     navController: NavController,
 ) {
-    var activeBar by remember { mutableStateOf(MainScreen.Tabs.Train) }
+    var activeBar by remember { mutableStateOf(MainScreen.Tabs.Programs) }
 
     Scaffold(bottomBar = {
         NavigationBar(containerColor = filledContainerColor()) {

@@ -1,10 +1,10 @@
 package io.github.depermitto.exercises
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.sharp.KeyboardArrowDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,9 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import io.github.depermitto.components.DropdownButton
 import io.github.depermitto.components.NumberField
-import io.github.depermitto.data.ExerciseDao
-import io.github.depermitto.data.ExerciseSet
-import io.github.depermitto.data.SwapIcon
+import io.github.depermitto.data.*
 import io.github.depermitto.programs.MutableDay
 import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.*
@@ -32,6 +30,10 @@ fun Exercise(
     colors = CardDefaults.cardColors(containerColor = filledContainerColor())
 ) {
     val sets = mutableDay.exercises[exerciseIndex]
+    val hasIntensity = sets.any { it.intensity != null }
+
+    var showSetEditDropdown by remember { mutableStateOf(false) }
+    var showTargetEditDropdown by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.padding(ItemPadding), verticalArrangement = Arrangement.spacedBy(2 * ItemSpacing)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -40,10 +42,19 @@ fun Exercise(
                 text = "${exerciseIndex + 1}. ${sets.first().name}",
                 style = MaterialTheme.typography.titleMedium,
             )
-            DropdownButton {
+            DropdownButton(show = showSetEditDropdown, onShowChange = { showSetEditDropdown = it }) {
                 DropdownMenuItem(leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
                     text = { Text(text = "Delete") },
-                    onClick = { mutableDay.exercises.removeAt(exerciseIndex) })
+                    onClick = {
+                        mutableDay.exercises.removeAt(exerciseIndex)
+                        showSetEditDropdown = false
+                    })
+                DropdownMenuItem(leadingIcon = { IntensityIcon() },
+                    text = { Text(text = if (!hasIntensity) "Add Intensity" else "Remove Intensity") },
+                    onClick = {
+                        sets.replaceAll { it.copy(intensity = if (!hasIntensity) 0f else null) }
+                        showSetEditDropdown = false
+                    })
             }
         }
 
@@ -54,9 +65,43 @@ fun Exercise(
                     .offset(y = 2 * ItemSpacing),
                 horizontalArrangement = Arrangement.Center
             ) {
-                Header("Set", ExerciseSetSetWeight)
-                Header("Reps", ExerciseSetNumberFieldWeight)
-                Header("RPE", ExerciseSetNumberFieldWeight)
+                Header(Modifier.weight(ExerciseSetNarrowWeight), "Set")
+                Row(
+                    modifier = Modifier
+                        .weight(ExerciseSetWideWeight)
+                        .clickable { showTargetEditDropdown = true },
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Header(text = sets.first().exerciseTarget.name())
+                    Icon(Icons.Sharp.KeyboardArrowDown, contentDescription = null)
+
+                    DropdownMenu(expanded = showTargetEditDropdown,
+                        onDismissRequest = { showTargetEditDropdown = false }) {
+                        if (sets.first().exerciseTarget !is ExerciseTarget.Reps) {
+                            DropdownMenuItem(text = { Text("Reps") }, onClick = {
+                                sets.replaceAll { it.copy(exerciseTarget = ExerciseTarget.Reps()) }
+                                showTargetEditDropdown = false
+                            })
+                        }
+                        if (sets.first().exerciseTarget !is ExerciseTarget.RepRange) {
+                            DropdownMenuItem(text = { Text("Rep Range") }, onClick = {
+                                sets.replaceAll { it.copy(exerciseTarget = ExerciseTarget.RepRange()) }
+                                showTargetEditDropdown = false
+                            })
+                        }
+                        if (sets.first().exerciseTarget !is ExerciseTarget.Time) {
+                            DropdownMenuItem(text = { Text("Time") }, onClick = {
+                                sets.replaceAll { it.copy(exerciseTarget = ExerciseTarget.Time()) }
+                                showTargetEditDropdown = false
+                            })
+                        }
+                    }
+                }
+                if (hasIntensity) {
+                    Header(Modifier.weight(ExerciseSetWideWeight), "RPE")
+                }
+                Header(Modifier.weight(ExerciseSetNarrowWeight), "")
             }
             HorizontalDivider()
 
@@ -67,24 +112,28 @@ fun Exercise(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        modifier = Modifier.weight(ExerciseSetSetWeight),
+                        modifier = Modifier.weight(ExerciseSetNarrowWeight),
                         text = (j + 1).toString(),
                         textAlign = TextAlign.Center
                     )
-                    NumberField(
+                    TargetNumberField(
                         Modifier
-                            .weight(ExerciseSetNumberFieldWeight)
+                            .weight(ExerciseSetWideWeight)
                             .padding(horizontal = ExerciseSetSpacing),
-                        value = set.reps,
-                        onValueChange = { sets[j] = set.copy(reps = it) }
-                    )
-                    NumberField(
-                        Modifier
-                            .weight(ExerciseSetNumberFieldWeight)
-                            .padding(horizontal = ExerciseSetSpacing),
-                        value = set.rpe,
-                        onValueChange = { sets[j] = set.copy(rpe = it) }
-                    )
+                        value = set.exerciseTarget,
+                        onValueChange = { sets[j] = set.copy(exerciseTarget = it) })
+                    if (set.intensity != null) {
+                        NumberField(
+                            Modifier
+                                .weight(ExerciseSetWideWeight)
+                                .padding(horizontal = ExerciseSetSpacing),
+                            value = set.intensity,
+                            onValueChange = { sets[j] = set.copy(intensity = it) })
+                    }
+                    IconButton(modifier = Modifier
+                        .size(20.dp)
+                        .weight(ExerciseSetNarrowWeight),
+                        onClick = { sets += set }) { DuplicateIcon() }
                 }
             }
         }
@@ -92,14 +141,20 @@ fun Exercise(
         OutlinedButton(modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors()
                 .copy(contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
-            onClick = { sets += ExerciseSet(exerciseId = sets.first().exerciseId, name = sets.first().name) }) {
+            onClick = {
+                sets += ExerciseSet(
+                    exerciseId = sets.first().exerciseId,
+                    name = sets.first().name,
+                    intensity = sets.first().intensity?.let { 0f },
+                    exerciseTarget = sets.first().exerciseTarget.zero()
+                )
+            }) {
             Text(text = "Add Set")
         }
     }
 }
 
 // TODO don't depend on TrainViewModel
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TrainExercise(
     settingsViewModel: SettingsViewModel,
@@ -110,10 +165,13 @@ fun TrainExercise(
     colors = CardDefaults.cardColors(containerColor = filledContainerColor())
 ) {
     val sets = trainViewModel.trainDay.exercises[exerciseIndex]
-    var showDropdownButton by remember { mutableStateOf(false) }
+    val targetSets = trainViewModel.targetDay.exercises.getOrNull(exerciseIndex)
+    val hasIntensity = targetSets?.any { it.intensity != null } ?: false
+
     val exerciseChooserToggle = exerciseChooser(exerciseDao = exerciseDao, onChoose = {
         sets.forEachIndexed { i, exerciseSet -> sets[i] = exerciseSet.copy(exerciseId = it.exerciseId, name = it.name) }
     })
+    var showDropdownButton by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.padding(ItemPadding), verticalArrangement = Arrangement.spacedBy(2 * ItemSpacing)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -152,67 +210,73 @@ fun TrainExercise(
                     .offset(y = 2 * ItemSpacing),
                 horizontalArrangement = Arrangement.Center
             ) {
-                Header("Set", ExerciseSetSetWeight)
-                Header("Previous", ExerciseSetNumberFieldWeight)
-                Header("Reps", ExerciseSetNumberFieldWeight)
-                Header(settingsViewModel.settings.unitSystem.weightUnit(), 0.9f)
-                Header("RPE", ExerciseSetNumberFieldWeight)
+                Header(Modifier.weight(ExerciseSetNarrowWeight), "Set")
+                if (hasIntensity) {
+                    Header(Modifier.weight(ExerciseSetNarrowWeight), "RPE")
+                }
+                if (targetSets?.firstOrNull()?.exerciseId == sets.first().exerciseId) {
+                    Header(Modifier.weight(ExerciseSetNarrowWeight + 0.1f), "Target")
+                }
+                Header(Modifier.weight(ExerciseSetWideWeight), "Reps")
+                Header(Modifier.weight(ExerciseSetWideWeight), settingsViewModel.settings.unitSystem.weightUnit())
                 if (trainViewModel.workoutState == WorkoutState.Started) {
-                    Header("", ExerciseSetSetWeight)
+                    Header(Modifier.weight(ExerciseSetNarrowWeight), "")
                 }
             }
             HorizontalDivider()
 
-            sets.forEachIndexed { j, set ->
+            sets.forEachIndexed { setIndex, set ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        modifier = Modifier.weight(ExerciseSetSetWeight),
-                        text = (j + 1).toString(),
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        modifier = Modifier.weight(ExerciseSetNumberFieldWeight),
-                        text = "5 x 10 kg", // TODO take this data from "history"
+                        modifier = Modifier.weight(ExerciseSetNarrowWeight),
+                        text = (setIndex + 1).toString(),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium
                     )
-                    NumberField(
+                    if (hasIntensity) {
+                        Text(
+                            modifier = Modifier.weight(ExerciseSetNarrowWeight),
+                            text = set.intensity.toString(),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    targetSets?.firstOrNull()?.let { targetSet ->
+                        if (targetSet.exerciseId == sets.first().exerciseId) {
+                            Text(
+                                modifier = Modifier.weight(ExerciseSetNarrowWeight + 0.1f),
+                                text = targetSets.getOrNull(setIndex)?.exerciseTarget?.toString() ?: "--",
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                    TargetNumberField(
                         Modifier
-                            .weight(ExerciseSetNumberFieldWeight)
+                            .weight(ExerciseSetWideWeight)
                             .padding(horizontal = ExerciseSetSpacing),
-                        value = set.reps,
-                        onValueChange = { sets[j] = set.copy(reps = it) },
+                        value = set.exerciseTarget,
+                        onValueChange = { sets[setIndex] = set.copy(exerciseTarget = it) },
                         readOnly = trainViewModel.workoutState == WorkoutState.NotStartedYet
                     )
                     NumberField(
                         Modifier
-                            .weight(ExerciseSetNumberFieldWeight)
+                            .weight(ExerciseSetWideWeight)
                             .padding(horizontal = ExerciseSetSpacing),
                         value = set.weight,
-                        onValueChange = { sets[j] = set.copy(weight = it) },
+                        onValueChange = { sets[setIndex] = set.copy(weight = it) },
                         readOnly = trainViewModel.workoutState == WorkoutState.NotStartedYet
                     )
-                    NumberField(
-                        Modifier
-                            .weight(ExerciseSetNumberFieldWeight)
-                            .padding(horizontal = ExerciseSetSpacing),
-                        value = set.rpe,
-                        onValueChange = { sets[j] = set.copy(rpe = it) },
-                        readOnly = trainViewModel.workoutState == WorkoutState.NotStartedYet
-                    )
-
                     if (trainViewModel.workoutState == WorkoutState.Started) {
                         Checkbox(modifier = Modifier
                             .size(20.dp)
-                            .weight(ExerciseSetSetWeight),
+                            .weight(ExerciseSetNarrowWeight),
                             checked = set.date != null,
-                            onCheckedChange = {
-                                sets[j] = set.copy(date = if (it) Instant.now() else null)
-                            })
+                            onCheckedChange = { sets[setIndex] = set.copy(date = if (it) Instant.now() else null) })
                     }
                 }
             }
@@ -221,19 +285,61 @@ fun TrainExercise(
         OutlinedButton(modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors()
                 .copy(contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
-            onClick = { sets += ExerciseSet(exerciseId = sets.first().exerciseId, name = sets.first().name) }) {
+            onClick = {
+                sets += ExerciseSet(
+                    exerciseId = sets.first().exerciseId,
+                    name = sets.first().name,
+                    exerciseTarget = sets.first().exerciseTarget.zero()
+                )
+            }) {
             Text(text = "Add Set")
         }
     }
 }
 
 @Composable
-fun RowScope.Header(
+fun Header(
+    modifier: Modifier = Modifier,
     text: String,
-    weight: Float,
-) = Text(
-    modifier = Modifier.weight(weight),
-    text = text,
-    style = MaterialTheme.typography.titleSmall,
-    textAlign = TextAlign.Center
-)
+) = Text(modifier = modifier, text = text, style = MaterialTheme.typography.titleSmall, textAlign = TextAlign.Center)
+
+@Composable
+fun TargetNumberField(
+    modifier: Modifier = Modifier,
+    value: ExerciseTarget,
+    onValueChange: (ExerciseTarget) -> Unit,
+    readOnly: Boolean = false,
+) = when (value) {
+    is ExerciseTarget.Reps -> NumberField(
+        modifier,
+        value = value.reps.toFloat(),
+        onValueChange = { onValueChange(value.copy(it.toInt())) },
+        readOnly = readOnly
+    )
+
+    is ExerciseTarget.Time -> Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        NumberField(
+            modifier = modifier,
+            value = value.time.toFloat(),
+            onValueChange = { onValueChange(value.copy(it.toLong())) },
+            readOnly = readOnly
+        )
+        Text(text = "min")
+    }
+
+    is ExerciseTarget.RepRange -> Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        NumberField(
+            modifier = modifier,
+            value = value.min.toFloat(),
+            onValueChange = { onValueChange(value.copy(min = it.toInt())) },
+            readOnly = readOnly
+        )
+        Text(text = "-")
+        NumberField(
+            modifier = modifier,
+            value = value.max.toFloat(),
+            onValueChange = { onValueChange(value.copy(max = it.toInt())) },
+            readOnly = readOnly
+        )
+    }
+}

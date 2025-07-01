@@ -14,3 +14,19 @@ val SwapIcon: @Composable () -> Unit = {
         colorFilter = ColorFilter.tint(adaptiveIconTint())
     )
 }
+
+val IntensityIcon: @Composable () -> Unit = {
+    Image(
+        painterResource(id = R.drawable.heart_flash),
+        contentDescription = null,
+        colorFilter = ColorFilter.tint(adaptiveIconTint())
+    )
+}
+
+val DuplicateIcon: @Composable () -> Unit = {
+    Image(
+        painterResource(id = R.drawable.duplicate),
+        contentDescription = null,
+        colorFilter = ColorFilter.tint(adaptiveIconTint())
+    )
+}
