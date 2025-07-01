@@ -30,9 +30,9 @@ import io.github.depermitto.data.entities.IntensityCategory
 import io.github.depermitto.data.entities.PerfVar
 import io.github.depermitto.data.entities.PerfVarCategory
 import io.github.depermitto.exercises.AddExerciseButton
-import io.github.depermitto.misc.DuplicateIcon
-import io.github.depermitto.misc.IntensityIcon
-import io.github.depermitto.misc.set
+import io.github.depermitto.util.DuplicateIcon
+import io.github.depermitto.util.IntensityIcon
+import io.github.depermitto.util.set
 import io.github.depermitto.theme.ExerciseSetNarrowWeight
 import io.github.depermitto.theme.ExerciseSetSpacing
 import io.github.depermitto.theme.ExerciseSetWideWeight

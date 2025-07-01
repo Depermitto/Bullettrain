@@ -25,7 +25,7 @@ import io.github.depermitto.data.entities.ExerciseSet
 import io.github.depermitto.data.entities.PerfVar
 import io.github.depermitto.exercises.AddExerciseButton
 import io.github.depermitto.exercises.exerciseChooser
-import io.github.depermitto.misc.SwapIcon
+import io.github.depermitto.util.SwapIcon
 import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.*
 import java.time.Instant
