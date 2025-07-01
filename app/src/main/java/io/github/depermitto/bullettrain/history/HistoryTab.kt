@@ -99,9 +99,14 @@ fun HistoryTab(
 
         selectedHistoryRecords.forEach { record ->
             val relatedProgram = programDao.where(record.relatedProgramId)
+            val plannedWorkout = relatedProgram.workouts.first { it.name == record.workout.name }
             DataPanel<WorkoutEntry>(
                 modifier = Modifier.fillMaxWidth(),
-                items = record.workout.entries,
+                items = record.workout.entries.filter { workoutEntry ->
+                    val skipped = workoutEntry.getPerformedSets().isEmpty()
+                    val planned = plannedWorkout.entries.any { it.descriptorId == workoutEntry.descriptorId }
+                    !skipped || planned
+                },
                 backgroundColor = MaterialTheme.colorScheme.focalGround(settings.theme),
                 headline = {
                     HeroTile(headlineContent = { Text(text = relatedProgram.name) },
@@ -134,8 +139,7 @@ fun HistoryTab(
                 }
 
                 val exerciseDescriptor = exerciseDao.where(entry.descriptorId)
-                HeroTile(
-                    headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
+                HeroTile(headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
                     trailingContent = { Text(text = bestSet ?: "skipped", overflow = TextOverflow.Ellipsis, maxLines = 2) },
                     modifier = Modifier.clip(MaterialTheme.shapes.small),
                     onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },
@@ -156,7 +160,7 @@ fun HistoryTab(
             onClick = { homeViewModel.calendarDate = today },
             colors = ButtonDefaults.textButtonColors(
                 contentColor = MaterialTheme.colorScheme.onBackground,
-                containerColor = MaterialTheme.colorScheme.background
+                containerColor = MaterialTheme.colorScheme.background,
             ),
             elevation = ButtonDefaults.buttonElevation()
         ) {
