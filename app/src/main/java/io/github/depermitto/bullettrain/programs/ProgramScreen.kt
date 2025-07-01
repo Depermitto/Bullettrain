@@ -19,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
@@ -30,8 +31,9 @@ import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
-import io.github.depermitto.bullettrain.theme.RegularPadding
-import io.github.depermitto.bullettrain.theme.BigSpacing
+import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
+import io.github.depermitto.bullettrain.theme.Medium
+import io.github.depermitto.bullettrain.theme.Small
 import sh.calvin.reorderable.ReorderableColumn
 
 @Composable
@@ -43,9 +45,10 @@ fun ProgramScreen(
     ReorderableColumn(
         list = days,
         modifier = Modifier
+            .padding(horizontal = Dp.Medium)
             .verticalScroll(rememberScrollState(0))
-            .padding(horizontal = RegularPadding),
-        verticalArrangement = Arrangement.spacedBy(BigSpacing),
+            .padding(bottom = Dp.EmptyScrollSpace),
+        verticalArrangement = Arrangement.spacedBy(Dp.Small),
         onMove = {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
@@ -99,7 +102,7 @@ fun ProgramScreen(
         }
     }
 
-    if (programViewModel.getDays().size < 7) AnchoredFloatingActionButton(onClick = { programViewModel.addDay() },
+    if (programViewModel.getDays().size < 14) AnchoredFloatingActionButton(onClick = { programViewModel.addDay() },
         text = { Text("Add Day") },
         icon = { Icon(Icons.Filled.Add, contentDescription = "Add New Day") })
 }

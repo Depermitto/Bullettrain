@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
@@ -58,24 +59,24 @@ import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.Intensity
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.PerfVarCategory
+import io.github.depermitto.bullettrain.database.Settings
 import io.github.depermitto.bullettrain.database.WorkoutEntry
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
-import io.github.depermitto.bullettrain.theme.BigSpacing
 import io.github.depermitto.bullettrain.theme.CompactIconSize
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
+import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.HeartPlusIcon
 import io.github.depermitto.bullettrain.theme.HeartRemoveIcon
+import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.NarrowWeight
-import io.github.depermitto.bullettrain.theme.RegularPadding
-import io.github.depermitto.bullettrain.theme.ScrollPadding
-import io.github.depermitto.bullettrain.theme.SmallPadding
-import io.github.depermitto.bullettrain.theme.SmallSpacing
+import io.github.depermitto.bullettrain.theme.Small
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.SwapIcon
 import io.github.depermitto.bullettrain.theme.WideWeight
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.util.reorder
 import io.github.depermitto.bullettrain.util.smallListSet
+import io.github.depermitto.bullettrain.util.splitOnUppercase
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableColumn
 import kotlin.math.max
@@ -88,6 +89,7 @@ fun DayScreen(
     dayIndex: Int,
     exerciseDao: ExerciseDao,
     historyDao: HistoryDao,
+    settings: Settings,
     navController: NavController,
     snackbarHostState: SnackbarHostState
 ) = Box(modifier = modifier.fillMaxSize()) {
@@ -95,12 +97,12 @@ fun DayScreen(
     val scope = rememberCoroutineScope()
     val day = programViewModel.getDay(dayIndex)
     ReorderableColumn(modifier = Modifier
-        .padding(horizontal = RegularPadding)
+        .padding(horizontal = Dp.Medium)
         .fillMaxSize()
-        .verticalScroll(rememberScrollState(0))
-        .padding(bottom = ScrollPadding),
+        .verticalScroll(rememberScrollState())
+        .padding(bottom = Dp.EmptyScrollSpace),
         list = day.entries,
-        verticalArrangement = Arrangement.spacedBy(BigSpacing),
+        verticalArrangement = Arrangement.spacedBy(Dp.Medium),
         onMove = {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
@@ -138,24 +140,26 @@ fun DayScreen(
                         }
                     }
                 }) {
-                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
+                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround(settings.theme))) {
                         var showTargetEditDropdown by remember { mutableStateOf(false) }
                         ListItem(headlineContent = {
                             TextLink(
                                 exerciseDescriptor.name,
                                 navController = navController,
                                 destination = Destination.Exercise(exerciseDescriptor.id),
-                                contentPadding = PaddingValues(RegularPadding),
+                                contentPadding = PaddingValues(Dp.Medium),
                                 style = MaterialTheme.typography.titleMedium,
                             )
                         }, trailingContent = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                IconButton(modifier = Modifier.size(SqueezableIconSize),
+                                IconButton(
+                                    modifier = Modifier.size(SqueezableIconSize),
                                     onClick = { showSwapExerciseChooser = true }) {
                                     SwapIcon()
                                 }
 
-                                if (!exercise.hasIntensity) IconButton(modifier = Modifier.size(SqueezableIconSize),
+                                if (!exercise.hasIntensity) IconButton(
+                                    modifier = Modifier.size(SqueezableIconSize),
                                     onClick = { setIntensity(Intensity.RPE) }) {
                                     HeartPlusIcon()
                                 }
@@ -167,7 +171,7 @@ fun DayScreen(
                             }
                         })
 
-                        Row(modifier = Modifier.padding(SmallPadding), verticalAlignment = Alignment.CenterVertically) {
+                        Row(modifier = Modifier.padding(Dp.Small), verticalAlignment = Alignment.CenterVertically) {
                             Header(Modifier.weight(NarrowWeight), "Set")
                             // PerfVarCategory Dropdown with Icon
                             Row(
@@ -177,13 +181,14 @@ fun DayScreen(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Header(text = exercise.perfVarCategory.prettyName)
+                                Header(text = exercise.perfVarCategory.name.splitOnUppercase())
                                 Icon(Sharp.KeyboardArrowDown, contentDescription = null)
 
-                                DropdownMenu(expanded = showTargetEditDropdown,
+                                DropdownMenu(
+                                    expanded = showTargetEditDropdown,
                                     onDismissRequest = { showTargetEditDropdown = false }) {
                                     PerfVarCategory.entries.forEach { entry ->
-                                        DropdownMenuItem(text = { Text(entry.prettyName) }, onClick = {
+                                        DropdownMenuItem(text = { Text(entry.name.splitOnUppercase()) }, onClick = {
                                             programViewModel.setExercise(
                                                 dayIndex, exerciseIndex, exercise.copy(
                                                     sets = exercise.sets.map { it.copy(targetPerfVar = PerfVar.of(entry)) },
@@ -226,8 +231,8 @@ fun DayScreen(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(color = MaterialTheme.colorScheme.focalGround)
-                                        .padding(vertical = RegularPadding, horizontal = SmallPadding),
+                                        .background(color = MaterialTheme.colorScheme.focalGround(settings.theme))
+                                        .padding(vertical = Dp.Medium, horizontal = Dp.Small),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
@@ -237,7 +242,7 @@ fun DayScreen(
                                     )
                                     ExerciseTargetField(Modifier
                                         .weight(WideWeight)
-                                        .padding(horizontal = SmallSpacing),
+                                        .padding(horizontal = 2.dp),
                                         value = set.targetPerfVar,
                                         onValueChange = {
                                             programViewModel.setExercise(
@@ -249,7 +254,7 @@ fun DayScreen(
                                     if (set.actualIntensity != null) {
                                         NumberField(modifier = Modifier
                                             .weight(WideWeight)
-                                            .padding(horizontal = SmallSpacing),
+                                            .padding(horizontal = 2.dp),
                                             value = set.actualIntensity,
                                             onValueChange = {
                                                 programViewModel.setExercise(
@@ -276,7 +281,7 @@ fun DayScreen(
 
                         OutlinedButton(modifier = Modifier
                             .fillMaxWidth()
-                            .padding(RegularPadding),
+                            .padding(Dp.Medium),
                             colors = ButtonDefaults.outlinedButtonColors()
                                 .copy(contentColor = MaterialTheme.colorScheme.tertiary),
                             onClick = {

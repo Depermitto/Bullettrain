@@ -17,9 +17,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.github.depermitto.bullettrain.theme.BigPadding
-import io.github.depermitto.bullettrain.theme.SuperBigPadding
+import io.github.depermitto.bullettrain.theme.ExtraLarge
+import io.github.depermitto.bullettrain.theme.Large
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +41,7 @@ fun TextFieldAlertDialog(
     ) {
         var name by rememberSaveable { mutableStateOf(startingText) }
         OutlinedTextField(
-            modifier = Modifier.padding(start = SuperBigPadding, end = SuperBigPadding, top = SuperBigPadding),
+            modifier = Modifier.padding(start = Dp.ExtraLarge, end = Dp.ExtraLarge, top = Dp.ExtraLarge),
             value = name, onValueChange = { name = it },
             label = label,
             maxLines = 4,
@@ -49,7 +50,7 @@ fun TextFieldAlertDialog(
         )
 
         Spacer(Modifier.weight(1f))
-        Row(modifier = Modifier.padding(end = BigPadding, bottom = SuperBigPadding)) {
+        Row(modifier = Modifier.padding(end = Dp.Large, bottom = Dp.ExtraLarge)) {
             Spacer(Modifier.weight(1f))
             dismissButton()
             confirmButton(name)

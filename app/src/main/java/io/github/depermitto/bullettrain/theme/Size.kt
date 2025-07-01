@@ -1,20 +1,16 @@
 package io.github.depermitto.bullettrain.theme
 
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-val SmallPadding = 4.dp
-val RegularPadding = 8.dp
-val BigPadding = 16.dp
-val SuperBigPadding = 24.dp
-
-val SmallSpacing = 2.dp
-val RegularSpacing = 4.dp
-val BigSpacing = 8.dp
+val Dp.Companion.Small get() = 4.dp
+val Dp.Companion.Medium get() = 8.dp
+val Dp.Companion.Large get() = 16.dp
+val Dp.Companion.ExtraLarge get() = 24.dp
+val Dp.Companion.EmptyScrollSpace get() = 500.dp
 
 val CompactIconSize = 20.dp
 val SqueezableIconSize = 40.dp
-
-val ScrollPadding = 300.dp
 
 const val NarrowWeight = 0.3f
 const val WideWeight = 0.9f

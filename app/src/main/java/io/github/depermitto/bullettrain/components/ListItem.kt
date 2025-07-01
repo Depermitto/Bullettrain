@@ -8,6 +8,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -20,8 +21,8 @@ import androidx.constraintlayout.compose.Dimension
 @Composable
 fun ListItem(
     modifier: Modifier = Modifier,
-    headlineContent: @Composable () -> Unit,
     onClick: (() -> Unit)? = null,
+    headlineContent: @Composable () -> Unit,
     supportingContent: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     headlineTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
@@ -39,7 +40,6 @@ fun ListItem(
             LocalTextStyle provides LocalTextStyle.current.merge(headlineTextStyle)
         ) {
             Box(Modifier.constrainAs(headline) {
-                start.linkTo(parent.start)
                 top.linkTo(parent.top)
                 width = Dimension.preferredWrapContent
             }) {
@@ -69,6 +69,49 @@ fun ListItem(
                 }
                 .padding(start = 16.dp)) {
                 trailingContent()
+            }
+        }
+    }
+}
+
+@Composable
+fun ListItem(
+    modifier: Modifier = Modifier,
+    selected: Boolean,
+    headlineContent: @Composable () -> Unit,
+    supportingContent: (@Composable () -> Unit)? = null,
+    headlineTextStyle: TextStyle = MaterialTheme.typography.bodyLarge
+) = ConstraintLayout(modifier) {
+    val (leading, headline, supporting) = createRefs()
+
+    RadioButton(selected = selected, onClick = null, modifier = Modifier.constrainAs(leading) {
+        centerVerticallyTo(parent)
+        start.linkTo(parent.start, 10.dp)
+    })
+
+    CompositionLocalProvider(
+        LocalContentColor provides ListItemDefaults.colors().headlineColor,
+        LocalTextStyle provides LocalTextStyle.current.merge(headlineTextStyle)
+    ) {
+        Box(Modifier.constrainAs(headline) {
+            start.linkTo(leading.end, 24.dp)
+            if (supportingContent == null) centerVerticallyTo(parent) else top.linkTo(parent.top)
+            width = Dimension.preferredWrapContent
+        }) {
+            headlineContent()
+        }
+    }
+
+    if (supportingContent != null) {
+        CompositionLocalProvider(
+            LocalContentColor provides ListItemDefaults.colors().supportingTextColor,
+            LocalTextStyle provides LocalTextStyle.current.merge(MaterialTheme.typography.bodyMedium)
+        ) {
+            Box(Modifier.constrainAs(supporting) {
+                start.linkTo(headline.start)
+                top.linkTo(headline.bottom)
+            }) {
+                supportingContent()
             }
         }
     }

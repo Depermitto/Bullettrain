@@ -26,6 +26,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -35,11 +36,11 @@ import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.database.SettingsDao
+import io.github.depermitto.bullettrain.database.Settings
 import io.github.depermitto.bullettrain.home.HomeViewModel
-import io.github.depermitto.bullettrain.theme.BigSpacing
-import io.github.depermitto.bullettrain.theme.RegularPadding
-import io.github.depermitto.bullettrain.theme.ScrollPadding
+import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
+import io.github.depermitto.bullettrain.theme.Medium
+import io.github.depermitto.bullettrain.theme.Small
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import java.time.LocalDate
@@ -50,13 +51,12 @@ fun HistoryTab(
     modifier: Modifier = Modifier,
     homeViewModel: HomeViewModel,
     trainViewModel: TrainViewModel,
-    settingsDao: SettingsDao,
     historyDao: HistoryDao,
     exerciseDao: ExerciseDao,
     programDao: ProgramDao,
+    settings: Settings,
     navController: NavController
 ) = Box(modifier = modifier.fillMaxSize()) {
-    val settings by settingsDao.getSettings.collectAsStateWithLifecycle()
     val historyRecords by historyDao.where(homeViewModel.calendarDate.month, homeViewModel.calendarDate.year)
         .collectAsStateWithLifecycle(initialValue = emptyList())
     val selectedHistoryRecords = historyRecords.filter { record -> record.date == homeViewModel.selectedDate }
@@ -64,14 +64,13 @@ fun HistoryTab(
         if (homeViewModel.selectedDate == null) homeViewModel.selectedDate = historyRecords.lastOrNull()?.date
     }
 
-    val verticalScrollState = rememberScrollState(0)
     Column(
         modifier = Modifier
-            .padding(horizontal = RegularPadding)
-            .verticalScroll(verticalScrollState)
-            .padding(bottom = ScrollPadding),
+            .padding(horizontal = Dp.Medium)
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = Dp.EmptyScrollSpace),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(BigSpacing)
+        verticalArrangement = Arrangement.spacedBy(Dp.Small)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = { homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1) }) {
@@ -100,7 +99,7 @@ fun HistoryTab(
 
         selectedHistoryRecords.forEach { record ->
             val relatedProgram = programDao.where(record.relatedProgramId)
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround(settings.theme))) {
                 WorkoutTable(
                     modifier = Modifier.fillMaxWidth(),
                     workout = record.workout,
@@ -121,7 +120,7 @@ fun HistoryTab(
 
                             when {
                                 weight.isBlank() -> "$perfVar ${bestSet.targetPerfVar.category.shortName.lowercase()}"
-                                else -> "$perfVar x $weight ${settings.weightUnit()}"
+                                else -> "$perfVar x $weight ${settings.unitSystem.weightUnit()}"
                             }
                         }
                     },
@@ -138,7 +137,7 @@ fun HistoryTab(
         exit = slideOutVertically(animationSpec = tween(durationMillis = 200), targetOffsetY = { it }),
     ) {
         TextButton(
-            modifier = Modifier.padding(bottom = RegularPadding),
+            modifier = Modifier.padding(bottom = Dp.Medium),
             onClick = { homeViewModel.calendarDate = today },
             colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
             elevation = ButtonDefaults.buttonElevation()

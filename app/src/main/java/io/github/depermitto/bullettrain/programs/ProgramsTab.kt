@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
@@ -29,10 +30,9 @@ import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.components.TransparentCard
 import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.theme.RegularPadding
-import io.github.depermitto.bullettrain.theme.RegularSpacing
-import io.github.depermitto.bullettrain.theme.ScrollPadding
-import io.github.depermitto.bullettrain.theme.SmallPadding
+import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
+import io.github.depermitto.bullettrain.theme.Medium
+import io.github.depermitto.bullettrain.theme.Small
 
 @Composable
 fun ProgramsTab(
@@ -44,8 +44,8 @@ fun ProgramsTab(
     val programs by programDao.getUserPrograms.collectAsStateWithLifecycle(initialValue = emptyList())
 
     LazyColumn(
-        contentPadding = PaddingValues(start = RegularPadding, end = RegularPadding, bottom = ScrollPadding),
-        verticalArrangement = Arrangement.spacedBy(RegularSpacing)
+        contentPadding = PaddingValues(start = Dp.Medium, end = Dp.Medium, bottom = Dp.EmptyScrollSpace),
+        verticalArrangement = Arrangement.spacedBy(Dp.Small)
     ) {
         items(programs) { program ->
             var showRenameDialog by rememberSaveable { mutableStateOf(false) }
@@ -79,7 +79,7 @@ fun ProgramsTab(
                             if (program.draft) Card {
                                 Text(
                                     text = "Draft",
-                                    modifier = Modifier.padding(SmallPadding),
+                                    modifier = Modifier.padding(Dp.Small),
                                     style = MaterialTheme.typography.titleSmall
                                 )
                             }

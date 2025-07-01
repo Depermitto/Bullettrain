@@ -1,5 +1,7 @@
 package io.github.depermitto.bullettrain.database
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.train.WorkoutPhase
@@ -13,16 +15,25 @@ interface Entity {
     fun clone(id: Int): Entity
 }
 
-enum class UnitSystem { Metric, Imperial }
+enum class UnitSystem {
+    Metric, Imperial;
+
+    fun weightUnit(): String = when (this) {
+        Metric -> "kg"
+        Imperial -> "lbs"
+    }
+}
+
+enum class Theme {
+    FollowSystem, Light, Dark;
+
+    @Composable
+    fun isDarkMode(): Boolean = (this == FollowSystem && (isSystemInDarkTheme())) || this == Dark
+}
 
 @Immutable
 @Serializable
-data class Settings(val unitSystem: UnitSystem = UnitSystem.Metric) {
-    fun weightUnit() = when (unitSystem) {
-        UnitSystem.Metric -> "kg"
-        UnitSystem.Imperial -> "lbs"
-    }
-}
+data class Settings(val unitSystem: UnitSystem = UnitSystem.Metric, val theme: Theme = Theme.FollowSystem)
 
 @Immutable
 @Serializable
@@ -128,7 +139,6 @@ enum class Intensity { RPE, RIR, PercentOf1RM }
 enum class PerfVarCategory {
     Reps, RepRange, Time, TimeRange;
 
-    val prettyName = name.split(regex = Regex("(?=[A-Z])")).joinToString(" ")
     val shortName
         get() = when (this) {
             Reps -> name

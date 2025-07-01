@@ -10,15 +10,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.BasicTable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.ExerciseDescriptor
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.SettingsDao
-import io.github.depermitto.bullettrain.theme.RegularPadding
-import io.github.depermitto.bullettrain.theme.RegularSpacing
-import io.github.depermitto.bullettrain.theme.ScrollPadding
+import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
+import io.github.depermitto.bullettrain.theme.Medium
+import io.github.depermitto.bullettrain.theme.Small
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -32,9 +33,9 @@ fun ExerciseScreen(
 
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(start = RegularPadding, end = RegularPadding, bottom = ScrollPadding),
+        contentPadding = PaddingValues(start = Dp.Medium, end = Dp.Medium, bottom = Dp.EmptyScrollSpace),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(RegularSpacing),
+        verticalArrangement = Arrangement.spacedBy(Dp.Small),
     ) {
         items(exercises) { exercise ->
             val doneDate = exercise.lastPerformedSet()?.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
@@ -52,7 +53,7 @@ fun ExerciseScreen(
 
                             when {
                                 weight.isBlank() -> "$perfVar ${set.targetPerfVar.category.shortName.lowercase()}"
-                                else -> "$perfVar x $weight ${settings.weightUnit()}"
+                                else -> "$perfVar x $weight ${settings.unitSystem.weightUnit()}"
                             }
                         }, maxLines = 1, overflow = TextOverflow.Ellipsis
                     )

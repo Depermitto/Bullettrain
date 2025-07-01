@@ -35,7 +35,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
@@ -51,16 +52,14 @@ import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.ExerciseSet
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.PerfVar
-import io.github.depermitto.bullettrain.database.SettingsDao
+import io.github.depermitto.bullettrain.database.Settings
 import io.github.depermitto.bullettrain.database.WorkoutEntry
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
-import io.github.depermitto.bullettrain.theme.BigSpacing
 import io.github.depermitto.bullettrain.theme.CompactIconSize
+import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
+import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.NarrowWeight
-import io.github.depermitto.bullettrain.theme.RegularPadding
-import io.github.depermitto.bullettrain.theme.ScrollPadding
-import io.github.depermitto.bullettrain.theme.SmallPadding
-import io.github.depermitto.bullettrain.theme.SmallSpacing
+import io.github.depermitto.bullettrain.theme.Small
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.SwapIcon
 import io.github.depermitto.bullettrain.theme.WideWeight
@@ -73,24 +72,23 @@ import kotlin.collections.plus
 @Composable
 fun TrainingScreen(
     trainViewModel: TrainViewModel,
-    settingsDao: SettingsDao,
     exerciseDao: ExerciseDao,
     historyDao: HistoryDao,
+    settings: Settings,
     modifier: Modifier = Modifier,
     navController: NavController,
     snackbarHostState: SnackbarHostState
 ) = Column(
     modifier = modifier
-        .padding(horizontal = RegularPadding)
-        .verticalScroll(rememberScrollState(0))
-        .padding(bottom = ScrollPadding), verticalArrangement = Arrangement.spacedBy(BigSpacing)
+        .padding(horizontal = Dp.Medium)
+        .verticalScroll(rememberScrollState())
+        .padding(bottom = Dp.EmptyScrollSpace), verticalArrangement = Arrangement.spacedBy(Dp.Medium)
 ) {
-    val settings by settingsDao.getSettings.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     trainViewModel.getWorkoutEntries().forEachIndexed { exerciseIndex, exercise ->
         val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
         var showExerciseDeleteDialog by remember { mutableStateOf(false) }
-        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
+        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround(settings.theme))) {
             var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
             if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
                 historyDao = historyDao,
@@ -103,7 +101,7 @@ fun TrainingScreen(
                     "${exerciseIndex + 1}. ${exerciseDescriptor.name}",
                     navController = navController,
                     destination = Destination.Exercise(exerciseDescriptor.id),
-                    contentPadding = PaddingValues(RegularPadding),
+                    contentPadding = PaddingValues(Dp.Medium),
                     style = MaterialTheme.typography.titleMedium,
                 )
             }, trailingContent = {
@@ -111,7 +109,7 @@ fun TrainingScreen(
                     if (!trainViewModel.isWorkoutEditing()) lastPerformedSet?.let { exerciseSet ->
                         Card {
                             Text(
-                                modifier = Modifier.padding(SmallPadding),
+                                modifier = Modifier.padding(Dp.Small),
                                 text = if (exercise.sets.all { it.completed }) "Done"
                                 else trainViewModel.elapsedSince(exerciseSet.doneTs!!),
                                 style = MaterialTheme.typography.titleMedium
@@ -136,19 +134,19 @@ fun TrainingScreen(
                 }
             })
 
-            Row(modifier = Modifier.padding(SmallPadding)) {
+            Row(modifier = Modifier.padding(Dp.Small)) {
                 Header(Modifier.weight(NarrowWeight), "Set")
                 if (exercise.intensity != null) {
                     Header(Modifier.weight(NarrowWeight), exercise.intensity.name)
                 }
                 Header(Modifier.weight(NarrowWeight + 0.1f), "Target")
                 Header(Modifier.weight(WideWeight), exercise.perfVarCategory.shortName)
-                Header(Modifier.weight(WideWeight), settings.weightUnit())
+                Header(Modifier.weight(WideWeight), settings.unitSystem.weightUnit())
                 if (trainViewModel.isWorkoutRunning()) {
                     Header(Modifier.weight(NarrowWeight), "")
                 }
             }
-            HorizontalDivider(modifier = Modifier.padding(horizontal = SmallPadding))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = Dp.Small))
 
             exercise.sets.forEachIndexed { setIndex, set ->
                 SwipeToDeleteBox(onDelete = {
@@ -168,9 +166,8 @@ fun TrainingScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(color = MaterialTheme.colorScheme.focalGround)
-                            .padding(vertical = RegularPadding, horizontal = SmallPadding),
-                        verticalAlignment = Alignment.CenterVertically
+                            .background(color = MaterialTheme.colorScheme.focalGround(settings.theme))
+                            .padding(vertical = Dp.Medium, horizontal = Dp.Small), verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             modifier = Modifier.weight(NarrowWeight),
@@ -191,7 +188,7 @@ fun TrainingScreen(
                             style = MaterialTheme.typography.bodyMedium)
                         CompletableNumberField(modifier = Modifier
                             .weight(WideWeight)
-                            .padding(horizontal = SmallSpacing),
+                            .padding(horizontal = 2.dp),
                             value = set.actualPerfVar,
                             onValueChange = {
                                 trainViewModel.setExerciseSet(exerciseIndex, setIndex, set.copy(actualPerfVar = it))
@@ -201,7 +198,7 @@ fun TrainingScreen(
                         CompletableNumberField(
                             modifier = Modifier
                                 .weight(WideWeight)
-                                .padding(horizontal = SmallSpacing),
+                                .padding(horizontal = 2.dp),
                             value = set.weight,
                             onValueChange = { trainViewModel.setExerciseSet(exerciseIndex, setIndex, set.copy(weight = it)) },
                             completed = set.completed,
@@ -218,7 +215,7 @@ fun TrainingScreen(
 
             OutlinedButton(modifier = Modifier
                 .fillMaxWidth()
-                .padding(RegularPadding),
+                .padding(Dp.Medium),
                 colors = ButtonDefaults.outlinedButtonColors().copy(contentColor = MaterialTheme.colorScheme.tertiary),
                 onClick = {
                     trainViewModel.setExercise(

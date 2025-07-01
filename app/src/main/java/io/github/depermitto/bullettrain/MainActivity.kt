@@ -49,7 +49,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -72,9 +74,8 @@ import io.github.depermitto.bullettrain.programs.ProgramCreationScreen
 import io.github.depermitto.bullettrain.programs.ProgramScreen
 import io.github.depermitto.bullettrain.programs.ProgramViewModel
 import io.github.depermitto.bullettrain.settings.SettingsScreen
-import io.github.depermitto.bullettrain.theme.BigSpacing
 import io.github.depermitto.bullettrain.theme.BullettrainTheme
-import io.github.depermitto.bullettrain.theme.RegularPadding
+import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.ScaleTransitionDirection
 import io.github.depermitto.bullettrain.theme.scaleIntoContainer
 import io.github.depermitto.bullettrain.theme.scaleOutOfContainer
@@ -90,10 +91,11 @@ class MainActivity : ComponentActivity() {
         FileKit.init(this)
 
         setContent {
-            BullettrainTheme(dynamicColor = false) {
+            val db = Database(application.filesDir, applicationContext)
+            BullettrainTheme(db.settingsDao) {
                 // this is for color flashing during navigating
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    App(Database(application.filesDir, applicationContext))
+                    App(db)
                 }
             }
         }
@@ -113,19 +115,24 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(db: Database) = MaterialTheme {
+    // global for every screen
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val homeViewModel = viewModel<HomeViewModel>(factory = HomeViewModel.Factory())
     val homeScreenPager = rememberPagerState(initialPage = Tab.Train.ordinal) { Tab.entries.size }
+
     val trainViewModel = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController))
     var programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program()))
 
+    val settings by db.settingsDao.getSettings.collectAsStateWithLifecycle()
+
+    // used across every NavHost.composable
     var showDiscardDialog by rememberSaveable { mutableStateOf(false) }
     var showFinishDialog by rememberSaveable { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
-    val snackbarHostState = remember { SnackbarHostState() }
     NavHost(navController = navController,
         startDestination = if (trainViewModel.restoreWorkout()) Destination.Training else Destination.Home,
         modifier = Modifier.pointerInput(Unit) {
@@ -166,7 +173,7 @@ fun App(db: Database) = MaterialTheme {
                     exerciseDao = db.exerciseDao,
                     programDao = db.programDao,
                     historyDao = db.historyDao,
-                    settingsDao = db.settingsDao,
+                    settings = settings,
                     pagerState = homeScreenPager,
                     navController = navController
                 )
@@ -180,7 +187,7 @@ fun App(db: Database) = MaterialTheme {
                 OutlinedCard(
                     modifier = Modifier
                         .windowInsetsPadding(TopAppBarDefaults.windowInsets)
-                        .padding(start = RegularPadding, end = RegularPadding, bottom = BigSpacing)
+                        .padding(start = Dp.Medium, end = Dp.Medium, bottom = Dp.Medium)
                 ) {
                     Box(
                         modifier = Modifier
@@ -220,9 +227,9 @@ fun App(db: Database) = MaterialTheme {
                         .consumeWindowInsets(paddingValues)
                         .padding(paddingValues),
                     trainViewModel = trainViewModel,
-                    settingsDao = db.settingsDao,
                     exerciseDao = db.exerciseDao,
                     historyDao = db.historyDao,
+                    settings = settings,
                     navController = navController,
                     snackbarHostState = snackbarHostState
                 )
@@ -307,7 +314,8 @@ fun App(db: Database) = MaterialTheme {
                     historyDao = db.historyDao,
                     dayIndex = dayIndex,
                     navController = navController,
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackbarHostState,
+                    settings = settings
                 )
             }
         }

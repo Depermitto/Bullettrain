@@ -119,7 +119,7 @@ fun Calendar(
         onDismissRequest = { showProgramListDialog = false },
         list = programs,
         dismissButton = { TextButton(onClick = { showProgramListDialog = false }) { Text("Cancel") } },
-        onSelected = { program ->
+        onClick = { program ->
             showProgramListDialog = false
             if (program corresponds Program.EmptyWorkout) {
                 trainViewModel.startWorkout(Workout(), Program.EmptyWorkout.id, date = longClickedDate)
@@ -135,7 +135,7 @@ fun Calendar(
             onDismissRequest = { selectedProgram = null },
             dismissButton = { TextButton(onClick = { selectedProgram = null }) { Text("Cancel") } },
             list = program.workouts,
-            onSelected = { day ->
+            onClick = { day ->
                 selectedProgram = null
                 trainViewModel.startWorkout(day, program.id, date = longClickedDate)
             }) { day ->
@@ -147,7 +147,7 @@ fun Calendar(
         onDismissRequest = { showWorkoutDiscardDialog = false },
         dismissButton = { TextButton(onClick = { showWorkoutDiscardDialog = false }) { Text("Cancel") } },
         list = currentHistoryRecords.filter { it.date == longClickedDate },
-        onSelected = { workout -> showWorkoutDiscardDialog = false; historyDao.delete(workout) }) { record ->
+        onClick = { workout -> showWorkoutDiscardDialog = false; historyDao.delete(workout) }) { record ->
         val relatedProgram = programDao.where(record.relatedProgramId)
         var text = relatedProgram.name
         if (relatedProgram correspondsNot Program.EmptyWorkout) text += ", " + record.workout.name

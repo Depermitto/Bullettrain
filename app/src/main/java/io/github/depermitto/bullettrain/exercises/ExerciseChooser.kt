@@ -11,7 +11,7 @@ import io.github.depermitto.bullettrain.database.HistoryDao
 fun ExerciseChooser(
     onDismissRequest: () -> Unit, exerciseDao: ExerciseDao, historyDao: HistoryDao, onChoose: (ExerciseDescriptor) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(true)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(onDismissRequest = onDismissRequest, sheetState = sheetState) {
         ExercisesListScreen(exerciseDao = exerciseDao,
             historyDao = historyDao,

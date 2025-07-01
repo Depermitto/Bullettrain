@@ -15,7 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import io.github.depermitto.bullettrain.theme.RegularPadding
+import androidx.compose.ui.unit.Dp
+import io.github.depermitto.bullettrain.theme.Medium
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +41,7 @@ fun SwipeToDeleteBox(
                     .background(MaterialTheme.colorScheme.errorContainer),
                 content = {
                     Text(
-                        modifier = Modifier.padding(horizontal = RegularPadding),
+                        modifier = Modifier.padding(horizontal = Dp.Medium),
                         text = "Delete",
                         color = MaterialTheme.colorScheme.onErrorContainer
                     )

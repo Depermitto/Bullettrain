@@ -9,7 +9,7 @@ import io.github.depermitto.bullettrain.Destination.Home.Tab
 import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.database.SettingsDao
+import io.github.depermitto.bullettrain.database.Settings
 import io.github.depermitto.bullettrain.exercises.ExerciseTab
 import io.github.depermitto.bullettrain.history.HistoryTab
 import io.github.depermitto.bullettrain.programs.ProgramViewModel
@@ -27,7 +27,7 @@ fun HomeScreen(
     exerciseDao: ExerciseDao,
     programDao: ProgramDao,
     historyDao: HistoryDao,
-    settingsDao: SettingsDao,
+    settings: Settings,
     navController: NavController,
 ) = HorizontalPager(modifier = modifier, state = pagerState) { page ->
     when (Tab.entries[page]) {
@@ -36,7 +36,7 @@ fun HomeScreen(
         Tab.History -> HistoryTab(
             homeViewModel = homeViewModel,
             trainViewModel = trainViewModel,
-            settingsDao = settingsDao,
+            settings = settings,
             historyDao = historyDao,
             programDao = programDao,
             exerciseDao = exerciseDao,
@@ -44,7 +44,11 @@ fun HomeScreen(
         )
 
         Tab.Train -> TrainTab(
-            trainViewModel = trainViewModel, programDao = programDao, exerciseDao = exerciseDao, navController = navController
+            trainViewModel = trainViewModel,
+            programDao = programDao,
+            exerciseDao = exerciseDao,
+            settings = settings,
+            navController = navController
         )
 
         Tab.Programs -> ProgramsTab(programViewModel = programViewModel, programDao = programDao, navController = navController)

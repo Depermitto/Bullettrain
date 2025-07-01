@@ -9,6 +9,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -21,8 +22,9 @@ import io.github.depermitto.bullettrain.components.WorkoutTable
 import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
+import io.github.depermitto.bullettrain.database.Settings
 import io.github.depermitto.bullettrain.database.Workout
-import io.github.depermitto.bullettrain.theme.RegularPadding
+import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.focalGround
 
 @Composable
@@ -31,16 +33,17 @@ fun TrainTab(
     trainViewModel: TrainViewModel,
     programDao: ProgramDao,
     exerciseDao: ExerciseDao,
+    settings: Settings,
     navController: NavController
 ) = Box(modifier.fillMaxSize()) {
-    Column(Modifier.padding(horizontal = RegularPadding), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier.padding(horizontal = Dp.Medium), horizontalAlignment = Alignment.CenterHorizontally) {
         val programs by programDao.getUserPrograms.collectAsStateWithLifecycle(initialValue = emptyList())
         var showChangeDayIndexDialog by rememberSaveable { mutableStateOf(false) }
         var selectedProgramIndex by rememberSaveable { mutableIntStateOf(0) }
 
         Card(
             modifier = Modifier.heightIn(0.dp, 400.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround(settings.theme))
         ) {
             val program = programs.getOrElse(selectedProgramIndex) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -80,7 +83,7 @@ fun TrainTab(
                 onDismissRequest = { showChangeDayIndexDialog = false },
                 dismissButton = { TextButton(onClick = { showChangeDayIndexDialog = false }) { Text("Cancel") } },
                 list = program.workouts,
-                onSelected = { day ->
+                onClick = { day ->
                     showChangeDayIndexDialog = false
                     programDao.update(program.copy(nextDayIndex = program.workouts.indexOf(day)))
                 }) { day ->

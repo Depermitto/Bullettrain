@@ -13,3 +13,7 @@ fun <T> List<T>.bigListSet(index: Int, value: T): List<T> = this.toMutableList()
 fun <T> List<T>.reorder(fromIndex: Int, toIndex: Int): List<T> = this.toMutableList().apply {
     add(toIndex, removeAt(fromIndex))
 }
+
+fun String.splitOnUppercase(): String =
+    split(regex = Regex("(?=[A-Z])")).filter { it.isNotEmpty() }.joinToString(" ") { it.lowercase() }
+        .replaceFirstChar { it.uppercaseChar() }

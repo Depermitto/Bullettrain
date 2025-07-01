@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
@@ -22,9 +23,8 @@ import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.ExerciseDescriptor
 import io.github.depermitto.bullettrain.database.HistoryDao
-import io.github.depermitto.bullettrain.theme.RegularPadding
-import io.github.depermitto.bullettrain.theme.ScrollPadding
-import io.github.depermitto.bullettrain.theme.SmallSpacing
+import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
+import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.unlinedColors
 import kotlinx.coroutines.flow.map
 
@@ -49,7 +49,7 @@ fun ExercisesListScreen(
         TextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = RegularPadding, end = RegularPadding, bottom = 12.dp)
+                .padding(start = Dp.Medium, end = Dp.Medium, bottom = 12.dp)
                 .clip(shape = RoundedCornerShape(24.dp))
                 .shadow(2.dp, shape = RoundedCornerShape(24.dp)),
             value = searchText, onValueChange = { searchText = it },
@@ -62,7 +62,7 @@ fun ExercisesListScreen(
         )
 
         LazyColumn(
-            contentPadding = PaddingValues(bottom = ScrollPadding), verticalArrangement = Arrangement.spacedBy(SmallSpacing)
+            contentPadding = PaddingValues(bottom = Dp.EmptyScrollSpace), verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             items(exercises) { exerciseDescriptor ->
                 val count = exerciseFrequencyMap[exerciseDescriptor.id]
