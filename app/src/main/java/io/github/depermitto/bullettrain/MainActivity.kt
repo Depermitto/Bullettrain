@@ -237,7 +237,12 @@ fun App(db: Database) = MaterialTheme {
                 val day = programViewModel.getDay(dayIndex)
 
                 RibbonScaffold(ribbon = { Ribbon(navController, title = day.name, settingsGear = false) }) {
-                    DayExercisesScreen(programViewModel = programViewModel, exerciseDao = db.exerciseDao, dayIndex = dayIndex)
+                    DayExercisesScreen(
+                        programViewModel = programViewModel,
+                        exerciseDao = db.exerciseDao,
+                        dayIndex = dayIndex,
+                        snackbarHostState = snackbarHostState
+                    )
                 }
             }
 

@@ -29,6 +29,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -66,15 +69,21 @@ import io.github.depermitto.bullettrain.util.HeartPlusIcon
 import io.github.depermitto.bullettrain.util.HeartRemoveIcon
 import io.github.depermitto.bullettrain.util.reorder
 import io.github.depermitto.bullettrain.util.smallListSet
+import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableColumn
 import kotlin.math.max
 import kotlin.math.min
 
 @Composable
 fun DayExercisesScreen(
-    modifier: Modifier = Modifier, programViewModel: ProgramViewModel, dayIndex: Int, exerciseDao: ExerciseDao
+    modifier: Modifier = Modifier,
+    programViewModel: ProgramViewModel,
+    dayIndex: Int,
+    exerciseDao: ExerciseDao,
+    snackbarHostState: SnackbarHostState
 ) = Box(modifier = modifier.fillMaxSize()) {
     val view = LocalView.current
+    val scope = rememberCoroutineScope()
     val day = programViewModel.getDay(dayIndex)
     ReorderableColumn(modifier = Modifier
         .padding(horizontal = ItemPadding)
@@ -94,9 +103,20 @@ fun DayExercisesScreen(
             val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
 
             Surface(shadowElevation = elevation, shape = MaterialTheme.shapes.medium) {
-                SwipeToDeleteBox(modifier = Modifier.clip(MaterialTheme.shapes.medium),
-                    threshold = 0.9f,
-                    onDelete = { programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises - exercise)) }) {
+                SwipeToDeleteBox(modifier = Modifier.clip(MaterialTheme.shapes.medium), threshold = 0.9f, onDelete = {
+                    val deletedDay = day
+                    programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises - exercise))
+                    scope.launch {
+                        val snackBarResult = snackbarHostState.showSnackbar(
+                            message = (if (exercise.sets.size == 1) "A set" else "${exercise.sets.size} sets") + " of ${exercise.name} deleted",
+                            actionLabel = "Undo",
+                            duration = SnackbarDuration.Short
+                        )
+                        if (snackBarResult == SnackbarResult.ActionPerformed) {
+                            programViewModel.setDay(dayIndex, deletedDay)
+                        }
+                    }
+                }) {
                     Card(colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
                         Column(modifier = Modifier.padding(ItemPadding)) {
                             var showTargetEditDropdown by remember { mutableStateOf(false) }
@@ -114,7 +134,8 @@ fun DayExercisesScreen(
                                     programViewModel.setExercise(
                                         dayIndex,
                                         exerciseIndex,
-                                        exercise.copy(intensityCategory = cat,
+                                        exercise.copy(
+                                            intensityCategory = cat,
                                             sets = exercise.sets.map { it.copy(intensity = intensity) })
                                     )
                                 }
@@ -159,7 +180,8 @@ fun DayExercisesScreen(
                                     Header(text = exercise.perfVarCategory.prettyName)
                                     Icon(Sharp.KeyboardArrowDown, contentDescription = null)
 
-                                    DropdownMenu(expanded = showTargetEditDropdown,
+                                    DropdownMenu(
+                                        expanded = showTargetEditDropdown,
                                         onDismissRequest = { showTargetEditDropdown = false }) {
                                         PerfVarCategory.entries.forEach { entry ->
                                             DropdownMenuItem(text = { Text(entry.prettyName) }, onClick = {
@@ -181,13 +203,26 @@ fun DayExercisesScreen(
                             }
                             HorizontalDivider()
 
-                            exercise.sets.forEachIndexed<ExerciseSet> { setIndex, set ->
+                            exercise.sets.forEachIndexed { setIndex, set ->
                                 SwipeToDeleteBox(onDelete = {
+                                    val deletedExercise = exercise
                                     programViewModel.setExercise(
                                         dayIndex,
                                         exerciseIndex,
-                                        exercise.copy(sets = exercise.sets.filterIndexed<ExerciseSet> { i, _ -> i != setIndex })
+                                        exercise.copy(sets = exercise.sets.filterIndexed { i, _ -> i != setIndex })
                                     )
+                                    scope.launch {
+                                        if (set.targetPerfVar != PerfVar.of(exercise.perfVarCategory)) {
+                                            val snackBarResult = snackbarHostState.showSnackbar(
+                                                message = "${set.targetPerfVar.encodeToStringOutput()} of ${exercise.name} deleted",
+                                                actionLabel = "Undo",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                            if (snackBarResult == SnackbarResult.ActionPerformed) {
+                                                programViewModel.setExercise(dayIndex, exerciseIndex, deletedExercise)
+                                            }
+                                        }
+                                    }
                                 }) {
                                     Row(
                                         modifier = Modifier
@@ -227,9 +262,10 @@ fun DayExercisesScreen(
                                                     )
                                                 })
                                         }
-                                        IconButton(modifier = Modifier
-                                            .size(CompactIconSize)
-                                            .weight(ExerciseSetNarrowWeight),
+                                        IconButton(
+                                            modifier = Modifier
+                                                .size(CompactIconSize)
+                                                .weight(ExerciseSetNarrowWeight),
                                             onClick = {
                                                 programViewModel.setExercise(
                                                     dayIndex, exerciseIndex, exercise.copy(sets = exercise.sets + set)
