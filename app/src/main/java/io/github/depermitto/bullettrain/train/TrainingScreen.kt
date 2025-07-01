@@ -87,7 +87,7 @@ fun TrainingScreen(
         onSettle = { from, to -> trainViewModel.reorderExercises(from, to) },
       ) { exerciseIndex, exercise ->
         val exerciseDescriptor = exerciseDao.where(id = exercise.descriptorId)
-        Text(text = "${exerciseIndex + 1}. ${exerciseDescriptor.name}", maxLines = 2)
+        Text("${exerciseIndex + 1}. ${exerciseDescriptor.name}", maxLines = 2)
       }
 
     Column(verticalArrangement = Arrangement.spacedBy(Dp.Medium)) {
@@ -142,10 +142,9 @@ fun TrainingScreen(
                     lastPerformedSet?.let { exerciseSet ->
                       Card {
                         Text(
+                          if (exercise.setsList.all { it.hasDoneTs() }) "Done"
+                          else trainViewModel.elapsed(exerciseSet.doneTs),
                           modifier = Modifier.padding(Dp.Small),
-                          text =
-                            if (exercise.setsList.all { it.hasDoneTs() }) "Done"
-                            else trainViewModel.elapsed(exerciseSet.doneTs),
                           style = MaterialTheme.typography.titleMedium,
                         )
                       }
@@ -207,26 +206,25 @@ fun TrainingScreen(
           },
           content = { setIndex, set ->
             Text(
+              (setIndex + 1).toString(),
               modifier = Modifier.weight(.2F),
-              text = (setIndex + 1).toString(),
               textAlign = TextAlign.Center,
             )
             if (exercise.hasIntensity)
               Text(
+                set.intensity.toString(),
                 modifier = Modifier.weight(.3F),
-                text = set.intensity.toString(),
                 textAlign = TextAlign.Center,
               )
             Text(
+              run {
+                val target =
+                  if (set.target == 0F) return@run "--"
+                  else if (exercise.hasTarget2) set.target.format() + "-" + set.target2.format()
+                  else set.target.format()
+                "$target ${if (exercise.type == Exercise.Type.Reps) "reps" else "min"}"
+              },
               modifier = Modifier.weight(.4F),
-              text =
-                run {
-                  val target =
-                    if (set.target == 0F) return@run "--"
-                    else if (exercise.hasTarget2) set.target.format() + "-" + set.target2.format()
-                    else set.target.format()
-                  "$target ${if (exercise.type == Exercise.Type.Reps) "reps" else "min"}"
-                },
               textAlign = TextAlign.Center,
               style = MaterialTheme.typography.bodyMedium,
             )
@@ -281,7 +279,7 @@ fun TrainingScreen(
       colors =
         ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onBackground),
     ) {
-      Text(text = "Add Exercise")
+      Text("Add Exercise")
     }
   }
 }

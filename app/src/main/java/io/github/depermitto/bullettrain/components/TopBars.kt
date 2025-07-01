@@ -20,7 +20,7 @@ fun HomeScreenTopBar(navController: NavController, title: String) {
   TopAppBar(
     title = {
       Text(
-        text = title,
+        title,
         style = MaterialTheme.typography.titleLarge,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
@@ -48,7 +48,7 @@ fun TopBarWithBackButton(
     modifier = modifier,
     title = {
       Text(
-        text = title,
+        title,
         style = MaterialTheme.typography.titleLarge,
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,

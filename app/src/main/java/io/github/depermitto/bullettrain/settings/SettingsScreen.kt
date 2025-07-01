@@ -159,7 +159,7 @@ fun SettingGroup(
 ) {
   Column(modifier) {
     Text(
-      text = headline,
+      headline,
       modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
       color = MaterialTheme.colorScheme.primary,
       style = MaterialTheme.typography.bodyMedium,

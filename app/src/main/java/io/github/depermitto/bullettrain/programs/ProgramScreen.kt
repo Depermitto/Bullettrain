@@ -36,6 +36,7 @@ import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
 import io.github.depermitto.bullettrain.theme.focalGround
+import io.github.depermitto.bullettrain.util.capitalizeWords
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -68,24 +69,41 @@ fun ProgramScreen(
           val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
           Surface(shadowElevation = elevation, shape = MaterialTheme.shapes.medium) {
             var showRenameDialog by rememberSaveable { mutableStateOf(false) }
-            if (showRenameDialog)
+            if (showRenameDialog) {
+              var errorMessage by rememberSaveable { mutableStateOf("") }
               TextFieldAlertDialog(
                 label = { Text("Day Name") },
                 onDismissRequest = { showRenameDialog = false },
                 dismissButton = {
                   TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") }
                 },
-                confirmButton = {
+                confirmButton = { dayName ->
                   TextButton(
                     onClick = {
-                      programViewModel.setDay(dayIndex, day.toBuilder().setName(it).build())
+                      if (dayName.isBlank()) {
+                        errorMessage = "Blank day name"
+                        return@TextButton
+                      }
+
+                      if (programViewModel.getDays().any { it.name == dayName.capitalizeWords() }) {
+                        errorMessage = "A day with the same name already exists"
+                        return@TextButton
+                      }
+
+                      programViewModel.setDay(
+                        dayIndex,
+                        day.toBuilder().setName(dayName.capitalizeWords()).build(),
+                      )
                       showRenameDialog = false
                     }
                   ) {
                     Text("Confirm")
                   }
                 },
+                errorMessage = errorMessage,
+                isError = errorMessage.isNotBlank(),
               )
+            }
 
             var showDayDeleteDialog by rememberSaveable { mutableStateOf(false) }
             if (showDayDeleteDialog)
@@ -99,7 +117,7 @@ fun ProgramScreen(
               onClick = { navController.navigate(Destination.Day(dayIndex)) },
               holdOptions = { closeDropdown ->
                 DropdownMenuItem(
-                  text = { Text(text = "Rename") },
+                  text = { Text("Rename") },
                   leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = "Rename Day") },
                   onClick = {
                     closeDropdown()
@@ -107,15 +125,17 @@ fun ProgramScreen(
                   },
                 )
                 DropdownMenuItem(
-                  text = { Text(text = "Duplicate") },
+                  text = { Text("Duplicate") },
                   leadingIcon = DuplicateIcon,
                   onClick = {
                     closeDropdown()
-                    programViewModel.addDay(day)
+                    programViewModel.addDay(
+                      day.toBuilder().setName(programViewModel.generateUniqueDayName()).build()
+                    )
                   },
                 )
                 DropdownMenuItem(
-                  text = { Text(text = "Delete") },
+                  text = { Text("Delete") },
                   leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = "Delete Day") },
                   onClick = {
                     closeDropdown()
@@ -126,9 +146,9 @@ fun ProgramScreen(
             ) {
               Card(colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme))) {
                 ExtendedListItem(
-                  headlineContent = { Text(text = day.name, maxLines = 1) },
+                  headlineContent = { Text(day.name, maxLines = 1) },
                   supportingContent = {
-                    Text(text = "${day.exercisesList.sumOf { it.setsCount }} sets", maxLines = 1)
+                    Text("${day.exercisesList.sumOf { it.setsCount }} sets", maxLines = 1)
                   },
                   trailingContent = {
                     IconButton(

@@ -27,6 +27,6 @@ fun ConfirmationAlertDialog(
         Text("Confirm")
       }
     },
-    text = { Text(text = text) },
+    text = { Text(text) },
   )
 }

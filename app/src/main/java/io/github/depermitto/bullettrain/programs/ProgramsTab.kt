@@ -60,7 +60,7 @@ fun ProgramsTab(
           onClick = { navController.navigate(Destination.Program(program.id)) },
           holdOptions = { closeDropdown ->
             DropdownMenuItem(
-              text = { Text(text = "Rename") },
+              text = { Text("Rename") },
               leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = "Rename Program") },
               onClick = {
                 closeDropdown()
@@ -68,7 +68,7 @@ fun ProgramsTab(
               },
             )
             DropdownMenuItem(
-              text = { Text(text = "Delete") },
+              text = { Text("Delete") },
               leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = "Delete Program") },
               onClick = {
                 closeDropdown()
@@ -82,15 +82,12 @@ fun ProgramsTab(
             colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
           ) {
             ExtendedListItem(
-              headlineContent = {
-                Text(text = program.name, style = MaterialTheme.typography.titleLarge)
-              },
+              headlineContent = { Text(program.name, style = MaterialTheme.typography.titleLarge) },
               supportingContent = {
                 Column {
-                  Text(text = "${program.workoutsCount} day program")
+                  Text("${program.workoutsCount} day program")
                   Text(
-                    text =
-                      "${program.workoutsList.sumOf { day -> day.exercisesList.sumOf { it.setsCount } }} total sets"
+                    "${program.workoutsList.sumOf { day -> day.exercisesList.sumOf { it.setsCount } }} total sets"
                   )
                 }
               },
@@ -116,7 +113,7 @@ fun ProgramsTab(
                 TextButton(
                   onClick = {
                     if (name.isBlank()) {
-                      errorMessage = "Black Program Name"
+                      errorMessage = "Blank program name"
                       return@TextButton
                     }
 
@@ -137,7 +134,7 @@ fun ProgramsTab(
 
     AnchoredFloatingActionButton(
       icon = { Icon(Icons.Filled.Add, contentDescription = "Create Program") },
-      text = { Text(text = "Create") },
+      text = { Text("Create") },
       onClick = {
         programViewModel.revertToDefault()
         navController.navigate(Destination.ProgramCreation)

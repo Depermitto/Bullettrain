@@ -67,7 +67,7 @@ fun ExercisesListScreen(
         colors = TextFieldDefaults.unlinedColors(),
         maxLines = 1,
         singleLine = true,
-        placeholder = { Text(text = "Search Exercises") },
+        placeholder = { Text("Search Exercises") },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Exercises") },
       )
 
@@ -93,7 +93,7 @@ fun ExercisesListScreen(
     AnchoredFloatingActionButton(
       onClick = { showDialog = true },
       icon = { Icon(Icons.Default.Add, contentDescription = "Add Exercise") },
-      text = { Text(text = "Add") },
+      text = { Text("Add") },
     )
 
     if (showDialog) {
@@ -114,7 +114,7 @@ fun ExercisesListScreen(
                       exerciseDao.insert(Exercise.Descriptor.newBuilder().setName(name).build())
                       ""
                     },
-                    onFailure = { throwable -> throwable.message ?: "Invalid Exercise Name" },
+                    onFailure = { throwable -> throwable.message ?: "Invalid exercise name" },
                   )
             }
           ) {

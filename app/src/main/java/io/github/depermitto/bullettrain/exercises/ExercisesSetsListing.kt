@@ -64,17 +64,16 @@ fun ExercisesSetsListings(
           },
           trailingContent = {
             Text(
+              run {
+                val actual = set.actual.format()
+                val weight = set.weight.format()
+                when {
+                  weight.isBlank() -> "$actual ${exercise.type}"
+                  else -> "$actual x $weight ${settings.unitSystem.weightUnit()}"
+                }
+              },
               maxLines = 1,
               overflow = TextOverflow.Ellipsis,
-              text =
-                run {
-                  val actual = set.actual.format()
-                  val weight = set.weight.format()
-                  when {
-                    weight.isBlank() -> "$actual ${exercise.type}"
-                    else -> "$actual x $weight ${settings.unitSystem.weightUnit()}"
-                  }
-                },
             )
           },
           contentPadding = PaddingValues(horizontal = Dp.Medium),

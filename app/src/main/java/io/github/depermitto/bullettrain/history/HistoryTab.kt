@@ -87,8 +87,8 @@ fun HistoryTab(
       Row(verticalAlignment = Alignment.CenterVertically) {
         Spacer(Modifier.width(Dp.Medium))
         Text(
+          homeViewModel.calendarPage.format(DateFormatters.MMMM_yyyy),
           modifier = Modifier.weight(1F),
-          text = homeViewModel.calendarPage.format(DateFormatters.MMMM_yyyy),
           maxLines = 1,
         )
         IconButton(
@@ -139,14 +139,14 @@ fun HistoryTab(
           backgroundColor = focalGround(settings.theme),
           headline = {
             ExtendedListItem(
-              headlineContent = { Text(text = workoutName) },
+              headlineContent = { Text(workoutName) },
               headlineTextStyle = MaterialTheme.typography.titleLarge,
-              supportingContent = { Text(text = record.workout.name) },
+              supportingContent = { Text(record.workout.name) },
               trailingContent = {
                 var showDropdown by rememberSaveable { mutableStateOf(false) }
                 DropdownButton(showDropdown, onShowChange = { showDropdown = it }) {
                   DropdownMenuItem(
-                    text = { Text(text = "Edit") },
+                    text = { Text("Edit") },
                     leadingIcon = { Icon(Icons.Filled.Edit, "Edit Workout") },
                     onClick = {
                       showDropdown = false
@@ -154,7 +154,7 @@ fun HistoryTab(
                     },
                   )
                   DropdownMenuItem(
-                    text = { Text(text = "Delete") },
+                    text = { Text("Delete") },
                     leadingIcon = { Icon(Icons.Filled.Delete, "Delete Workout") },
                     onClick = {
                       showDropdown = false
@@ -210,7 +210,7 @@ fun HistoryTab(
           ExtendedListItem(
             headlineContent = { Text(exerciseDescriptor.name, maxLines = 2) },
             trailingContent = {
-              Text(text = bestSet ?: notPerformedLabel, overflow = TextOverflow.Ellipsis)
+              Text(bestSet ?: notPerformedLabel, overflow = TextOverflow.Ellipsis)
             },
             modifier = Modifier.clip(MaterialTheme.shapes.small),
             onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },

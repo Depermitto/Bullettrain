@@ -3,6 +3,7 @@ package io.github.depermitto.bullettrain.db
 import io.github.depermitto.bullettrain.protos.ExercisesProto.Exercise
 import io.github.depermitto.bullettrain.util.BKTree
 import io.github.depermitto.bullettrain.util.bigListSet
+import io.github.depermitto.bullettrain.util.capitalizeWords
 import kotlin.Result.Companion.failure
 import kotlin.Result.Companion.success
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -88,16 +89,13 @@ class ExerciseDao(exerciseDescriptors: List<Exercise.Descriptor>) {
   /** Check [name] for duplicates and emptiness. */
   fun validateName(name: String): Result<Unit> {
     if (name.isBlank()) {
-      return failure(Throwable(message = "Empty Exercise Name"))
+      return failure(Throwable(message = "Empty exercise name"))
     }
 
     if (items.value.any { !it.obsolete && it.name == name.capitalizeWords() }) {
-      return failure(Throwable(message = "Duplicate Exercise Name"))
+      return failure(Throwable(message = "Duplicate exercise name"))
     }
 
     return success(Unit)
   }
-
-  private fun String.capitalizeWords() =
-    this.trim().split(' ').joinToString(" ") { it.replaceFirstChar { c -> c.uppercaseChar() } }
 }

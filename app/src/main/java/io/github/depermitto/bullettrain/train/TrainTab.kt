@@ -77,9 +77,9 @@ fun TrainTab(
           backgroundColor = Color.Transparent,
           headline = {
             ExtendedListItem(
-              headlineContent = { Text(text = program.name) },
+              headlineContent = { Text(program.name) },
               headlineTextStyle = MaterialTheme.typography.titleLarge,
-              supportingContent = { Text(text = program.getWorkouts(program.nextDayIndex).name) },
+              supportingContent = { Text(program.getWorkouts(program.nextDayIndex).name) },
             )
           },
           headerTextStyle = MaterialTheme.typography.bodyLarge,
@@ -92,13 +92,9 @@ fun TrainTab(
         ) { _, entry ->
           val exerciseDescriptor = exerciseDao.where(entry.descriptorId)
           ExtendedListItem(
-            headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
+            headlineContent = { Text(exerciseDescriptor.name, maxLines = 2) },
             trailingContent = {
-              Text(
-                text = entry.setsCount.toString(),
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 2,
-              )
+              Text(entry.setsCount.toString(), overflow = TextOverflow.Ellipsis, maxLines = 2)
             },
             modifier = Modifier.clip(MaterialTheme.shapes.small),
             onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },
@@ -177,7 +173,7 @@ fun TrainTab(
 
     Spacer(modifier = Modifier.height(Dp.ExtraLarge))
 
-    Text(modifier = Modifier.padding(start = 8.dp), text = "Other Options")
+    Text("Other Options", modifier = Modifier.padding(start = 8.dp))
     Column {
       OutlinedButton(
         modifier = Modifier.fillMaxWidth(),
@@ -190,7 +186,7 @@ fun TrainTab(
         },
         shape = RoundedCornerShape(16.dp, 16.dp, 4.dp, 4.dp),
       ) {
-        Text(text = "Start Empty Session", maxLines = 1)
+        Text("Start Empty Session", maxLines = 1)
       }
       Row(modifier = Modifier.offset(y = (-4).dp)) {
         ElevatedButton(
@@ -201,7 +197,7 @@ fun TrainTab(
           },
           shape = RoundedCornerShape(4.dp, 4.dp, 4.dp, 16.dp),
         ) {
-          Text(text = "Review Last Workout", maxLines = 1, overflow = TextOverflow.Ellipsis)
+          Text("Review Last Workout", maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Spacer(modifier = Modifier.width(2.dp))
         ElevatedButton(
@@ -209,7 +205,7 @@ fun TrainTab(
           onClick = { navController.navigate(Destination.ProgramCreation) },
           shape = RoundedCornerShape(4.dp, 4.dp, 16.dp, 4.dp),
         ) {
-          Text(text = "Create a Program", maxLines = 1, overflow = TextOverflow.Ellipsis)
+          Text("Create a Program", maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
       }
     }

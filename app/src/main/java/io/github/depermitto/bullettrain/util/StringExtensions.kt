@@ -5,3 +5,6 @@ fun String.splitOnUppercase(): String =
     .filter { it.isNotEmpty() }
     .joinToString(" ") { it.lowercase() }
     .replaceFirstChar { it.uppercaseChar() }
+
+fun String.capitalizeWords() =
+  this.trim().split(' ').joinToString(" ") { it.replaceFirstChar { c -> c.uppercaseChar() } }

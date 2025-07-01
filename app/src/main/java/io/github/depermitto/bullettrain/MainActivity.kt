@@ -175,7 +175,7 @@ fun App(db: Db) = MaterialTheme {
                   }
                 },
                 icon = { Icon(painterResource(id = tab.icon), tab.name) },
-                label = { Text(text = tab.name) },
+                label = { Text(tab.name) },
                 alwaysShowLabel = false,
               )
             }
@@ -204,7 +204,7 @@ fun App(db: Db) = MaterialTheme {
           CenterAlignedTopAppBar(
             title = {
               Text(
-                text = trainViewModel.elapsed(),
+                trainViewModel.elapsed(),
                 maxLines = 1,
                 style = MaterialTheme.typography.titleMedium,
               )
@@ -494,7 +494,7 @@ fun App(db: Db) = MaterialTheme {
                         db.exerciseDao.update(exerciseDescriptor.toBuilder().setName(name).build())
                         ""
                       },
-                      onFailure = { throwable -> throwable.message ?: "Invalid Exercise Name" },
+                      onFailure = { throwable -> throwable.message ?: "Invalid exercise name" },
                     )
               }
             ) {
@@ -535,14 +535,14 @@ fun App(db: Db) = MaterialTheme {
                 val relatedProgram = db.programDao.where(record.relatedProgramId)
                 ExtendedListItem(
                   headlineContent = {
-                    Text(text = relatedProgram.name, style = MaterialTheme.typography.titleLarge)
+                    Text(relatedProgram.name, style = MaterialTheme.typography.titleLarge)
                   },
                   headlineTextStyle = MaterialTheme.typography.titleLarge,
-                  supportingContent = { Text(text = record.workout.name) },
+                  supportingContent = { Text(record.workout.name) },
                 )
               } else
                 Text(
-                  text = DateFormatters.MMM_dd.format(record.date) + " Workout",
+                  DateFormatters.MMM_dd.format(record.date) + " Workout",
                   style = MaterialTheme.typography.titleLarge,
                 )
             },
@@ -565,7 +565,7 @@ fun App(db: Db) = MaterialTheme {
           exercises = record.workout.exercisesList,
           exerciseHeadline = { exercise ->
             val exerciseDescriptor = db.exerciseDao.where(exercise.descriptorId)
-            Text(text = exerciseDescriptor.name)
+            Text(exerciseDescriptor.name)
           },
           settings = settings,
         )

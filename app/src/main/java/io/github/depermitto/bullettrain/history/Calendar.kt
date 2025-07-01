@@ -180,7 +180,7 @@ private fun CalendarItem(
       },
     )
     Text(
-      text = text,
+      text,
       color =
         MaterialTheme.colorScheme
           .contentColorFor(backgroundColor)

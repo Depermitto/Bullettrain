@@ -23,7 +23,7 @@ class ProgramViewModel(private val base: Program) : ViewModel() {
 
   fun addDay(workout: Workout) = workouts.add(workout)
 
-  fun addDay() = addDay(Workout.newBuilder().setName("Day ${workouts.size + 1}").build())
+  fun addDay() = addDay(Workout.newBuilder().setName(generateUniqueDayName()).build())
 
   fun setDay(dayIndex: Int, workout: Workout) {
     workouts[dayIndex] = workout
@@ -79,6 +79,16 @@ class ProgramViewModel(private val base: Program) : ViewModel() {
     workouts.clear()
     nextDayIndex = defaultProgram.nextDayIndex
     lastWorkoutTs = defaultProgram.lastWorkoutTs
+  }
+
+  fun generateUniqueDayName(): String {
+    val maxDayNumber =
+      if (getDays().isEmpty()) 0
+      else
+        getDays().maxOf { day ->
+          if (day.name.startsWith("Day ")) day.name.drop(4).toIntOrNull() ?: 0 else 0
+        }
+    return "Day ${maxDayNumber + 1}"
   }
 
   companion object {

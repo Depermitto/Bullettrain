@@ -85,7 +85,7 @@ fun DayScreen(
         onSettle = { from, to -> programViewModel.reorderExercises(dayIndex, from, to) },
       ) { exerciseIndex, exercise ->
         val exerciseDescriptor = exerciseDao.where(id = exercise.descriptorId)
-        Text(text = "${exerciseIndex + 1}. ${exerciseDescriptor.name}", maxLines = 2)
+        Text("${exerciseIndex + 1}. ${exerciseDescriptor.name}", maxLines = 2)
       }
 
     Column(
@@ -237,7 +237,7 @@ fun DayScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
               ) {
-                Text(text = exercise.type.name, textAlign = TextAlign.Center)
+                Text(exercise.type.name, textAlign = TextAlign.Center)
                 Icon(Icons.Sharp.KeyboardArrowDown, contentDescription = "Choose Exercise Type")
                 DropdownMenu(
                   expanded = showExerciseTypeDropdown,
@@ -278,7 +278,7 @@ fun DayScreen(
                         )
                       },
                     )
-                    Text(text = "-", modifier = Modifier.padding(horizontal = 2.dp))
+                    Text("-", modifier = Modifier.padding(horizontal = 2.dp))
                     NumberField(
                       modifier = Modifier.weight(0.5F),
                       value = set.target2,
@@ -290,7 +290,7 @@ fun DayScreen(
                         )
                       },
                     )
-                    if (exercise.type == Exercise.Type.Time) Text(text = "min")
+                    if (exercise.type == Exercise.Type.Time) Text("min")
                   }
                 else
                   Row(verticalAlignment = Alignment.CenterVertically) {
@@ -305,7 +305,7 @@ fun DayScreen(
                         )
                       },
                     )
-                    if (exercise.type == Exercise.Type.Time) Text(text = "min")
+                    if (exercise.type == Exercise.Type.Time) Text("min")
                   }
               }
               if (exercise.hasIntensity)
