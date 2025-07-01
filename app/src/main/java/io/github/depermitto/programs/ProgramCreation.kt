@@ -12,12 +12,14 @@ import androidx.navigation.NavController
 import io.github.depermitto.Screen
 import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.database.ExerciseDao
+import io.github.depermitto.database.ProgramDao
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.notUnderlinedTextFieldColors
 
 @Composable
 fun ProgramCreation(
     programViewModel: ProgramViewModel,
+    programDao: ProgramDao,
     exerciseDao: ExerciseDao,
     navController: NavController,
 ) {
@@ -36,14 +38,14 @@ fun ProgramCreation(
             colors = notUnderlinedTextFieldColors()
         )
         Box(modifier = Modifier.weight(1f)) {
-            Program(programViewModel = programViewModel, exerciseDao = exerciseDao)
+            ProgramScreen(programViewModel = programViewModel, exerciseDao = exerciseDao)
             AnchoredFloatingActionButton(text = { Text(text = "Complete Program") }, onClick = {
                 if (programViewModel.programName.isBlank()) {
                     Toast.makeText(context, "Blank Program Name", Toast.LENGTH_SHORT).show()
                     return@AnchoredFloatingActionButton
                 }
 
-                programViewModel.upload()
+                programDao.insert(programViewModel.constructProgram())
                 Toast.makeText(context, "Successfully Created", Toast.LENGTH_SHORT).show()
                 navController.popBackStack(Screen.MainScreen.route, false)
             })

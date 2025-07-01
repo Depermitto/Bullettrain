@@ -29,7 +29,8 @@ import io.github.depermitto.database.SettingsDao
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
-import io.github.depermitto.util.blockingFirstOrEmpty
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -39,7 +40,7 @@ fun HistoryTab(
     modifier: Modifier = Modifier, settingsDao: SettingsDao, historyDao: HistoryDao
 ) = Box(modifier = modifier.fillMaxSize()) {
     var date by rememberSaveable { mutableStateOf(LocalDate.now()) }
-    val historyRecords = historyDao.where(date.month, date.year).blockingFirstOrEmpty()
+    val historyRecords = runBlocking { historyDao.where(date.month, date.year).firstOrNull() ?: emptyList() }
     var selectedRecord by remember { mutableStateOf(historyRecords.lastOrNull()) }
 
     fun findWorkout(calendarDay: LocalDate) = historyRecords.find { record ->

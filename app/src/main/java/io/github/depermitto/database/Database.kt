@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
 import java.io.File
 import java.io.FileOutputStream
 import java.time.Month
@@ -36,7 +36,7 @@ class Database(private val databaseDirectory: File) {
     init {
         if (!settingsFile.file.exists()) settingsFile.write(Settings())
         if (!historyFile.file.exists()) historyFile.write(emptyList())
-        if (!programsFile.file.exists()) programsFile.write(emptyList())
+        if (!programsFile.file.exists()) programsFile.write(listOf(ProgramDao.EmptyWorkout))
         if (!exercisesFile.file.exists()) exercisesFile.write(emptyList())
     }
 
@@ -108,25 +108,24 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
      * i.e. return true if item is present in the database.
      */
     fun update(item: T): Boolean {
-        var present = true
-        write { state ->
-            val existingIndex = state.indexOfFirst { it.id == item.id }
-            if (existingIndex == -1) {
-                present = false
-                state
-            } else state.set(existingIndex, item)
-        }
-        return present
+        val existingIndex = items.value.indexOfFirst { it.id == item.id }
+        if (existingIndex == -1) return false
+
+        val state = items.updateAndGet { state -> state.set(existingIndex, item) }
+        BackgroundSlave.enqueue { storageFile.write(state) }
+        return true
     }
 
     /**
      * return id of the inserted item.
      */
+    @Suppress("UNCHECKED_CAST")
     fun insert(item: T): Int {
-        write { state ->
+        val state = items.updateAndGet { state ->
             newId += 1
             state + item.clone(id = newId) as T
         }
+        BackgroundSlave.enqueue { storageFile.write(state) }
         return newId
     }
 
@@ -135,14 +134,12 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
      */
     fun upsert(item: T): Int = if (update(item)) -1 else insert(item)
 
-    fun delete(item: T) = write { state -> state - item }
+    fun delete(item: T) {
+        val state = items.updateAndGet { state -> state - item }
+        BackgroundSlave.enqueue { storageFile.write(state) }
+    }
 
     fun where(id: Int): Flow<T?> = items.map { it.filter { it.id == id }.firstOrNull() }
-
-    private fun write(operation: (List<T>) -> List<T>) {
-        items.update { state -> operation(state) }
-        storageFile.write(items.value)
-    }
 }
 
 class SettingsDao(private val file: SettingsFile) {
@@ -173,6 +170,12 @@ class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
     }
 }
 
-class ProgramDao(file: ProgramsFile) : Dao<Program>(file)
+class ProgramDao(file: ProgramsFile) : Dao<Program>(file) {
+    companion object {
+        val EmptyWorkout = Program(id = -1, name = "Empty Workout")
+    }
+
+    val getAlmostAll = getAll.map { it.filterNot { it.id == EmptyWorkout.id && it.name == EmptyWorkout.name } }
+}
 
 class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file)

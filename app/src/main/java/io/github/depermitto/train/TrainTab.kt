@@ -6,14 +6,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.components.WorkoutInfo
+import io.github.depermitto.database.Day
 import io.github.depermitto.database.ProgramDao
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.runBlocking
 
-// TODO THIS BRANCH empty workout starter
 @Composable
 fun TrainTab(
     modifier: Modifier = Modifier,
@@ -24,7 +25,7 @@ fun TrainTab(
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Center,
 ) {
-    val programs by programDao.getAll.collectAsStateWithLifecycle()
+    val programs = runBlocking { programDao.getAlmostAll.firstOrNull() ?: emptyList() }
     var selectedProgramIndex by remember { mutableIntStateOf(0) }
 
     OutlinedCard(
@@ -60,7 +61,7 @@ fun TrainTab(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )
-                ) { Text(text = "Start Week ${program.weekStreak}, Day ${program.nextDay + 1}") }
+                ) { Text(text = "Start Week ${program.weekStreak}, ${program.days[program.nextDay].name}") }
             }
         }
     }
@@ -72,5 +73,10 @@ fun TrainTab(
                 onClick = { selectedProgramIndex = i },
             )
         }
+    }
+
+    OutlinedButton(modifier = Modifier.fillMaxWidth(),
+        onClick = { trainViewModel.startWorkout(Day(), ProgramDao.EmptyWorkout) }) {
+        Text("Start Empty Workout")
     }
 }

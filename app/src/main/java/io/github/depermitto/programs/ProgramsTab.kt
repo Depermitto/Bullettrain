@@ -14,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.Screen
 import io.github.depermitto.components.AnchoredFloatingActionButton
@@ -24,7 +23,9 @@ import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -36,7 +37,7 @@ fun ProgramsTab(
     navController: NavController,
 ) = Box(modifier = modifier.fillMaxSize()) {
     val scope = rememberCoroutineScope { Dispatchers.IO }
-    val programs by programDao.getAll.collectAsStateWithLifecycle()
+    val programs = runBlocking { programDao.getAlmostAll.firstOrNull() ?: emptyList() }
 
     LazyColumn(
         modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)

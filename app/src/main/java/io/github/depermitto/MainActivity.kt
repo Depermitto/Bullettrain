@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -20,17 +20,18 @@ import io.github.depermitto.Screen.TrainingScreen
 import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.components.Ribbon
 import io.github.depermitto.components.RibbonScaffold
+import io.github.depermitto.database.BackgroundSlave
 import io.github.depermitto.database.Database
 import io.github.depermitto.database.Program
-import io.github.depermitto.programs.Program
 import io.github.depermitto.programs.ProgramCreation
+import io.github.depermitto.programs.ProgramScreen
 import io.github.depermitto.programs.ProgramViewModel
 import io.github.depermitto.settings.SettingsScreen
 import io.github.depermitto.theme.GymAppTheme
 import io.github.depermitto.train.TrainViewModel
 import io.github.depermitto.train.TrainingScreen
-import io.github.depermitto.util.blockingFirstOrNull
 import io.github.vinceglb.filekit.core.FileKit
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
@@ -45,6 +46,16 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        BackgroundSlave.waitForAll()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        BackgroundSlave.quit()
     }
 }
 
@@ -83,26 +94,27 @@ fun App(db: Database) = MaterialTheme {
         }
 
         composable(ProgramCreationScreen.route) {
-            RibbonScaffold(ribbon = { Ribbon(navController = navController, title = "New Program") }) {
-                ProgramCreation(
-                    programViewModel = programViewModel, exerciseDao = db.exerciseDao, navController = navController
-                )
-            }
+            ProgramCreation(
+                programViewModel = programViewModel,
+                programDao = db.programDao,
+                exerciseDao = db.exerciseDao,
+                navController = navController
+            )
         }
 
         composable(ProgramScreen.route) { navBackStackEntry ->
             val programId = (navBackStackEntry.arguments?.getString("programId") ?: return@composable).toInt()
 
-            val program = db.programDao.where(programId).blockingFirstOrNull()
+            val program = runBlocking { db.programDao.where(programId).firstOrNull() }
             if (program != null) {
                 val programViewModel =
                     viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(program, db.programDao))
 
                 RibbonScaffold(ribbon = { Ribbon(navController, title = programViewModel.programName) }) {
-                    Program(programViewModel, exerciseDao = db.exerciseDao)
+                    ProgramScreen(programViewModel, exerciseDao = db.exerciseDao)
                     if (programViewModel.days.toList() != program.days.toList()) {
                         AnchoredFloatingActionButton(text = { Text("Finish Edit") }, onClick = {
-                            programViewModel.upload()
+                            db.programDao.update(programViewModel.constructProgram())
                             navController.popBackStack(MainScreen.route, inclusive = false)
                         })
                     }

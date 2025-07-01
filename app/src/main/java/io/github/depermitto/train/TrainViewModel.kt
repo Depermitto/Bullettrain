@@ -2,7 +2,6 @@ package io.github.depermitto.train
 
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
@@ -14,10 +13,8 @@ import io.github.depermitto.database.HistoryDao
 import io.github.depermitto.database.HistoryRecord
 import io.github.depermitto.database.Program
 import io.github.depermitto.database.ProgramDao
-import io.github.depermitto.util.blockingFirstOrNull
 import io.github.depermitto.util.set
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import java.time.Instant
@@ -93,7 +90,7 @@ class TrainViewModel(
             workoutPhase = WorkoutPhase.Completed,
             workout = state.historyRecord.workout.copy(exercises = exercises.toList())
         )
-        val program = programDao.where(record.relatedProgram.id).blockingFirstOrNull() ?: return@endWorkout
+        val program = runBlocking { programDao.where(record.relatedProgram.id).firstOrNull() } ?: return@endWorkout
         val nextDay = (program.nextDay + 1) % program.days.size
 
         historyDao.upsert(record)
@@ -108,11 +105,11 @@ class TrainViewModel(
 
     fun cancelWorkout() = endWorkout { historyDao.delete(it.historyRecord) }
 
-    private fun endWorkout(deinit: suspend (WorkoutState) -> Unit) = workoutState?.let { state ->
+    private fun endWorkout(deinit: (WorkoutState) -> Unit) = workoutState?.let { state ->
         state.saveTimer.cancel()
         state.clockTimer.cancel()
 
-        runBlocking(Dispatchers.IO) { deinit(state) }
+        deinit(state)
 
         workoutState = null
         exercises.clear()
@@ -145,9 +142,7 @@ class TrainViewModel(
                         it.copy(historyRecord = it.historyRecord.copy(workout = it.historyRecord.workout.copy(exercises = exercises.toList())))
                     }
 
-                    viewModelScope.launch(Dispatchers.IO) {
-                        historyDao.upsert(workoutState?.historyRecord ?: return@launch)
-                    }
+                    historyDao.upsert(workoutState?.historyRecord ?: return@timer)
                 })
         } else throw UnsupportedOperationException("WorkoutState Is Not Null")
     }

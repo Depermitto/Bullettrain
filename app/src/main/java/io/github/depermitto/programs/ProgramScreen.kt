@@ -29,7 +29,7 @@ import io.github.depermitto.theme.*
 import io.github.depermitto.util.*
 
 @Composable
-fun Program(
+fun ProgramScreen(
     programViewModel: ProgramViewModel,
     exerciseDao: ExerciseDao,
 ) = LazyColumn(

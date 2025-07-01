@@ -5,13 +5,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.depermitto.database.*
-import kotlinx.coroutines.launch
 
-class ProgramViewModel(program: Program, private val programDao: ProgramDao) : ViewModel() {
+class ProgramViewModel(program: Program) : ViewModel() {
     private val programId = program.id
     var programName by mutableStateOf(program.name)
     var days = mutableStateListOf<Day>().apply { addAll(program.days) }
@@ -24,14 +22,11 @@ class ProgramViewModel(program: Program, private val programDao: ProgramDao) : V
     fun setDay(dayIndex: Int, day: Day) = days.set(dayIndex, day)
     fun removeDayAt(dayIndex: Int) = days.removeAt(dayIndex)
 
-    fun upload() = viewModelScope.launch {
-        programDao.upsert(Program(id = programId, name = programName, days = days.toList(), followed = followed))
-        programName = ""
-        days.clear()
-    }
+    fun constructProgram(): Program =
+        Program(id = programId, name = programName, days = days.toList(), followed = followed)
 
     companion object {
         fun Factory(program: Program, programDao: ProgramDao) =
-            viewModelFactory { initializer { ProgramViewModel(program, programDao) } }
+            viewModelFactory { initializer { ProgramViewModel(program) } }
     }
 }
