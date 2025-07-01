@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
@@ -13,11 +13,11 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -25,7 +25,6 @@ import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.Program
-import io.github.depermitto.bullettrain.theme.RegularPadding
 
 sealed class Ratio {
     data object Unlimited : Ratio()
@@ -46,8 +45,9 @@ fun <T> BasicTable(
     separateHeadersAndContent: Boolean = true,
     list: List<T>,
     content: (Int, T) -> Pair<@Composable () -> Unit, @Composable () -> Unit>
-) = Column(modifier = modifier) {
+) = if (list.isEmpty()) Box(modifier.fillMaxSize()) {
     ListItem(
+        modifier = Modifier.align(Alignment.TopCenter),
         headlineContent = headlineContent,
         supportingContent = supportingContent,
         overlineContent = overlineContent,
@@ -56,14 +56,16 @@ fun <T> BasicTable(
         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
     )
 
-    if (list.isEmpty()) {
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(RegularPadding), text = emptyMessage, textAlign = TextAlign.Center
-        )
-        return@Column
-    }
+    Text(text = emptyMessage, modifier = Modifier.align(Alignment.Center))
+} else Column(modifier) {
+    ListItem(
+        headlineContent = headlineContent,
+        supportingContent = supportingContent,
+        overlineContent = overlineContent,
+        leadingContent = leadingContent,
+        trailingContent = trailingContent,
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+    )
 
     // This weird padding is for equalizing padding for ListItem
     Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
@@ -128,12 +130,7 @@ fun WorkoutTable(
         list = workout.exercises.mapNotNull { exercise -> exstractor(exercise)?.let { text -> exercise to text } },
     ) { _, (exercise, text) ->
         Pair(first = {
-            TextLink(
-                exercise.name,
-                navController,
-                Destination.Exercise(exercise.id),
-                maxLines = 2
-            )
+            TextLink(exercise.name, navController, Destination.Exercise(exercise.id), maxLines = 2)
         }, second = {
             Text(text = text, overflow = TextOverflow.Ellipsis, maxLines = 2)
         })

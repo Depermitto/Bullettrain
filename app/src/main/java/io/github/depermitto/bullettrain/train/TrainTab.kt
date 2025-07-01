@@ -1,13 +1,11 @@
 package io.github.depermitto.bullettrain.train
 
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -19,15 +17,10 @@ import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.SmallPadding
 import io.github.depermitto.bullettrain.theme.focalGround
-import kotlin.math.max
-import kotlin.math.min
 
 @Composable
 fun TrainTab(
-    modifier: Modifier = Modifier,
-    trainViewModel: TrainViewModel,
-    programDao: ProgramDao,
-    navController: NavController
+    modifier: Modifier = Modifier, trainViewModel: TrainViewModel, programDao: ProgramDao, navController: NavController
 ) = Column(
     modifier = modifier.padding(horizontal = RegularPadding),
     horizontalAlignment = Alignment.CenterHorizontally,
@@ -35,20 +28,12 @@ fun TrainTab(
 ) {
     val programs by programDao.getAlmostAll.collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedProgramIndex by rememberSaveable { mutableIntStateOf(0) }
-    var dragDirection by remember { mutableFloatStateOf(0f) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(0.dp, 350.dp)
-            .pointerInput(Unit) {
-                detectDragGestures(onDragEnd = {
-                    when {
-                        dragDirection > 20 -> selectedProgramIndex = max(selectedProgramIndex - 1, 0)
-                        dragDirection < -20 -> selectedProgramIndex = min(selectedProgramIndex + 1, programs.size - 1)
-                    }
-                }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
-            }, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)
+            .heightIn(0.dp, 400.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)
     ) {
         Box(
             modifier = Modifier
@@ -99,7 +84,6 @@ fun TrainTab(
             )
         }
     }
-
     OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { trainViewModel.startWorkout(Day(), Program.EmptyWorkout) }) {
         Text(text = "Start Empty Workout")
     }

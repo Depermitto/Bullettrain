@@ -271,7 +271,7 @@ fun App(db: Database) = MaterialTheme {
                             }
 
                             navController.navigateUp()
-                            db.programDao.upsert(program)
+                            db.programDao.insert(program)
                             programViewModel.revertToDefault()
                         }) {
                             Icon(

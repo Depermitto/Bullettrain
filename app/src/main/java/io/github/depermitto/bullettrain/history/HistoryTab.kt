@@ -5,7 +5,6 @@ import androidx.compose.animation.core.EaseInCubic
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
@@ -26,7 +25,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -88,7 +86,6 @@ fun HistoryTab(
             }
         }
 
-        var dragDirection by remember { mutableFloatStateOf(0f) }
         Calendar(
             homeViewModel = homeViewModel,
             trainViewModel = trainViewModel,
@@ -96,16 +93,7 @@ fun HistoryTab(
             currentDate = homeViewModel.calendarDate,
             programDao = programDao,
             historyDao = historyDao,
-            modifier = Modifier
-                .heightIn(0.dp, 400.dp)
-                .pointerInput(Unit) {
-                    detectDragGestures(onDragEnd = {
-                        when {
-                            dragDirection > 20 -> homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1)
-                            dragDirection < -20 -> homeViewModel.calendarDate = homeViewModel.calendarDate.plusMonths(1)
-                        }
-                    }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
-                },
+            modifier = Modifier.heightIn(0.dp, 400.dp)
         )
 
         selectedHistoryRecords.forEach { record ->
