@@ -22,12 +22,10 @@ class HistoryDao(historyRecords: List<HistoryRecord>) {
   val getSortedByFrequency: Flow<Map<Int, Int>> =
     items.map { records ->
       records
-        .flatMap { record ->
-          record.workout.exercisesList.filter { entry ->
-            entry.setsList.any { set -> set.hasDoneTs() }
-          }
+        .flatMap { r ->
+          r.workout.exercisesList.filter { e -> e.setsList.any { s -> s.hasDoneTs() } }
         }
-        .groupingBy { entry -> entry.descriptorId }
+        .groupingBy { e -> e.descriptorId }
         .eachCount()
     }
 

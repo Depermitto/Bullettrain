@@ -37,10 +37,10 @@ import io.github.depermitto.bullettrain.components.ConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DataPanel
 import io.github.depermitto.bullettrain.components.DropdownButton
 import io.github.depermitto.bullettrain.components.ExtendedListItem
-import io.github.depermitto.bullettrain.components.format
 import io.github.depermitto.bullettrain.db.ExerciseDao
 import io.github.depermitto.bullettrain.db.HistoryDao
 import io.github.depermitto.bullettrain.db.ProgramDao
+import io.github.depermitto.bullettrain.exercises.format
 import io.github.depermitto.bullettrain.exercises.oneRepMax
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.protos.ExercisesProto.*
@@ -52,7 +52,6 @@ import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.util.DateFormatters
 import io.github.depermitto.bullettrain.util.date
-import io.github.depermitto.bullettrain.util.weightUnit
 import java.time.YearMonth
 
 @Composable
@@ -71,8 +70,8 @@ fun HistoryTab(
     historyDao
       .map { records ->
         records
-          .filter { days.first() <= it.date && it.date <= days.last() }
-          .sortedByDescending { it.workoutStartTs.seconds }
+          .filter { r -> days.first() <= r.date && r.date <= days.last() }
+          .sortedByDescending { r -> r.workoutStartTs.seconds }
       }
       .collectAsStateWithLifecycle(emptyList())
 
@@ -193,27 +192,17 @@ fun HistoryTab(
           },
           contentPadding = PaddingValues(horizontal = Dp.Large),
         ) { _, exercise ->
-          val notPerformedLabel = "skipped"
-          val bestSet =
-            exercise.setsList
-              .filter { s -> s.hasDoneTs() }
-              .maxByOrNull { s -> oneRepMax(s) }
-              ?.let { bestSet ->
-                val actual = bestSet.actual.format()
-                val weight = bestSet.weight.format()
-                when {
-                  actual.isBlank() && weight.isBlank() -> notPerformedLabel
-                  actual.isBlank() -> "$weight ${settings.unitSystem.weightUnit()}"
-                  weight.isBlank() -> "$actual reps"
-                  else -> "$actual x $weight ${settings.unitSystem.weightUnit()}"
-                }
-              }
-
           val descriptor by exerciseDao.whereAsState(exercise.descriptorId)
           ExtendedListItem(
             headlineContent = { Text(descriptor.name, maxLines = 2) },
             trailingContent = {
-              Text(bestSet ?: notPerformedLabel, overflow = TextOverflow.Ellipsis)
+              Text(
+                exercise.setsList
+                  .filter { s -> s.hasDoneTs() }
+                  .maxByOrNull { s -> oneRepMax(s) }
+                  ?.format(settings) ?: "skipped",
+                overflow = TextOverflow.Ellipsis,
+              )
             },
             modifier = Modifier.clip(MaterialTheme.shapes.small),
             onClick = { navController.navigate(Destination.Exercise(descriptor.id)) },

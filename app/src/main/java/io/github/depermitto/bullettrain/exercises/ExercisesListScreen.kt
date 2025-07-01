@@ -42,10 +42,10 @@ fun ExercisesListScreen(
     val exerciseFrequencyMap by
       historyDao.getSortedByFrequency.collectAsStateWithLifecycle(emptyMap())
 
-    var searchText by rememberSaveable { mutableStateOf("") }
+    var searchText by remember { mutableStateOf("") }
     val descriptors by
       exerciseDao
-        .getByName(name = searchText, errorTolerance = 3, ignoreCase = true)
+        .getByName(name = searchText, errorTolerance = 2, ignoreCase = true)
         .map { descriptors ->
           descriptors
             .filterNot { d -> exclude.contains(d.id) }

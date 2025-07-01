@@ -71,25 +71,23 @@ fun ExercisesSetsListings(
           headlineContent = {
             Text("${setIndex + 1}", maxLines = 1, overflow = TextOverflow.Ellipsis)
           },
-          trailingContent = {
-            Text(
-              run {
-                val actual = set.actual.format()
-                val weight = set.weight.format()
-                when {
-                  weight.isBlank() -> "$actual reps"
-                  else -> "$actual x $weight ${settings.unitSystem.weightUnit()}"
-                }
-              },
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis,
-            )
-          },
+          trailingContent = { Text(set.format(settings)) },
           contentPadding = PaddingValues(horizontal = Dp.Medium),
           headlineTextStyle = MaterialTheme.typography.bodyLarge,
           supportingTextStyle = MaterialTheme.typography.bodyLarge,
         )
       }
     }
+  }
+}
+
+fun Exercise.Set.format(settings: Settings): String {
+  val actual = this.actual.format()
+  val weight = this.weight.format()
+  return when {
+    actual.isBlank() && weight.isBlank() -> "skipped"
+    actual.isBlank() -> "$weight ${settings.unitSystem.weightUnit()}"
+    weight.isBlank() -> "$actual reps"
+    else -> "$actual x $weight ${settings.unitSystem.weightUnit()}"
   }
 }

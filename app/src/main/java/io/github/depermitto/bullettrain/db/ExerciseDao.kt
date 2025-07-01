@@ -29,15 +29,14 @@ class ExerciseDao(descriptors: List<Exercise.Descriptor>) {
   fun getByName(name: String, errorTolerance: Int = 0, ignoreCase: Boolean = false) =
     getVisible.map { descriptors ->
       val words = name.trim().split(' ')
-      val predictedWords = words.mapNotNull { bkTree.search(it, errorTolerance, ignoreCase) }
+      val predictedWords = words.map { bkTree.search(it, errorTolerance, ignoreCase) }
 
       descriptors
         .filter { d ->
           val matches = words.all { word -> d.name.contains(word, ignoreCase) }
           // not checking for empty string will show all exercises
           val matchesPrediction =
-            (predictedWords.isNotEmpty() &&
-              predictedWords.all { word -> d.name.contains(word, ignoreCase) })
+            predictedWords.all { word -> word != null && d.name.contains(word, ignoreCase) }
           matches || matchesPrediction
         }
         .sortedBy { d -> d.name }
