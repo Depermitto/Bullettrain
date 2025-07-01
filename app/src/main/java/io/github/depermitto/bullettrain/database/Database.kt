@@ -198,6 +198,7 @@ class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
 
     fun where(exercise: Exercise): Flow<List<Exercise>> = getAll.map { records ->
         records.flatMap { record -> record.workout.exercises.filter { it.id == exercise.id } }
+            .sortedBy { exercise -> exercise.lastPerformedSet()?.doneTs }
     }
 }
 
@@ -264,6 +265,5 @@ class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {
         return null
     }
 
-    private fun String.prep() =
-        this.trim().split(' ').joinToString(" ") { it.replaceFirstChar { it.uppercaseChar() } }
+    private fun String.prep() = this.trim().split(' ').joinToString(" ") { it.replaceFirstChar { it.uppercaseChar() } }
 }

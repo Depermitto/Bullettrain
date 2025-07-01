@@ -13,7 +13,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.BasicTable
-import io.github.depermitto.bullettrain.components.GhostCard
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.HistoryDao
@@ -35,23 +34,20 @@ fun ExerciseScreen(modifier: Modifier = Modifier, historyDao: HistoryDao, settin
         verticalArrangement = Arrangement.spacedBy(RegularSpacing),
     ) {
         items(exercises) { exercise ->
-            val sets = exercise.getPerformedSets()
-            val doneDate = sets.firstOrNull()?.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
-            GhostCard {
-                BasicTable(
-                    headers = Pair("Set", "Completed"), list = sets, separateHeadersAndContent = false,
-                    headlineContent = { Text(dateFormatter.format(doneDate), style = MaterialTheme.typography.titleMedium) },
-                ) { setIndex, set ->
-                    Pair(first = {
-                        Text("${setIndex + 1}", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }, second = {
-                        Text(
-                            "${set.actualPerfVar.encodeToStringOutput()} x ${set.weight.encodeToStringOutput()} ${settingsDao.weightUnit()}",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    })
-                }
+            val doneDate = exercise.lastPerformedSet()?.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
+            BasicTable(
+                headers = Pair("Set", "Completed"), list = exercise.getPerformedSets(), separateHeadersAndContent = false,
+                headlineContent = { Text(dateFormatter.format(doneDate), style = MaterialTheme.typography.titleMedium) },
+            ) { setIndex, set ->
+                Pair(first = {
+                    Text("${setIndex + 1}", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }, second = {
+                    Text(
+                        "${set.actualPerfVar.encodeToStringOutput()} x ${set.weight.encodeToStringOutput()} ${settingsDao.weightUnit()}",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                })
             }
         }
     }

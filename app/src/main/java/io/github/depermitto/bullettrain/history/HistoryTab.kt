@@ -123,7 +123,7 @@ fun HistoryTab(
                         IconButton(onClick = { trainViewModel.editWorkout(record) }) {
                             Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit Workout")
                         }
-                    }, ratio = Ratio.Strict(0.5f)
+                    }, ratio = Ratio.Strict(0.6f)
                 )
             }
         }
