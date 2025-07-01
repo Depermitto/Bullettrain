@@ -3,12 +3,16 @@ package io.github.depermitto.bullettrain.programs
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.Icons.Sharp
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.sharp.KeyboardArrowDown
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -22,18 +26,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
+import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.Header
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
 import io.github.depermitto.bullettrain.database.Exercise
+import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.ExerciseSet
 import io.github.depermitto.bullettrain.database.IntensityCategory
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.PerfVarCategory
+import io.github.depermitto.bullettrain.exercises.ExerciseChooser
 import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.CompactIconSize
 import io.github.depermitto.bullettrain.theme.ExerciseSetNarrowWeight
@@ -56,10 +66,10 @@ import kotlin.math.min
 
 @Composable
 fun DayScreen(
-    modifier: Modifier = Modifier, programViewModel: ProgramViewModel, dayIndex: Int
-) {
+    modifier: Modifier = Modifier, programViewModel: ProgramViewModel, dayIndex: Int, exerciseDao: ExerciseDao
+) = Box(modifier = modifier.fillMaxSize()) {
     val day = programViewModel.getDay(dayIndex)
-    ReorderableColumn(modifier = modifier,
+    ReorderableColumn(modifier = Modifier,
         list = day.exercises,
         verticalArrangement = Arrangement.spacedBy(CardSpacing),
         onSettle = { fromIndex, toIndex ->
@@ -90,12 +100,12 @@ fun DayScreen(
                                 )
                             }
 
-                            if (!exercise.hasIntensity) IconButton(modifier = Modifier.size(SqueezableIconSize),
+                            if (!exercise.hasIntensity) IconButton(
+                                modifier = Modifier.size(SqueezableIconSize),
                                 onClick = { setIntensity(IntensityCategory.RPE) }) {
                                 HeartPlusIcon()
                             }
-                            else IconButton(modifier = Modifier.size(SqueezableIconSize),
-                                onClick = { setIntensity(null) }) {
+                            else IconButton(modifier = Modifier.size(SqueezableIconSize), onClick = { setIntensity(null) }) {
                                 HeartRemoveIcon()
                             }
 
@@ -118,7 +128,8 @@ fun DayScreen(
                                 Header(text = exercise.perfVarCategory.prettyName)
                                 Icon(Sharp.KeyboardArrowDown, contentDescription = null)
 
-                                DropdownMenu(expanded = showTargetEditDropdown,
+                                DropdownMenu(
+                                    expanded = showTargetEditDropdown,
                                     onDismissRequest = { showTargetEditDropdown = false }) {
                                     PerfVarCategory.entries.forEach { entry ->
                                         DropdownMenuItem(text = { Text(entry.prettyName) }, onClick = {
@@ -188,9 +199,10 @@ fun DayScreen(
                                                 )
                                             })
                                     }
-                                    IconButton(modifier = Modifier
-                                        .size(CompactIconSize)
-                                        .weight(ExerciseSetNarrowWeight),
+                                    IconButton(
+                                        modifier = Modifier
+                                            .size(CompactIconSize)
+                                            .weight(ExerciseSetNarrowWeight),
                                         onClick = {
                                             programViewModel.setExercise(
                                                 dayIndex, exerciseIndex, exercise.copy(sets = exercise.sets + set)
@@ -209,7 +221,7 @@ fun DayScreen(
                                 onExerciseChange(
                                     exercise.copy(
                                         sets = exercise.sets + ExerciseSet(
-                                            intensity = exercise.intensityCategory?.let<IntensityCategory, Float> { 0f },
+                                            intensity = exercise.intensityCategory?.let { 0f },
                                             targetPerfVar = PerfVar.of(exercise.perfVarCategory)
                                         )
                                     )
@@ -222,4 +234,12 @@ fun DayScreen(
             }
         }
     }
+
+    var showExerciseChooser by rememberSaveable { mutableStateOf(false) }
+    if (showExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
+        onDismissRequest = { showExerciseChooser = false },
+        onChoose = { programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises + it)) })
+    AnchoredFloatingActionButton(text = { Text("Add Exercise") },
+        icon = { Icon(Icons.Filled.Add, null) },
+        onClick = { showExerciseChooser = true })
 }

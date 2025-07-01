@@ -23,8 +23,11 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -40,7 +43,7 @@ import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.ExerciseSet
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.SettingsDao
-import io.github.depermitto.bullettrain.exercises.exerciseChooser
+import io.github.depermitto.bullettrain.exercises.ExerciseChooser
 import io.github.depermitto.bullettrain.theme.CompactIconSize
 import io.github.depermitto.bullettrain.theme.ExerciseSetNarrowWeight
 import io.github.depermitto.bullettrain.theme.ExerciseSetSpacing
@@ -63,13 +66,12 @@ fun TrainingScreen(
 ) = LazyColumn(
     modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
 ) {
-    itemsIndexed(trainViewModel.getExercises()) { i, _ ->
+    itemsIndexed(trainViewModel.getExercises()) { i, exercise ->
         Card(modifier = Modifier, colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
-            val exercise = trainViewModel.getExercise(index = i)
-            var showDropdownButton by remember { mutableStateOf(false) }
-            val swapExerciseChooser = exerciseChooser(exerciseDao = exerciseDao, onChoose = { exercise ->
-                trainViewModel.setExercise(i, exercise.copy(name = exercise.name, id = exercise.id))
-            })
+            var showExerciseChooserSwapper by rememberSaveable { mutableStateOf(false) }
+            if (showExerciseChooserSwapper) ExerciseChooser(exerciseDao = exerciseDao,
+                onDismissRequest = { showExerciseChooserSwapper = false },
+                onChoose = { it -> trainViewModel.setExercise(i, exercise.copy(name = it.name, id = it.id)) })
 
             Column(modifier = Modifier.padding(ItemPadding)) {
                 val lastPerformedSet = exercise.lastPerformedSet
@@ -81,7 +83,7 @@ fun TrainingScreen(
                         text = "${i + 1}. ${exercise.name}",
                         style = MaterialTheme.typography.titleMedium,
                     )
-                    lastPerformedSet?.let<ExerciseSet, Unit> { exerciseSet ->
+                    lastPerformedSet?.let { exerciseSet ->
                         Card {
                             Text(
                                 modifier = Modifier.padding(4.dp),
@@ -91,6 +93,7 @@ fun TrainingScreen(
                             )
                         }
                     }
+                    var showDropdownButton by remember { mutableStateOf(false) }
                     DropdownButton(modifier = Modifier.size(SqueezableIconSize),
                         show = showDropdownButton,
                         onShowChange = { showDropdownButton = it }) {
@@ -98,8 +101,8 @@ fun TrainingScreen(
                             text = { Text(text = "Delete") },
                             onClick = { trainViewModel.removeExercise(i) })
                         DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
-                            swapExerciseChooser()
                             showDropdownButton = false
+                            showExerciseChooserSwapper = true
                         })
                     }
                 }
@@ -199,14 +202,16 @@ fun TrainingScreen(
     }
 
     item {
-        val exerciseChooserToggle = exerciseChooser(exerciseDao = exerciseDao, onChoose = {
-            trainViewModel.addExercise(it.copy(sets = listOf(ExerciseSet(targetPerfVar = PerfVar.of(it.perfVarCategory)))))
-        })
-        OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { exerciseChooserToggle() }) {
+        var showExerciseChooser by rememberSaveable { mutableStateOf(false) }
+        if (showExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
+            onDismissRequest = { showExerciseChooser = false },
+            onChoose = { trainViewModel.addExercise(it.copy(sets = listOf(ExerciseSet(targetPerfVar = PerfVar.of(it.perfVarCategory))))) })
+        OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { showExerciseChooser = true }) {
             Text(text = "Add Exercise")
         }
     }
 }
+
 
 @Composable
 fun CompletableNumberField(

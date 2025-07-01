@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -37,7 +36,6 @@ import io.github.depermitto.bullettrain.components.RibbonScaffold
 import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Database
 import io.github.depermitto.bullettrain.database.Program
-import io.github.depermitto.bullettrain.exercises.exerciseChooser
 import io.github.depermitto.bullettrain.home.HomeScreen
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.programs.DayScreen
@@ -206,14 +204,9 @@ fun App(db: Database) = MaterialTheme {
                     DayScreen(
                         modifier = Modifier.padding(horizontal = ItemPadding),
                         programViewModel = programViewModel,
+                        exerciseDao = db.exerciseDao,
                         dayIndex = dayIndex
                     )
-                    val exerciseChooserToggle = exerciseChooser(db.exerciseDao) {
-                        programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises + it))
-                    }
-                    AnchoredFloatingActionButton(text = { Text("Add Exercise") },
-                        icon = { Icon(Icons.Filled.Add, null) },
-                        onClick = { exerciseChooserToggle() })
                 }
             }
 
