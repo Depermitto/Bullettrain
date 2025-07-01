@@ -92,7 +92,7 @@ fun App(db: Database) = MaterialTheme {
         composable(ProgramScreen.route) { navBackStackEntry ->
             val programId = (navBackStackEntry.arguments?.getString("programId") ?: return@composable).toInt()
 
-            val program = runBlocking { db.programDao.whereId(programId) }
+            val program = runBlocking { db.programDao.where(programId) }
             if (program != null) {
                 val programViewModel =
                     viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(program, db.programDao))

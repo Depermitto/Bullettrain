@@ -92,7 +92,7 @@ class TrainViewModel(
             workoutPhase = WorkoutPhase.Completed,
             workout = state.historyRecord.workout.copy(exercises = exercises.toList())
         )
-        val program = programDao.whereId(record.relatedProgram.id) ?: return@endWorkout
+        val program = programDao.where(record.relatedProgram.id) ?: return@endWorkout
         val nextDay = (program.nextDay + 1) % program.days.size
 
         historyDao.upsert(record)

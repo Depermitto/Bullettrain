@@ -12,8 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
@@ -22,36 +20,25 @@ import java.util.zip.ZipOutputStream
 
 class Database(private val databaseDirectory: File) {
     companion object {
-        const val SETTINGS_FILENAME = "settings.json"
-        const val HISTORY_FILENAME = "history.json"
-        const val PROGRAMS_FILENAME = "programs.json"
-        const val EXERCISES_FILENAME = "exercises.json"
+        const val SETTINGS_FILENAME = "settings"
+        const val HISTORY_FILENAME = "history"
+        const val PROGRAMS_FILENAME = "programs"
+        const val EXERCISES_FILENAME = "exercises"
     }
 
-    private val settingsFile = File(databaseDirectory, SETTINGS_FILENAME)
-    private val historyFile = File(databaseDirectory, HISTORY_FILENAME)
-    private val programsFile = File(databaseDirectory, PROGRAMS_FILENAME)
-    private val exercisesFile = File(databaseDirectory, EXERCISES_FILENAME)
-    private val backupFile = File(databaseDirectory, "bullet-train.bk.zip")
+    private val settingsFile = SettingsFile(File(databaseDirectory, SETTINGS_FILENAME))
+    private val historyFile = HistoryFile(File(databaseDirectory, HISTORY_FILENAME))
+    private val programsFile = ProgramsFile(File(databaseDirectory, PROGRAMS_FILENAME))
+    private val exercisesFile = ExerciseFile(File(databaseDirectory, EXERCISES_FILENAME))
 
     init {
-        if (!settingsFile.exists()) {
-            settingsFile.writeText(Json.encodeToString(Settings()))
-        }
-
-        if (!historyFile.exists()) {
-            historyFile.writeText(Json.encodeToString(listOf<HistoryRecord>()))
-        }
-
-        if (!programsFile.exists()) {
-            programsFile.writeText(Json.encodeToString(listOf<Program>()))
-        }
-
-        if (!exercisesFile.exists()) {
-            exercisesFile.writeText(Json.encodeToString(listOf<Exercise>()))
-        }
+        if (!settingsFile.file.exists()) settingsFile.write(Settings())
+        if (!historyFile.file.exists()) historyFile.write(listOf())
+        if (!programsFile.file.exists()) programsFile.write(listOf())
+        if (!exercisesFile.file.exists()) exercisesFile.write(listOf())
     }
 
+    private val backupFile = File(databaseDirectory, "bullet-train.bk.zip")
     private val backupFiles = listOf(settingsFile, historyFile, programsFile, exercisesFile)
 
     var settingsDao by mutableStateOf(SettingsDao(settingsFile))
@@ -70,8 +57,8 @@ class Database(private val databaseDirectory: File) {
     suspend fun exportDatabase(): String? {
         ZipOutputStream(FileOutputStream(backupFile)).use { zipOutputStream ->
             for (backup in backupFiles) {
-                zipOutputStream.putNextEntry(ZipEntry(backup.name))
-                zipOutputStream.write(backup.readBytes())
+                zipOutputStream.putNextEntry(ZipEntry(backup.file.name))
+                zipOutputStream.write(backup.file.readBytes())
             }
         }
         val file = FileKit.saveFile(
@@ -91,10 +78,10 @@ class Database(private val databaseDirectory: File) {
 
         ZipFile(tmpFile).use { zipFile ->
             val entries = zipFile.entries().toList()
-            if (!entries.zip(backupFiles).all { (entry, backup) -> entry.name == backup.name }) return null
+            if (!entries.zip(backupFiles).all { (entry, backup) -> entry.name == backup.file.name }) return null
 
             entries.forEachIndexed { i, entry ->
-                backupFiles[i].writeBytes(zipFile.getInputStream(entry).readBytes())
+                backupFiles[i].file.writeBytes(zipFile.getInputStream(entry).readBytes())
 
                 when (entry.name) {
                     SETTINGS_FILENAME -> settingsDao = SettingsDao(settingsFile)
@@ -108,8 +95,8 @@ class Database(private val databaseDirectory: File) {
     }
 }
 
-abstract class Dao<T : Entity>(protected val daoFile: File, startingItems: List<T>) {
-    private val items = MutableStateFlow(startingItems)
+abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) {
+    private val items = MutableStateFlow(storageFile.read())
     private var newId = items.value.maxOfOrNull { it.id } ?: 0
 
     val getAll: StateFlow<List<T>> = items.asStateFlow()
@@ -120,14 +107,13 @@ abstract class Dao<T : Entity>(protected val daoFile: File, startingItems: List<
      */
     fun update(item: T): Boolean {
         var present = true
-        items.update { state ->
+        write { state ->
             val existingIndex = state.indexOfFirst { it.id == item.id }
             if (existingIndex == -1) {
                 present = false
                 state
             } else state.set(existingIndex, item)
         }
-        write(items.value)
         return present
     }
 
@@ -135,11 +121,10 @@ abstract class Dao<T : Entity>(protected val daoFile: File, startingItems: List<
      * return id of the inserted item.
      */
     fun insert(item: T): Int {
-        items.update { state ->
+        write { state ->
             newId += 1
             state + item.clone(id = newId) as T
         }
-        write(items.value)
         return newId
     }
 
@@ -148,23 +133,23 @@ abstract class Dao<T : Entity>(protected val daoFile: File, startingItems: List<
      */
     fun upsert(item: T): Int = if (update(item)) -1 else insert(item)
 
-    fun delete(item: T) {
-        items.update { state -> state - item }
-        write(items.value)
+    fun delete(item: T) = write { state -> state - item }
+
+    suspend fun where(id: Int): T? = items.map { it.filter { it.id == id } }.firstOrNull()?.firstOrNull()
+
+    private fun write(operation: (List<T>) -> List<T>) {
+        items.update { state -> operation(state) }
+        storageFile.write(items.value)
     }
-
-    suspend fun whereId(id: Int): T? = items.map { it.filter { it.id == id } }.firstOrNull()?.firstOrNull()
-
-    abstract fun write(state: List<T>)
 }
 
-class SettingsDao(private val settingsFile: File) {
-    private var settings by mutableStateOf(Json.decodeFromString<Settings>(settingsFile.readText()))
+class SettingsDao(private val file: SettingsFile) {
+    private var settings by mutableStateOf(file.read())
 
     var unitSystem: UnitSystem = settings.unitSystem
         set(value) {
             settings = settings.copy(unitSystem = value)
-            settingsFile.writeBytes(Json.encodeToString<Settings>(settings).encodeToByteArray())
+            file.write(settings)
         }
 
     fun weightUnit() = when (settings.unitSystem) {
@@ -173,24 +158,12 @@ class SettingsDao(private val settingsFile: File) {
     }
 }
 
-class HistoryDao(historyFile: File) : Dao<HistoryRecord>(historyFile, Json.decodeFromString(historyFile.readText())) {
-    override fun write(state: List<HistoryRecord>) {
-        daoFile.writeText(Json.encodeToString(state))
-    }
-
+class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
     suspend fun getUnfinishedBusiness(): HistoryRecord? =
         getAll.map { records -> records.filter { record -> record.workoutPhase == WorkoutPhase.During } }.firstOrNull()
             ?.firstOrNull()
 }
 
-class ProgramDao(programsFile: File) : Dao<Program>(programsFile, Json.decodeFromString(programsFile.readText())) {
-    override fun write(state: List<Program>) {
-        daoFile.writeText(Json.encodeToString(state))
-    }
-}
+class ProgramDao(file: ProgramsFile) : Dao<Program>(file)
 
-class ExerciseDao(exerciseFile: File) : Dao<Exercise>(exerciseFile, Json.decodeFromString(exerciseFile.readText())) {
-    override fun write(state: List<Exercise>) {
-        daoFile.writeText(Json.encodeToString(state))
-    }
-}
+class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file)
