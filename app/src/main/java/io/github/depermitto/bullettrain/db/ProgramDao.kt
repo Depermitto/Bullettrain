@@ -10,9 +10,10 @@ import kotlinx.coroutines.flow.update
 
 class ProgramDao(programs: List<Program>) {
   internal val items = MutableStateFlow(programs)
-  private var newId = items.value.maxOfOrNull { it.id } ?: 0
+  var idTrack = items.value.maxOfOrNull { it.id } ?: 0
+    private set
 
-  val getAll: StateFlow<List<Program>> = items.asStateFlow()
+  private val getAll: StateFlow<List<Program>> = items.asStateFlow()
   val getUserPrograms =
     getAll.map { programs ->
       programs
@@ -37,10 +38,10 @@ class ProgramDao(programs: List<Program>) {
   /** @return Id of the inserted program. */
   fun insert(program: Program): Int {
     items.update { state ->
-      newId += 1
-      state + program.toBuilder().setId(newId).build()
+      idTrack += 1
+      state + program.toBuilder().setId(idTrack).build()
     }
-    return newId
+    return idTrack
   }
 
   /** @return Id of the inserted program or -1 if it was updated. */

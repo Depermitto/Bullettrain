@@ -13,11 +13,13 @@ import kotlinx.coroutines.flow.update
 /** Abstraction representing a Data Access Object. Every method executes synchronously. */
 class ExerciseDao(exerciseDescriptors: List<Exercise.Descriptor>) {
   internal val items = MutableStateFlow(exerciseDescriptors)
-  private var newId = items.value.maxOfOrNull { it.id } ?: 0
+  var idTrack = items.value.maxOfOrNull { it.id } ?: 0
+    private set
+
   private val bkTree =
     BKTree("Press") // Most frequent word in our database, followed by "Dumbbell" and "Barbell"
 
-  val getAll = items.asStateFlow()
+  private val getAll = items.asStateFlow()
   val getSortedAlphabetically =
     getAll.map { exerciseDescriptors ->
       exerciseDescriptors.filterNot { it.obsolete }.sortedBy { it.name }
@@ -51,15 +53,15 @@ class ExerciseDao(exerciseDescriptors: List<Exercise.Descriptor>) {
   /** @return Id of the inserted descriptor. */
   fun insert(descriptor: Exercise.Descriptor): Int {
     items.update { state ->
-      newId += 1
+      idTrack += 1
       state +
         descriptor
           .toBuilder()
           .setName(descriptor.name.capitalizeWords().also { name -> bkTree.insert(name) })
-          .setId(newId)
+          .setId(idTrack)
           .build()
     }
-    return newId
+    return idTrack
   }
 
   fun delete(descriptor: Exercise.Descriptor) =

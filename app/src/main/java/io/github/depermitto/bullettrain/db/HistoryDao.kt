@@ -16,9 +16,10 @@ import kotlinx.coroutines.flow.update
 
 class HistoryDao(historyRecords: List<HistoryRecord>) {
   internal val items = MutableStateFlow(historyRecords)
-  private var newId = items.value.lastOrNull()?.id ?: 0
+  var idTrack = items.value.lastOrNull()?.id ?: 0
+    private set
 
-  val getAll: StateFlow<List<HistoryRecord>> = items.asStateFlow()
+  private val getAll: StateFlow<List<HistoryRecord>> = items.asStateFlow()
   val getSortedByFrequency: Flow<Map<Int, Int>> =
     getAll.map { records ->
       records
@@ -44,10 +45,10 @@ class HistoryDao(historyRecords: List<HistoryRecord>) {
   /** @return Id of the inserted record. */
   fun insert(record: HistoryRecord): Int {
     items.update { state ->
-      newId++
-      state + record.toBuilder().setId(newId).build()
+      idTrack++
+      state + record.toBuilder().setId(idTrack).build()
     }
-    return newId
+    return idTrack
   }
 
   /** @return Id of the inserted record or -1 if it was updated. */
