@@ -64,6 +64,7 @@ class Database(private val databaseDirectory: File, private val context: Context
 
     /**
      * launch file picker and export the zipped database to it. Returns name the file the database was exported to  if successful.
+     * @see [importDatabase]
      */
     suspend fun exportDatabase(): String? {
         ZipOutputStream(FileOutputStream(backupFile)).use { zipOutputStream ->
@@ -87,6 +88,7 @@ class Database(private val databaseDirectory: File, private val context: Context
 
     /**
      * launch file picker and import database from the zipFile. Returns true if successful.
+     * @see [exportDatabase]
      */
     suspend fun importDatabase(importType: ImportType): String? {
         val (bytes, filename) = when (importType) {

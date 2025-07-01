@@ -51,13 +51,22 @@ data class Program(
 ) : Entity {
     override fun clone(id: Int) = copy(id = id)
 
+    /**
+     * Essentially a comparison between this.[id] and [other].[id]
+     * @see [correspondsNot]
+     */
     infix fun corresponds(other: Program) = this.id == other.id
+
+    /**
+     * Essentially a comparison if this.[id] is not equal to [other].[id].
+     * @see [corresponds]
+     */
     infix fun correspondsNot(other: Program) = this.id != other.id
 
     fun nextDay() = days[nextDayIndex]
 
     companion object {
-        val EmptyWorkout = Program(id = -1, name = "Empty Workout")
+        val EmptyWorkout = Program(id = -1, name = "Impromptu Workout")
     }
 }
 

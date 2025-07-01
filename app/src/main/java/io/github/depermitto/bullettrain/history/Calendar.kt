@@ -116,7 +116,7 @@ fun Calendar(
     val programs by programDao.getPerformable.collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedProgram: Program? by rememberSaveable { mutableStateOf(null) }
 
-    if (showProgramListDialog) ListAlertDialog(title = "Select program",
+    if (showProgramListDialog) ListAlertDialog(title = "Which program does the workout belong to?",
         onDismissRequest = { showProgramListDialog = false },
         list = programs,
         dismissButton = { TextButton(onClick = { showProgramListDialog = false }) { Text("Cancel") } },
@@ -132,7 +132,7 @@ fun Calendar(
     }
 
     selectedProgram?.let { program ->
-        ListAlertDialog(title = "Which workout to perform?",
+        ListAlertDialog(title = "Which workout would you like to perform?",
             onDismissRequest = { selectedProgram = null },
             dismissButton = { TextButton(onClick = { selectedProgram = null }) { Text("Cancel") } },
             list = program.days,

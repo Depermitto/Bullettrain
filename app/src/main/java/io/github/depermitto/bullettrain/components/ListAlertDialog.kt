@@ -39,7 +39,7 @@ fun <T> ListAlertDialog(
     ) {
         Text(title, Modifier.padding(SuperBigPadding), style = MaterialTheme.typography.titleLarge, maxLines = 2)
 
-        LazyColumn(Modifier.heightIn(0.dp, 220.dp)) {
+        LazyColumn(Modifier.heightIn(0.dp, 190.dp)) {
             items(list) { item ->
                 DropdownMenuItem(text = { content(item) }, onClick = { onSelected(item) })
             }
