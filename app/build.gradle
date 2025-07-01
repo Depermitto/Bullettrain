@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace 'org.depermitto'
+    namespace 'io.github.depermitto'
     compileSdk 34
 
     defaultConfig {
-        applicationId "org.depermitto"
+        applicationId "io.github.depermitto"
         minSdk 24
         targetSdk 34
         versionCode 1
