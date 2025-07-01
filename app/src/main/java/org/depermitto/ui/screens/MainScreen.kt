@@ -9,7 +9,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
@@ -42,11 +41,9 @@ fun MainScreen(programDao: ProgramDao, navController: NavController) {
                 .padding(paddingValues)
         ) {
             when (activeBar) {
-                Tabs.Programs -> ProgramsScreen(
-                    programDao = programDao, navController = navController
-                )
-
-                else -> Text(modifier = Modifier.align(Alignment.Center), text = "Currently Empty")
+                Tabs.Programs -> ProgramsScreen(programDao = programDao, navController = navController)
+                Tabs.History -> HistoryScreen()
+                Tabs.Train -> TrainScreen()
             }
         }
     }

@@ -34,7 +34,7 @@ fun ProgramsScreen(programDao: ProgramDao, navController: NavController) {
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(spacingDp)) {
             items(programs) { program ->
-                // TODO Navigate to ProgramOverviewScreen, seeing history of the plan and trainingWork
+                // TODO Navigate to ProgramOverviewScreen, seeing history of the plan and trainingWork, uniform look of exercises
                 OutlinedCard(colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Column(
