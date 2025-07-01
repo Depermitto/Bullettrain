@@ -24,7 +24,7 @@ import io.github.depermitto.theme.filledContainerColor
 import java.time.LocalDate
 import java.time.ZoneId
 
-// TODO Finder per date, and maybe some graphs would be good too
+// TODO finder per date, and maybe some graphs would be good too
 @Composable
 fun HistoryTab(modifier: Modifier = Modifier, settingsViewModel: SettingsViewModel, historyDao: HistoryDao) = Column(
     modifier = modifier

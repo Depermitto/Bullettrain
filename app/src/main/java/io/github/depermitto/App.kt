@@ -10,11 +10,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import io.github.depermitto.Screen.MainScreen.Tabs
 import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.components.Ribbon
 import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.data.entities.Program
-import io.github.depermitto.Screen.MainScreen.Tabs
 import io.github.depermitto.programs.Program
 import io.github.depermitto.programs.ProgramCreation
 import io.github.depermitto.programs.ProgramViewModel
@@ -24,6 +24,7 @@ import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.train.TrainViewModel
 import io.github.depermitto.train.TrainingScreen
 
+// TODO make tests and benchmarks, mostly for backend probably
 @Composable
 fun App(persistentData: PersistentData) = MaterialTheme {
     val programDao = persistentData.db.getProgramDao()
@@ -42,7 +43,6 @@ fun App(persistentData: PersistentData) = MaterialTheme {
     }
 
     NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
-        // HistoryTab, TrainTab and ProgramsTab
         composable(Screen.MainScreen.route) { navBackStackEntry ->
             val activeTab = Tabs.valueOf(navBackStackEntry.arguments?.getString("tab") ?: Tabs.History.name)
 
