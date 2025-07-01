@@ -11,14 +11,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destinations
 
 @Composable
-fun RibbonScaffold(
+fun Scaffold(
     modifier: Modifier = Modifier,
     ribbon: @Composable BoxScope.() -> Unit,
     floatingActionButton: (@Composable () -> Unit)? = null,
@@ -40,28 +39,47 @@ fun RibbonScaffold(
 }
 
 @Composable
-fun BoxScope.Ribbon(
+fun HeaderWithSettingsButton(
     navController: NavController,
-    backButton: Boolean = true,
-    settingsGear: Boolean = true,
+    title: String,
+) = Row(verticalAlignment = Alignment.CenterVertically) {
+    Text(
+        modifier = Modifier
+            .padding(start = 16.dp)
+            .widthIn(max = 300.dp),
+        text = title,
+        style = MaterialTheme.typography.titleLarge,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+    Spacer(Modifier.weight(1f))
+    IconButton(
+        onClick = { navController.navigate(Destinations.Settings) }) {
+        Icon(Icons.Filled.Settings, contentDescription = "Settings")
+    }
+}
+
+
+@Composable
+fun HeaderWithBackButton(
+    navController: NavController,
+    topEndContent: (@Composable () -> Unit)? = null,
     title: String? = null,
-) {
+) = Row(verticalAlignment = Alignment.CenterVertically) {
     val onBackPressedDispatcherOwner = LocalOnBackPressedDispatcherOwner.current
-    if (backButton) IconButton(modifier = Modifier.align(Alignment.TopStart),
+    IconButton(
         onClick = { onBackPressedDispatcherOwner?.onBackPressedDispatcher?.onBackPressed() ?: navController.navigateUp() }) {
         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back Button")
     }
     if (title != null) Text(
-        modifier = Modifier
-            .align(Alignment.Center)
-            .widthIn(max = 300.dp),
+        modifier = Modifier.widthIn(max = 300.dp),
         text = title,
-        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+        style = MaterialTheme.typography.titleLarge,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
     )
-    if (settingsGear) IconButton(modifier = Modifier.align(Alignment.TopEnd),
-        onClick = { navController.navigate(Destinations.Settings) }) {
-        Icon(Icons.Filled.Settings, contentDescription = "Settings")
+    if (topEndContent != null) {
+        Spacer(Modifier.weight(1f))
+        topEndContent()
     }
 }

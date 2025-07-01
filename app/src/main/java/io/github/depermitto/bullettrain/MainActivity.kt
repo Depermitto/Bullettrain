@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -42,8 +44,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
-import io.github.depermitto.bullettrain.components.Ribbon
-import io.github.depermitto.bullettrain.components.RibbonScaffold
+import io.github.depermitto.bullettrain.components.HeaderWithBackButton
+import io.github.depermitto.bullettrain.components.HeaderWithSettingsButton
+import io.github.depermitto.bullettrain.components.Scaffold
 import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Database
 import io.github.depermitto.bullettrain.database.Program
@@ -51,7 +54,7 @@ import io.github.depermitto.bullettrain.home.HomeScreen
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.programs.DayExercisesScreen
 import io.github.depermitto.bullettrain.programs.ProgramCreationScreen
-import io.github.depermitto.bullettrain.programs.ProgramScreen
+import io.github.depermitto.bullettrain.programs.ProgramDaysScreen
 import io.github.depermitto.bullettrain.programs.ProgramViewModel
 import io.github.depermitto.bullettrain.settings.SettingsScreen
 import io.github.depermitto.bullettrain.theme.GymAppTheme
@@ -124,9 +127,9 @@ fun App(db: Database) = MaterialTheme {
                     factory = HomeViewModel.Factory(tab = navBackStackEntry.toRoute<Destinations.Home>().tab)
                 )
 
-                RibbonScaffold(ribbon = {
+                Scaffold(ribbon = {
                     if (homeViewModel.activeBar != Destinations.Home.Tabs.History) {
-                        Ribbon(navController = navController, title = "Home", backButton = false)
+                        HeaderWithSettingsButton(navController = navController, title = "Home")
                     }
                 }) {
                     HomeScreen(
@@ -144,7 +147,7 @@ fun App(db: Database) = MaterialTheme {
             composable<Destinations.Training> {
                 if (!trainViewModel.isWorkoutRunning()) return@composable
 
-                RibbonScaffold(ribbon = {
+                Scaffold(ribbon = {
                     OutlinedCard(modifier = Modifier.padding(start = ItemPadding, end = ItemPadding, bottom = ItemPadding)) {
                         Box(
                             modifier = Modifier
@@ -202,18 +205,37 @@ fun App(db: Database) = MaterialTheme {
             }
 
             composable<Destinations.ProgramCreation> {
-                RibbonScaffold(ribbon = {
-                    Ribbon(
-                        title = if (programViewModel.programName.isBlank()) "New Program" else "New Program: ${programViewModel.programName}",
-                        settingsGear = false,
-                        navController = navController
+                Scaffold(ribbon = {
+                    HeaderWithBackButton(
+                        navController = navController,
+                        title = if (programViewModel.programName.isBlank()) "New Program" else programViewModel.programName,
+                        topEndContent = {
+                            TextButton(onClick = {
+                                val program = programViewModel.constructProgram()
+                                if (program.name.isBlank()) {
+                                    BackgroundSlave.enqueue {
+                                        snackbarHostState.showSnackbar("Blank Program Name", withDismissAction = true)
+                                    }
+                                    return@TextButton
+                                }
+
+                                navController.navigateUp()
+                                db.programDao.insert(program)
+                                programViewModel.clear()
+                            }) {
+                                Icon(
+                                    modifier = Modifier.size(ButtonDefaults.IconSize),
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = "Complete Program Creation"
+                                )
+                                Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+                                Text("Complete")
+                            }
+                        },
                     )
                 }) {
                     ProgramCreationScreen(
-                        programViewModel = programViewModel,
-                        programDao = db.programDao,
-                        snackbarHostState = snackbarHostState,
-                        navController = navController
+                        programViewModel = programViewModel, navController = navController
                     )
                 }
 
@@ -227,29 +249,44 @@ fun App(db: Database) = MaterialTheme {
             composable<Destinations.Program>(typeMap = mapOf(typeOf<Program>() to serializableType<Program>())) { navBackStackEntry ->
                 val program by db.programDao.where(navBackStackEntry.toRoute<Destinations.Program>().programId)
                     .collectAsStateWithLifecycle(null)
-                programViewModel = viewModel(factory = ProgramViewModel.Factory(program ?: return@composable))
+                program?.let { program ->
+                    programViewModel = viewModel(factory = ProgramViewModel.Factory(program))
 
-                RibbonScaffold(ribbon = { Ribbon(navController, title = programViewModel.programName, settingsGear = false) }) {
-                    ProgramScreen(
-                        programViewModel = programViewModel,
-                        programDao = db.programDao,
-                        program = program ?: return@RibbonScaffold,
-                        navController = navController
-                    )
+                    Scaffold(ribbon = {
+                        HeaderWithBackButton(
+                            navController = navController,
+                            title = programViewModel.programName,
+                            topEndContent = {
+                                if (!programViewModel.areDaysEqual(program)) TextButton(onClick = {
+                                    db.programDao.update(programViewModel.constructProgram())
+                                    navController.popBackStack()
+                                }) {
+                                    Icon(
+                                        modifier = Modifier.size(ButtonDefaults.IconSize),
+                                        imageVector = Icons.Filled.Check,
+                                        contentDescription = "Complete Program Edit"
+                                    )
+                                    Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+                                    Text("Finish Edit")
+                                }
+                            })
+                    }) {
+                        ProgramDaysScreen(programViewModel = programViewModel, navController = navController)
+                    }
+
+                    if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
+                        text = "Do you want to discard changes made to ${programViewModel.programName}?",
+                        onConfirm = { navController.navigateUp() })
+
+                    BackHandler(enabled = !programViewModel.areDaysEqual(program)) { showDiscardDialog = true }
                 }
-
-                if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
-                    text = "Do you want to discard changes made to ${programViewModel.programName}?",
-                    onConfirm = { navController.navigateUp() })
-
-                BackHandler(enabled = !programViewModel.areDaysEqual(program ?: return@composable)) { showDiscardDialog = true }
             }
 
             composable<Destinations.Day> { navBackStackEntry ->
                 val dayIndex = navBackStackEntry.toRoute<Destinations.Day>().dayIndex
                 val day = programViewModel.getDay(dayIndex)
 
-                RibbonScaffold(ribbon = { Ribbon(navController, title = day.name, settingsGear = false) }) {
+                Scaffold(ribbon = { HeaderWithBackButton(navController, title = day.name) }) {
                     DayExercisesScreen(
                         programViewModel = programViewModel,
                         exerciseDao = db.exerciseDao,
@@ -260,7 +297,7 @@ fun App(db: Database) = MaterialTheme {
             }
 
             composable<Destinations.Settings> {
-                RibbonScaffold(ribbon = { Ribbon(navController = navController, title = "Settings", settingsGear = false) }) {
+                Scaffold(ribbon = { HeaderWithBackButton(navController = navController, title = "Settings") }) {
                     SettingsScreen(db = db, snackbarHostState = snackbarHostState)
                 }
             }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
@@ -21,6 +22,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destinations
+import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DragButton
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
@@ -35,18 +37,14 @@ import sh.calvin.reorderable.ReorderableColumn
 @Composable
 fun ProgramDaysScreen(
     modifier: Modifier = Modifier, programViewModel: ProgramViewModel, navController: NavController
-) = Column(
-    modifier = modifier
-        .fillMaxSize()
-        .padding(horizontal = ItemPadding),
-    verticalArrangement = Arrangement.spacedBy(CardSpacing),
-    horizontalAlignment = Alignment.CenterHorizontally,
-) {
+) = Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
     val view = LocalView.current
     val days = programViewModel.getDays()
     ReorderableColumn(
         list = days,
-        modifier = Modifier.verticalScroll(rememberScrollState(0)),
+        modifier = Modifier
+            .verticalScroll(rememberScrollState(0))
+            .padding(horizontal = ItemPadding),
         verticalArrangement = Arrangement.spacedBy(CardSpacing),
         onMove = {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -101,9 +99,9 @@ fun ProgramDaysScreen(
         }
     }
 
-    if (programViewModel.getDays().size < 7) Button(onClick = { programViewModel.addDay() }) {
-        Text("Add Day")
-    }
+    if (programViewModel.getDays().size < 7) AnchoredFloatingActionButton(onClick = { programViewModel.addDay() },
+        text = { Text("Add Day") },
+        icon = { Icon(Icons.Filled.Add, contentDescription = "Add New Day") })
 }
 
 @Composable

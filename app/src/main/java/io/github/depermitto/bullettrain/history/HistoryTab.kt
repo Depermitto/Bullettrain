@@ -58,6 +58,7 @@ fun HistoryTab(
             Text(
                 modifier = Modifier.weight(1f),
                 text = homeViewModel.calendarDate.format(DateTimeFormatter.ofPattern("MMM yyyy")),
+                maxLines = 1,
                 textAlign = TextAlign.Center
             )
             IconButton(onClick = { homeViewModel.calendarDate = homeViewModel.calendarDate.plusMonths(1) }) {
