@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
+import io.github.depermitto.database.BackgroundSlave
 import io.github.depermitto.database.Day
 import io.github.depermitto.database.Exercise
 import io.github.depermitto.database.ExerciseSet
@@ -137,12 +138,14 @@ class TrainViewModel(
             exercises = historyRecord.workout.exercises.toMutableStateList()
             workoutState = WorkoutState(historyRecord = record,
                 clockTimer = timer(initialDelay = 1000L, period = 1000L) { clock = clock.plusSeconds(1L) },
-                saveTimer = timer(initialDelay = 1000L, period = 10000L) {
-                    workoutState = workoutState?.let {
-                        it.copy(historyRecord = it.historyRecord.copy(workout = it.historyRecord.workout.copy(exercises = exercises.toList())))
-                    }
+                saveTimer = timer(initialDelay = 1000L, period = 1000L) {
+                    BackgroundSlave.enqueue {
+                        workoutState = workoutState?.let {
+                            it.copy(historyRecord = it.historyRecord.copy(workout = it.historyRecord.workout.copy(exercises = exercises.toList())))
+                        }
 
-                    historyDao.upsert(workoutState?.historyRecord ?: return@timer)
+                        historyDao.upsert(workoutState?.historyRecord ?: return@enqueue)
+                    }
                 })
         } else throw UnsupportedOperationException("WorkoutState Is Not Null")
     }

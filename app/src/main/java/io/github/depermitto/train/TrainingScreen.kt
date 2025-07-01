@@ -47,6 +47,7 @@ import io.github.depermitto.theme.ExerciseSetSpacing
 import io.github.depermitto.theme.ExerciseSetWideWeight
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
+import io.github.depermitto.theme.SqueezableIconSize
 import io.github.depermitto.theme.filledContainerColor
 import io.github.depermitto.theme.numberFieldTextStyle
 import io.github.depermitto.util.SwapIcon
@@ -73,7 +74,9 @@ fun TrainingScreen(
                 val lastPerformedSet = exercise.lastPerformedSet
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .padding(start = ItemSpacing)
+                            .weight(1f),
                         text = "${i + 1}. ${exercise.name}",
                         style = MaterialTheme.typography.titleMedium,
                     )
@@ -87,7 +90,9 @@ fun TrainingScreen(
                             )
                         }
                     }
-                    DropdownButton(show = showDropdownButton, onShowChange = { showDropdownButton = it }) {
+                    DropdownButton(modifier = Modifier.size(SqueezableIconSize),
+                        show = showDropdownButton,
+                        onShowChange = { showDropdownButton = it }) {
                         DropdownMenuItem(leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
                             text = { Text(text = "Delete") },
                             onClick = { trainViewModel.removeExercise(i) })

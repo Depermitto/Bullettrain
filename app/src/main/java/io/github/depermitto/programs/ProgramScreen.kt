@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.depermitto.components.ExpandableOutlinedCard
@@ -57,14 +58,16 @@ fun ProgramScreen(
                     singleLine = true,
                     colors = transparentTextFieldColors(),
                 )
-            }, dropdownItems = {
+            },
+            dropdownItems = {
                 DropdownMenuItem(text = { Text(text = "Duplicate Day") },
                     leadingIcon = { DuplicateIcon() },
                     onClick = { programViewModel.addDay(day) })
                 DropdownMenuItem(text = { Text(text = "Delete Day") },
                     leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = "Delete Day") },
                     onClick = { programViewModel.removeDayAt(dayIndex) })
-            }, startExpanded = true
+            },
+            startExpanded = true
         ) {
             ReorderableColumn(
                 list = day.exercises,
@@ -73,67 +76,71 @@ fun ProgramScreen(
                     programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises.reorder(fromIndex, toIndex)))
                 }) { exerciseIndex, exercise, isDragging ->
                 key(exercise.id) {
-                    ProgramExerciseHeaderAndFooter(
-                        exercise = exercise,
-                        onExerciseChange = { programViewModel.setExercise(dayIndex, exerciseIndex, it) },
-                        scope = this
-                    ) {
-                        exercise.sets.forEachIndexed { setIndex, set ->
-                            SwipeToDeleteBox(onDelete = {
-                                programViewModel.setExercise(
-                                    dayIndex,
-                                    exerciseIndex,
-                                    exercise.copy(sets = exercise.sets.filterIndexed { i, _ -> i != setIndex })
-                                )
-                            }) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(color = filledContainerColor())
-                                        .padding(vertical = ItemPadding), verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        modifier = Modifier.weight(ExerciseSetNarrowWeight),
-                                        text = (setIndex + 1).toString(),
-                                        textAlign = TextAlign.Center
+                    SwipeToDeleteBox(modifier = Modifier.clip(MaterialTheme.shapes.medium),
+                        onDelete = { programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises - exercise)) }) {
+                        ProgramExerciseHeaderAndFooter(
+                            exercise = exercise,
+                            onExerciseChange = { programViewModel.setExercise(dayIndex, exerciseIndex, it) },
+                            scope = this@ReorderableColumn
+                        ) {
+                            exercise.sets.forEachIndexed { setIndex, set ->
+                                SwipeToDeleteBox(onDelete = {
+                                    programViewModel.setExercise(
+                                        dayIndex,
+                                        exerciseIndex,
+                                        exercise.copy(sets = exercise.sets.filterIndexed { i, _ -> i != setIndex })
                                     )
-                                    ExerciseTargetField(
-                                        Modifier
-                                            .weight(ExerciseSetWideWeight)
-                                            .padding(horizontal = ExerciseSetSpacing),
-                                        value = set.targetPerfVar,
-                                        onValueChange = {
-                                            programViewModel.setExercise(
-                                                dayIndex, exerciseIndex, exercise.copy(
-                                                    sets = exercise.sets.smallListSet(
-                                                        setIndex, set.copy(targetPerfVar = it)
-                                                    )
-                                                )
-                                            )
-                                        })
-                                    if (set.intensity != null) {
-                                        NumberField(modifier = Modifier
-                                            .weight(ExerciseSetWideWeight)
-                                            .padding(horizontal = ExerciseSetSpacing),
-                                            value = set.intensity,
+                                }) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(color = filledContainerColor())
+                                            .padding(vertical = ItemPadding), verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            modifier = Modifier.weight(ExerciseSetNarrowWeight),
+                                            text = (setIndex + 1).toString(),
+                                            textAlign = TextAlign.Center
+                                        )
+                                        ExerciseTargetField(
+                                            Modifier
+                                                .weight(ExerciseSetWideWeight)
+                                                .padding(horizontal = ExerciseSetSpacing),
+                                            value = set.targetPerfVar,
                                             onValueChange = {
                                                 programViewModel.setExercise(
                                                     dayIndex, exerciseIndex, exercise.copy(
                                                         sets = exercise.sets.smallListSet(
-                                                            setIndex, set.copy(intensity = it)
+                                                            setIndex, set.copy(targetPerfVar = it)
                                                         )
                                                     )
                                                 )
                                             })
-                                    }
-                                    IconButton(modifier = Modifier
-                                        .size(CompactIconSize)
-                                        .weight(ExerciseSetNarrowWeight), onClick = {
-                                        programViewModel.setExercise(
-                                            dayIndex, exerciseIndex, exercise.copy(sets = exercise.sets + set)
-                                        )
-                                    }) {
-                                        DuplicateIcon()
+                                        if (set.intensity != null) {
+                                            NumberField(modifier = Modifier
+                                                .weight(ExerciseSetWideWeight)
+                                                .padding(horizontal = ExerciseSetSpacing),
+                                                value = set.intensity,
+                                                onValueChange = {
+                                                    programViewModel.setExercise(
+                                                        dayIndex, exerciseIndex, exercise.copy(
+                                                            sets = exercise.sets.smallListSet(
+                                                                setIndex, set.copy(intensity = it)
+                                                            )
+                                                        )
+                                                    )
+                                                })
+                                        }
+                                        IconButton(modifier = Modifier
+                                            .size(CompactIconSize)
+                                            .weight(ExerciseSetNarrowWeight),
+                                            onClick = {
+                                                programViewModel.setExercise(
+                                                    dayIndex, exerciseIndex, exercise.copy(sets = exercise.sets + set)
+                                                )
+                                            }) {
+                                            DuplicateIcon()
+                                        }
                                     }
                                 }
                             }
@@ -174,7 +181,9 @@ fun ProgramExerciseHeaderAndFooter(
         var showTargetEditDropdown by remember { mutableStateOf(false) }
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = ItemSpacing),
                 text = exercise.name,
                 style = MaterialTheme.typography.titleMedium,
             )
@@ -191,9 +200,7 @@ fun ProgramExerciseHeaderAndFooter(
                 onClick = { setIntensity(IntensityCategory.RPE) }) {
                 HeartPlusIcon()
             }
-            else IconButton(
-                modifier = Modifier.size(SqueezableIconSize),
-                onClick = { setIntensity(null) }) {
+            else IconButton(modifier = Modifier.size(SqueezableIconSize), onClick = { setIntensity(null) }) {
                 HeartRemoveIcon()
             }
 
