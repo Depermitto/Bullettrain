@@ -11,8 +11,8 @@ sealed class Screen(val route: String) {
         }
     }
 
-    data object ProgramsCreationScreen : Screen("programs/creation")
-    data object ProgramOverviewScreen : Screen("programs/overview/{programId}") {
+    data object ProgramCreationScreen : Screen("programs/creation")
+    data object ProgramScreen : Screen("programs/overview/{programId}") {
         fun passId(id: Long): String {
             return this.route.replace(oldValue = "{programId}", newValue = id.toString())
         }

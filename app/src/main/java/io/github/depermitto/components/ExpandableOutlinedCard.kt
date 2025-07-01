@@ -17,13 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
-import io.github.depermitto.theme.paddingDp
+import io.github.depermitto.theme.ItemPadding
 
 // TODO fix title padding
 @Composable
 fun ExpandableOutlinedCard(
     title: @Composable () -> Unit,
-    titlePadding: PaddingValues = PaddingValues(horizontal = paddingDp),
+    titlePadding: PaddingValues = PaddingValues(horizontal = ItemPadding),
     dropdownItems: (@Composable () -> Unit)? = null,
     startExpanded: Boolean = false,
     content: @Composable () -> Unit,

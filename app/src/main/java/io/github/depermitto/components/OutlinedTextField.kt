@@ -34,7 +34,7 @@ fun OutlinedTextField(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
     cursorBrush: Brush = SolidColor(MaterialTheme.colorScheme.primary),
-    contentPadding: PaddingValues = PaddingValues(6.dp),
+    contentPadding: PaddingValues,
 ) {
     BasicTextField(
         value = value,

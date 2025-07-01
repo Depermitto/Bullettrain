@@ -8,7 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.depermitto.data.Exercise
-import io.github.depermitto.theme.paddingDp
+import io.github.depermitto.theme.ItemPadding
 
 @Composable
 fun ExercisesCreationScreen(newExercise: (Exercise?) -> Unit) {
@@ -22,7 +22,7 @@ fun ExercisesCreationScreen(newExercise: (Exercise?) -> Unit) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = paddingDp)
+                .padding(horizontal = ItemPadding)
         ) {
             OutlinedTextField(
                 modifier = Modifier.align(Alignment.TopCenter),

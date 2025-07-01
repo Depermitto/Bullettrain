@@ -11,13 +11,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
+import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.data.Exercise
 import io.github.depermitto.data.ExerciseDao
 import io.github.depermitto.theme.filledContainerColor
 import io.github.depermitto.theme.notUnderlinedTextFieldColors
-import io.github.depermitto.theme.paddingDp
-import io.github.depermitto.theme.spacingDp
+import io.github.depermitto.theme.ItemPadding
+import io.github.depermitto.theme.ItemSpacing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -29,7 +29,7 @@ fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         var searchText by remember { mutableStateOf("") }
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(spacingDp), contentPadding = PaddingValues(paddingDp)) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(ItemSpacing), contentPadding = PaddingValues(ItemPadding)) {
             item {
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
@@ -51,15 +51,9 @@ fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) {
         }
 
         var showDialog by remember { mutableStateOf(false) }
-        FloatingActionButton(
-            modifier = Modifier
-                .padding(bottom = 2 * paddingDp, end = 2 * paddingDp)
-                .align(Alignment.BottomEnd),
+        AnchoredFloatingActionButton(
             onClick = { showDialog = true },
-            shape = MaterialTheme.shapes.large,
-        ) {
-            Icon(Icons.Filled.Add, contentDescription = null)
-        }
+            icon = { Icon(Icons.Default.Add, contentDescription = "Add") })
 
         if (showDialog) {
             BasicAlertDialog(

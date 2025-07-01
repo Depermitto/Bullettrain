@@ -1,9 +1,6 @@
 package io.github.depermitto.components
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
@@ -37,14 +34,18 @@ fun BoxScope.BackButton(navController: NavController, modifier: Modifier = Modif
 @Composable
 fun RibbonScaffold(
     ribbon: @Composable BoxScope.() -> Unit,
-    content: @Composable () -> Unit,
+    content: @Composable BoxScope.() -> Unit,
 ) {
     Scaffold(topBar = {
         Box(modifier = Modifier.fillMaxWidth()) {
             ribbon()
         }
     }) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             content()
         }
     }

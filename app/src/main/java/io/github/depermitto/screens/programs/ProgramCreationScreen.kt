@@ -1,10 +1,7 @@
 package io.github.depermitto.screens.programs
 
 import android.widget.Toast
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -13,18 +10,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
+import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.data.ExerciseDao
 import io.github.depermitto.data.Program
 import io.github.depermitto.data.ProgramDao
 import io.github.depermitto.presentation.ProgramViewModel
 import io.github.depermitto.screens.Screen
 import io.github.depermitto.theme.notUnderlinedTextFieldColors
-import io.github.depermitto.theme.paddingDp
+import io.github.depermitto.theme.ItemPadding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun ProgramsCreationScreen(
+fun ProgramCreationScreen(
     viewModel: ProgramViewModel,
     exerciseDao: ExerciseDao,
     programDao: ProgramDao,
@@ -37,25 +35,29 @@ fun ProgramsCreationScreen(
         TextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = paddingDp),
-            value = viewModel.state.name,
-            onValueChange = { viewModel.setWorkoutName(it) },
+                .padding(horizontal = ItemPadding),
+            value = viewModel.name,
+            onValueChange = { viewModel.name = it },
             placeholder = { Text(text = "Workout Name") },
             shape = MaterialTheme.shapes.medium,
             colors = notUnderlinedTextFieldColors()
         )
-        ProgramScreen(viewModel = viewModel, onFabClick = {
-            if (viewModel.state.name.isBlank()) {
-                Toast.makeText(context, "Blank Program Name", Toast.LENGTH_SHORT).show()
-                return@ProgramScreen
-            }
+        Box(modifier = Modifier.weight(1f)) {
+            ProgramScreen(viewModel = viewModel, exerciseDao = exerciseDao)
+            AnchoredFloatingActionButton(text = { Text(text = "Complete Program") }, onClick = {
+                if (viewModel.name.isBlank()) {
+                    Toast.makeText(context, "Blank Program Name", Toast.LENGTH_SHORT).show()
+                    return@AnchoredFloatingActionButton
+                }
 
-            val program = Program(name = viewModel.state.name, days = viewModel.state.days)
-            scope.launch { programDao.upsert(program) }
-            Toast.makeText(context, "Successfully Created", Toast.LENGTH_SHORT).show()
+                scope.launch { programDao.upsert(Program(name = viewModel.name, days = viewModel.days)) }
+                Toast.makeText(context, "Successfully Created", Toast.LENGTH_SHORT).show()
 
-            viewModel.reset()
-            navController.popBackStack(Screen.MainScreen.route, false)
-        }, exerciseDao = exerciseDao, fabText = { "Complete Program" })
+                viewModel.name = ""
+                viewModel.days = listOf()
+
+                navController.popBackStack(Screen.MainScreen.route, false)
+            })
+        }
     }
 }
