@@ -47,7 +47,7 @@ fun Calendar(
   trainViewModel: TrainViewModel,
   programDao: ProgramDao,
   historyDao: HistoryDao,
-) =
+) {
   Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
     val today = LocalDate.now()
     var days =
@@ -96,8 +96,10 @@ fun Calendar(
                     when {
                       homeViewModel.selectedDate == day ->
                         MaterialTheme.colorScheme.tertiaryContainer
+
                       currentHistoryRecords.any { it.date == day } ->
                         MaterialTheme.colorScheme.primaryContainer
+
                       else -> Color.Transparent
                     },
                   underline = day == today,
@@ -206,12 +208,15 @@ fun Calendar(
           headlineContent = { Text(text, maxLines = 2, overflow = TextOverflow.Ellipsis) },
           supportingContent = {
             val totalSets =
-              record.workout.entries.sumOf { it.sets.count { it.actualPerfVar != 0f } }
+              record.workout.entries.sumOf { workoutEntry ->
+                workoutEntry.sets.count { it.actualPerfVar != 0f }
+              }
             if (totalSets != 0) Text(text = "$totalSets performed sets")
           },
         )
       }
   }
+}
 
 @Composable
 private fun CalendarItem(

@@ -12,7 +12,7 @@ import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import sh.calvin.reorderable.ReorderableScope
 
 @Composable
-fun DragButton(receiver: ReorderableScope, view: View, modifier: Modifier = Modifier) =
+fun DragButton(receiver: ReorderableScope, view: View, modifier: Modifier = Modifier) {
   IconButton(
     modifier =
       with(receiver = receiver) {
@@ -34,3 +34,4 @@ fun DragButton(receiver: ReorderableScope, view: View, modifier: Modifier = Modi
   ) {
     DragHandleIcon()
   }
+}

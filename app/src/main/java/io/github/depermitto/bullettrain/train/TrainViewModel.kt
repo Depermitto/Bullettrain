@@ -211,5 +211,5 @@ class TrainViewModel(
   }
 }
 
-fun LocalDate.atTimeNow() =
+fun LocalDate.atTimeNow(): Instant =
   this.atTime(OffsetTime.ofInstant(Instant.now(), ZoneId.systemDefault())).toInstant()

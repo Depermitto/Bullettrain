@@ -3,49 +3,72 @@ package io.github.depermitto.bullettrain.database
 import android.content.Context
 import android.util.Log
 import io.github.depermitto.bullettrain.R
-import io.github.depermitto.bullettrain.database.entities.*
+import io.github.depermitto.bullettrain.database.entities.ExerciseDao
+import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
+import io.github.depermitto.bullettrain.database.entities.HistoryDao
+import io.github.depermitto.bullettrain.database.entities.HistoryRecord
+import io.github.depermitto.bullettrain.database.entities.Program
+import io.github.depermitto.bullettrain.database.entities.ProgramDao
+import io.github.depermitto.bullettrain.database.entities.Settings
+import io.github.depermitto.bullettrain.database.entities.SettingsDao
+import io.github.depermitto.bullettrain.util.loadAndUncompressData
+import io.github.depermitto.bullettrain.util.saveAndCompressData
 import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerType
 import io.github.vinceglb.filekit.core.pickFile
-import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
+import java.nio.file.Path
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
-import kotlin.Result
 import kotlin.Result.Companion.failure
 import kotlin.Result.Companion.success
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.div
+import kotlin.io.path.exists
+import kotlin.io.path.name
+import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.readBytes
+import kotlin.io.path.writeBytes
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
-class Database(private val dir: File, private val context: Context) {
+class Database(private val dir: Path, private val context: Context) {
 
-  private val settingsDepot = SettingsDepot(File(dir, "settings"))
-  private val historyDepot = HistoryDepot(File(dir, "history"))
-  private val programsDepot = ProgramsDepot(File(dir, "programs"))
-  private val exercisesDepot = ExerciseDepot(File(dir, "exercises"))
-
-  private val depots = listOf(settingsDepot, historyDepot, programsDepot, exercisesDepot)
+  private val locSettings = dir / "settings"
+  private val locHistory = dir / "history"
+  private val locPrograms = dir / "programs"
+  private val locExercises = dir / "exercises"
+  private val dataLocations = listOf(locSettings, locHistory, locPrograms, locExercises)
 
   init {
-    if (depots.any { !it.file.exists() }) {
-      settingsDepot.stash(Settings())
-      historyDepot.stash(emptyList())
-      programsDepot.stash(listOf(Program.EmptyWorkout))
-      exercisesDepot.stash(emptyList())
-
-      Log.i("db", "init completed.")
+    if (!locSettings.exists()) {
+      saveAndCompressData(locSettings, Settings())
+      Log.i("db", "settings initialized.")
+    }
+    if (!locHistory.exists()) {
+      saveAndCompressData(locHistory, emptyList<HistoryRecord>())
+      Log.i("db", "history initialized.")
+    }
+    if (!locPrograms.exists()) {
+      saveAndCompressData(locHistory, listOf(Program.EmptyWorkout))
+      Log.i("db", "programs initialized.")
+    }
+    if (!locExercises.exists()) {
+      saveAndCompressData(locExercises, emptyList<ExerciseDescriptor>())
+      Log.i("db", "exercises initialized.")
     }
   }
 
-  val settingsDao = SettingsDao(settingsDepot)
-  val historyDao = HistoryDao(historyDepot)
-  val programDao = ProgramDao(programsDepot)
-  val exerciseDao = ExerciseDao(exercisesDepot)
+  val settingsDao = SettingsDao(locSettings)
+  val historyDao = HistoryDao(locHistory)
+  val programDao = ProgramDao(locPrograms)
+  val exerciseDao = ExerciseDao(locExercises)
 
   /**
    * Launch a file picker, export the zipped database to the selected location, and return the name
@@ -54,30 +77,59 @@ class Database(private val dir: File, private val context: Context) {
    * @see [importDatabase]
    */
   suspend fun exportDatabase(): Result<String> {
-    val backupFile =
-      File(
-        dir,
-        "bullettrain-${LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))}.bk.zip",
-      )
-    ZipOutputStream(FileOutputStream(backupFile)).use { zipOutputStream ->
-      for (backup in depots) {
-        zipOutputStream.putNextEntry(ZipEntry(backup.file.name))
-        zipOutputStream.write(backup.file.readBytes())
+    val now = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+    val backup = dir / "bullettrain-$now.bk.zip"
+    withContext(Dispatchers.IO) {
+      ZipOutputStream(FileOutputStream(backup.absolutePathString())).use { zipOutputStream ->
+        for (loc in dataLocations) {
+          zipOutputStream.putNextEntry(ZipEntry(loc.name))
+          zipOutputStream.write(loc.readBytes())
+        }
       }
     }
     val file =
       FileKit.saveFile(
-        bytes = backupFile.readBytes(),
-        baseName = backupFile.name.substringBefore('.'),
-        extension = backupFile.name.substringAfter('.'),
+        bytes = backup.readBytes(),
+        baseName = backup.name.substringBefore('.'),
+        extension = backup.name.substringAfter('.'),
       ) ?: return failure(Throwable(message = "Creating a data backup cancelled"))
     return success(file.name)
   }
 
-  sealed class ImportType {
-    data object Interactive : ImportType()
+  private suspend fun importDatabaseFromBytes(bytes: ByteArray): Result<Unit> {
+    val tmpFile = (dir / "tmp").toFile()
+    tmpFile.writeBytes(bytes)
+    try {
+      val result: Result<Unit> =
+        withContext(Dispatchers.IO) {
+          ZipFile(tmpFile).use { zipFile ->
+            val entries = zipFile.entries().toList()
+            // we should probably check if file is not corrupt here
+            if (!entries.zip(dataLocations).all { (entry, backup) -> entry.name == backup.name }) {
+              return@withContext failure(Throwable(message = "data is in an incorrect format"))
+            }
 
-    data class FromStream(val stream: InputStream) : ImportType()
+            entries.forEachIndexed { i, entry ->
+              val loc = dataLocations[i]
+              loc.writeBytes(zipFile.getInputStream(entry).readBytes())
+
+              when (loc.nameWithoutExtension) {
+                "settings" -> settingsDao.item.update { SettingsDao(loc).item.value }
+                "history" -> historyDao.items.update { HistoryDao(loc).items.value }
+                "programs" -> programDao.items.update { ProgramDao(loc).items.value }
+                "exercises" -> exerciseDao.items.update { ExerciseDao(loc).items.value }
+              }
+            }
+          }
+          return@withContext success(Unit)
+        }
+      if (result.isFailure) return result
+    } catch (_: ZipException) {
+      return failure(Throwable(message = "not a data backup"))
+    } catch (err: Throwable) {
+      return failure(err)
+    }
+    return success(Unit)
   }
 
   /**
@@ -85,55 +137,24 @@ class Database(private val dir: File, private val context: Context) {
    *
    * @see [exportDatabase]
    */
-  suspend fun importDatabase(importType: ImportType): Result<String> {
-    val (bytes, filename) =
-      when (importType) {
-        is ImportType.FromStream -> importType.stream.readBytes() to ""
-        is ImportType.Interactive -> {
-          val file =
-            FileKit.pickFile(title = "Pick a data backup", type = PickerType.File())
-              ?: return failure(Throwable(message = "Restoring a data backup cancelled"))
-          file.readBytes() to file.name
-        }
-      }
+  suspend fun importDatabase(): Result<String> {
+    val pickedFile =
+      FileKit.pickFile(title = "Pick a data backup", type = PickerType.File())
+        ?: return failure(Throwable(message = "Restoring a data backup cancelled"))
 
-    val tmpFile = File(dir, "tmp").apply { writeBytes(bytes) }
-    try {
-      ZipFile(tmpFile).use { zipFile ->
-        val entries = zipFile.entries().toList()
-        // we should probably check if file is not corrupt here
-        if (!entries.zip(depots).all { (entry, backup) -> entry.name == backup.file.name }) {
-          return failure(Throwable(message = "$filename is in an incorrect format"))
-        }
-
-        entries.forEachIndexed { i, entry ->
-          when (
-            val backupFile =
-              depots[i].apply { file.writeBytes(zipFile.getInputStream(entry).readBytes()) }
-          ) {
-            is SettingsDepot -> settingsDao.item.update { SettingsDao(backupFile).item.value }
-            is HistoryDepot -> historyDao.items.update { HistoryDao(backupFile).items.value }
-            is ProgramsDepot -> programDao.items.update { ProgramDao(backupFile).items.value }
-            is ExerciseDepot -> exerciseDao.items.update { ExerciseDao(backupFile).items.value }
-          }
-        }
-      }
-    } catch (_: ZipException) {
-      return failure(Throwable(message = "$filename is not a data backup"))
-    } catch (err: Throwable) {
-      return failure(err)
-    }
-    return success(filename)
+    return importDatabaseFromBytes(pickedFile.readBytes())
+      .fold(onFailure = { failure(it) }, onSuccess = { success(pickedFile.name) })
   }
 
   suspend fun factoryReset(): Boolean {
-    val inputStream = context.resources.openRawResource(R.raw.fallback)
-    return importDatabase(ImportType.FromStream(inputStream)).isSuccess
+    val stream = context.resources.openRawResource(R.raw.fallback)
+    return importDatabaseFromBytes(stream.readBytes()).isSuccess
   }
 
   init {
-    // this could be any DepotFile really
-    if (exercisesDepot.retrieve().isEmpty() && runBlocking { factoryReset() })
+    if (
+      loadAndUncompressData<List<Program>>(locPrograms).isEmpty() && runBlocking { factoryReset() }
+    )
       Log.i("db", "polluted database with default data")
   }
 }

@@ -17,7 +17,6 @@ import io.github.depermitto.bullettrain.components.DataPanel
 import io.github.depermitto.bullettrain.components.Tile
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
-import io.github.depermitto.bullettrain.database.entities.ExerciseSet
 import io.github.depermitto.bullettrain.database.entities.HistoryDao
 import io.github.depermitto.bullettrain.database.entities.SettingsDao
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
@@ -48,7 +47,7 @@ fun ExerciseScreen(
     items(exercises) { exercise ->
       val doneDate =
         exercise.lastPerformedSet()?.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
-      DataPanel<ExerciseSet>(
+      DataPanel(
         items = exercise.getPerformedSets(),
         separateHeaderAndContent = false,
         headline = {

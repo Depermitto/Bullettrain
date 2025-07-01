@@ -16,7 +16,7 @@ import io.github.depermitto.bullettrain.Destination
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBarWithSettingsButton(navController: NavController, title: String) =
+fun TopBarWithSettingsButton(navController: NavController, title: String) {
   TopAppBar(
     title = {
       Text(
@@ -33,6 +33,7 @@ fun TopBarWithSettingsButton(navController: NavController, title: String) =
     },
     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
   )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

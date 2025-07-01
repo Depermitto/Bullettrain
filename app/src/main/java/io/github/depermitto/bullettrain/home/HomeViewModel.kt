@@ -8,8 +8,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import java.time.LocalDate
 
-class HomeViewModel() : ViewModel() {
-  var calendarDate by mutableStateOf(LocalDate.now())
+class HomeViewModel : ViewModel() {
+  var calendarDate: LocalDate by mutableStateOf(LocalDate.now())
   var selectedDate by mutableStateOf<LocalDate?>(null)
 
   companion object {

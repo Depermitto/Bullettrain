@@ -58,7 +58,7 @@ fun TrainingScreen(
   modifier: Modifier = Modifier,
   navController: NavController,
   snackbarHostState: SnackbarHostState,
-) =
+) {
   Column(
     modifier =
       modifier
@@ -85,7 +85,7 @@ fun TrainingScreen(
           onDismissRequest = { showSwapExerciseChooser = false },
           filter = filter,
           // Swap ExerciseDescriptor
-          onSelection = { it ->
+          onSelection = {
             trainViewModel.setWorkoutEntry(exerciseIndex, exercise.copy(descriptorId = it.id))
           },
         )
@@ -265,6 +265,7 @@ fun TrainingScreen(
       Text(text = "Add Exercise")
     }
   }
+}
 
 @Composable
 fun CompletableNumberField(

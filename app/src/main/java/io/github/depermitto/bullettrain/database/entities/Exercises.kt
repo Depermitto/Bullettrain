@@ -2,18 +2,14 @@ package io.github.depermitto.bullettrain.database.entities
 
 import androidx.compose.runtime.Immutable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
-import io.github.depermitto.bullettrain.database.Compressor
 import io.github.depermitto.bullettrain.database.Dao
-import io.github.depermitto.bullettrain.database.Depot
 import io.github.depermitto.bullettrain.database.serializers.InstantSerializer
 import io.github.depermitto.bullettrain.util.BKTree
-import java.io.File
+import java.nio.file.Path
 import java.time.Instant
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 @Immutable
 @Serializable
@@ -128,12 +124,15 @@ sealed class PerfVar(val category: PerfVarCategory) {
     }
 }
 
-class ExerciseDao(file: ExerciseDepot) : Dao<ExerciseDescriptor>(file) {
+class ExerciseDao(filepath: Path) : Dao<ExerciseDescriptor>(filepath) {
   private val bkTree =
     BKTree("Press") // This is the most frequent word in our database, followed by "Dumbbell" and
   // "Barbell"
 
-  val getSortedAlphabetically = getAll.map { it.filterNot { it.obsolete }.sortedBy { it.name } }
+  val getSortedAlphabetically =
+    getAll.map { exerciseDescriptors ->
+      exerciseDescriptors.filterNot { it.obsolete }.sortedBy { it.name }
+    }
 
   /**
    * Filter out exercises by name. This function provides an autocorrect/typo correcting algorithm
@@ -203,12 +202,4 @@ class ExerciseDao(file: ExerciseDepot) : Dao<ExerciseDescriptor>(file) {
 
   private fun String.prep() =
     this.trim().split(' ').joinToString(" ") { it.replaceFirstChar { it.uppercaseChar() } }
-}
-
-class ExerciseDepot(file: File) : Depot<List<ExerciseDescriptor>>(file) {
-  override fun retrieve(): List<ExerciseDescriptor> =
-    Json.decodeFromString(Compressor.uncompress(file.readText()))
-
-  override fun stash(obj: List<ExerciseDescriptor>) =
-    file.writeText(Compressor.compress(Json.encodeToString(obj)))
 }

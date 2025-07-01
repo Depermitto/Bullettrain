@@ -41,7 +41,7 @@ fun ProgramScreen(
   modifier: Modifier = Modifier,
   programViewModel: ProgramViewModel,
   navController: NavController,
-) =
+) {
   Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
     val view = LocalView.current
     val days = programViewModel.getDays()
@@ -141,6 +141,7 @@ fun ProgramScreen(
         icon = { Icon(Icons.Filled.Add, contentDescription = "Add New Day") },
       )
   }
+}
 
 @Composable
 fun ExerciseTargetField(

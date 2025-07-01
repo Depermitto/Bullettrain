@@ -54,7 +54,7 @@ fun HistoryTab(
   programDao: ProgramDao,
   settings: Settings,
   navController: NavController,
-) =
+) {
   Box(modifier = modifier.fillMaxSize()) {
     val historyRecords by
       historyDao
@@ -111,7 +111,7 @@ fun HistoryTab(
       selectedHistoryRecords.forEach { record ->
         val relatedProgram = programDao.where(record.relatedProgramId)
         val plannedWorkout = relatedProgram.workouts.first { it.name == record.workout.name }
-        DataPanel<WorkoutEntry>(
+        DataPanel(
           modifier = Modifier.fillMaxWidth(),
           items =
             record.workout.entries.filter { workoutEntry ->
@@ -154,6 +154,7 @@ fun HistoryTab(
                 when {
                   weight.isBlank() ->
                     "$perfVar ${bestSet.targetPerfVar.category.shortName.lowercase()}"
+
                   else -> "$perfVar x $weight ${settings.unitSystem.weightUnit()}"
                 }
               }
@@ -199,3 +200,4 @@ fun HistoryTab(
       }
     }
   }
+}

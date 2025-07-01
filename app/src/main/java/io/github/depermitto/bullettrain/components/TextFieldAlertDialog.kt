@@ -33,7 +33,7 @@ fun TextFieldAlertDialog(
   label: @Composable (() -> Unit)? = null,
   isError: Boolean = false,
   errorMessage: String = "",
-) =
+) {
   BasicAlertDialog(onDismissRequest = onDismissRequest) {
     Card(modifier.heightIn(0.dp, 250.dp).clip(MaterialTheme.shapes.extraLarge)) {
       var name by rememberSaveable { mutableStateOf(startingText) }
@@ -56,3 +56,4 @@ fun TextFieldAlertDialog(
       }
     }
   }
+}

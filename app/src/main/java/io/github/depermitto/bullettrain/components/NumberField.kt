@@ -57,7 +57,7 @@ fun NumberField(
   OutlinedTextField(
     modifier = modifier,
     value = textFieldValue,
-    onValueChange = { it ->
+    onValueChange = {
       if (it.text.contains(" ")) return@OutlinedTextField
 
       textFieldValue =
@@ -87,6 +87,7 @@ fun NumberField(
   )
 }
 
+// TODO change this cancer function name
 fun Float.encodeToStringOutput(): String {
   if (this == 0f) return ""
   return takeIf { it == it.roundToInt().toFloat() }?.roundToInt()?.toString() ?: this.toString()

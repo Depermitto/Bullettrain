@@ -89,7 +89,7 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     FileKit.init(this)
 
-    val db = Database(application.filesDir, applicationContext)
+    val db = Database(application.filesDir.toPath(), applicationContext)
     setContent {
       val settings by db.settingsDao.getSettings.collectAsStateWithLifecycle()
       BullettrainTheme(settings) {
@@ -277,9 +277,7 @@ fun App(db: Database) = MaterialTheme {
         topBar = {
           TopBarWithBackButton(
             navController = navController,
-            title =
-              if (programViewModel.programName.isBlank()) "New Program"
-              else programViewModel.programName,
+            title = programViewModel.programName.ifBlank { "New Program" },
             topEndContent = {
               TextButton(
                 onClick = {

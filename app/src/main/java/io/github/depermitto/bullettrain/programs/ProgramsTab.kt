@@ -43,7 +43,7 @@ fun ProgramsTab(
   programDao: ProgramDao,
   settings: Settings,
   navController: NavController,
-) =
+) {
   Box(modifier = modifier.fillMaxSize()) {
     val programs by
       programDao.getUserPrograms.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -168,3 +168,4 @@ fun ProgramsTab(
       },
     )
   }
+}

@@ -38,8 +38,8 @@ fun WorkoutEntry(
   scope: CoroutineScope = rememberCoroutineScope(),
   snackbarHostState: SnackbarHostState,
   content: @Composable RowScope.(Int, ExerciseSet) -> Unit,
-) =
-  DataPanel<ExerciseSet>(
+) {
+  DataPanel(
     items = workoutEntry.sets,
     modifier = modifier,
     backgroundColor = MaterialTheme.colorScheme.focalGround(settings.theme),
@@ -69,9 +69,9 @@ fun WorkoutEntry(
     ) {
       Row(
         modifier =
-          Modifier.fillMaxWidth()
-            .background(color = MaterialTheme.colorScheme.focalGround(settings.theme))
-            .padding(Dp.Medium),
+        Modifier.fillMaxWidth()
+          .background(color = MaterialTheme.colorScheme.focalGround(settings.theme))
+          .padding(Dp.Medium),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically,
       ) {
@@ -79,3 +79,4 @@ fun WorkoutEntry(
       }
     }
   }
+}

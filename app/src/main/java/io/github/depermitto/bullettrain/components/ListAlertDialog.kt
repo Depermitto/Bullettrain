@@ -33,7 +33,7 @@ fun <T> ListAlertDialog(
   onClick: (T) -> Unit,
   list: List<T>,
   content: @Composable (T) -> Unit,
-) =
+) {
   BasicAlertDialog(onDismissRequest = onDismissRequest) {
     Card(modifier.clip(MaterialTheme.shapes.extraLarge)) {
       Text(
@@ -58,3 +58,4 @@ fun <T> ListAlertDialog(
       }
     }
   }
+}

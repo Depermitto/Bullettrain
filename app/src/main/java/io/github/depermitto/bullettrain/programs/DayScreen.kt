@@ -66,7 +66,7 @@ fun DayScreen(
   settings: Settings,
   navController: NavController,
   snackbarHostState: SnackbarHostState,
-) =
+) {
   Box(modifier = modifier.fillMaxSize()) {
     val filter = { descriptor: ExerciseDescriptor ->
       programViewModel.getDay(dayIndex).entries.none { it.descriptorId == descriptor.id }
@@ -336,3 +336,4 @@ fun DayScreen(
       onClick = { showAddExerciseChooser = true },
     )
   }
+}

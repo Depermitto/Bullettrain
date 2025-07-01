@@ -1,13 +1,11 @@
 package io.github.depermitto.bullettrain.database.entities
 
 import androidx.compose.runtime.Immutable
-import io.github.depermitto.bullettrain.database.Compressor
 import io.github.depermitto.bullettrain.database.Dao
-import io.github.depermitto.bullettrain.database.Depot
 import io.github.depermitto.bullettrain.database.serializers.InstantSerializer
 import io.github.depermitto.bullettrain.database.serializers.LocalDateSerializer
 import io.github.depermitto.bullettrain.train.WorkoutPhase
-import java.io.File
+import java.nio.file.Path
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
@@ -15,8 +13,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 @Immutable
 @Serializable
@@ -31,7 +27,7 @@ data class HistoryRecord(
   override fun clone(id: Int) = copy(id = id)
 }
 
-class HistoryDao(file: HistoryDepot) : Dao<HistoryRecord>(file) {
+class HistoryDao(filepath: Path) : Dao<HistoryRecord>(filepath) {
   fun getUnfinishedBusiness(): HistoryRecord? =
     items.value.firstOrNull { record -> record.workoutPhase != WorkoutPhase.Completed }
 
@@ -48,12 +44,4 @@ class HistoryDao(file: HistoryDepot) : Dao<HistoryRecord>(file) {
         }
         .sortedByDescending { exercise -> exercise.lastPerformedSet()?.doneTs }
     }
-}
-
-class HistoryDepot(file: File) : Depot<List<HistoryRecord>>(file) {
-  override fun retrieve(): List<HistoryRecord> =
-    Json.decodeFromString(Compressor.uncompress(file.readText()))
-
-  override fun stash(obj: List<HistoryRecord>) =
-    file.writeText(Compressor.compress(Json.encodeToString(obj)))
 }

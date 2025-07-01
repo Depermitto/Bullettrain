@@ -26,7 +26,7 @@ fun HomeScreen(
   settings: Settings,
   pagerState: PagerState,
   navController: NavController,
-) =
+) {
   HorizontalPager(modifier = modifier, state = pagerState) { page ->
     when (Tab.entries[page]) {
       Tab.Exercises ->
@@ -65,3 +65,4 @@ fun HomeScreen(
         )
     }
   }
+}

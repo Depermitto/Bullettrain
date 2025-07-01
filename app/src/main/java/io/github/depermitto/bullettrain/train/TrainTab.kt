@@ -27,7 +27,6 @@ import io.github.depermitto.bullettrain.database.entities.Program
 import io.github.depermitto.bullettrain.database.entities.ProgramDao
 import io.github.depermitto.bullettrain.database.entities.Settings
 import io.github.depermitto.bullettrain.database.entities.Workout
-import io.github.depermitto.bullettrain.database.entities.WorkoutEntry
 import io.github.depermitto.bullettrain.theme.Large
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.focalGround
@@ -40,7 +39,7 @@ fun TrainTab(
   exerciseDao: ExerciseDao,
   settings: Settings,
   navController: NavController,
-) =
+) {
   Box(modifier.fillMaxSize()) {
     Column(
       Modifier.padding(horizontal = Dp.Medium),
@@ -66,7 +65,7 @@ fun TrainTab(
             return@Card
           }
 
-        DataPanel<WorkoutEntry>(
+        DataPanel(
           items = program.nextDay().entries,
           backgroundColor = Color.Transparent,
           headline = {
@@ -83,7 +82,7 @@ fun TrainTab(
             Text("Sets", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
           },
           contentPadding = PaddingValues(horizontal = Dp.Large),
-        ) { entryIndex, entry ->
+        ) { _, entry ->
           val exerciseDescriptor = exerciseDao.where(entry.descriptorId)
           Tile(
             headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
@@ -167,3 +166,4 @@ fun TrainTab(
       trainViewModel.startWorkout(Workout(), Program.EmptyWorkout.id)
     }
   }
+}

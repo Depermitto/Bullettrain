@@ -40,7 +40,7 @@ fun TextLink(
   softWrap: Boolean = true,
   maxLines: Int = 2,
   minLines: Int = 1,
-) =
+) {
   Card(
     modifier = modifier,
     onClick = { navController.navigate((destination)) },
@@ -65,3 +65,4 @@ fun TextLink(
       )
     },
   )
+}

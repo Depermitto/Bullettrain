@@ -12,7 +12,7 @@ fun DiscardConfirmationAlertDialog(
   onDismissRequest: () -> Unit,
   onConfirm: () -> Unit,
   modifier: Modifier = Modifier,
-) =
+) {
   AlertDialog(
     modifier = modifier,
     onDismissRequest = onDismissRequest,
@@ -29,3 +29,4 @@ fun DiscardConfirmationAlertDialog(
     },
     text = { Text(text = text) },
   )
+}

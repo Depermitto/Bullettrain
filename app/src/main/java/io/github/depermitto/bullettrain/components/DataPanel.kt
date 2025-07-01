@@ -35,7 +35,7 @@ fun <T> DataPanel(
   textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
   contentPadding: PaddingValues = PaddingValues(0.dp),
   content: @Composable RowScope.(Int, T) -> Unit,
-) =
+) {
   Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = backgroundColor)) {
     // TODO next step: try to overwrite BasicTable with this
     headline.invoke()
@@ -58,3 +58,4 @@ fun <T> DataPanel(
     }
     Spacer(Modifier.height(12.dp)) // Equivalent to HeroTile vertical Dp
   }
+}

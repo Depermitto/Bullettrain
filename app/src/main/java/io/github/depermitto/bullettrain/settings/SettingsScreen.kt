@@ -34,7 +34,7 @@ fun SettingsScreen(
   db: Database,
   scope: CoroutineScope = rememberCoroutineScope(),
   snackbarHostState: SnackbarHostState,
-) =
+) {
   Column(modifier) {
     val context = LocalContext.current
     val dynamicPalette =
@@ -122,7 +122,7 @@ fun SettingsScreen(
           scope.launch(Dispatchers.IO) {
             val msg =
               db
-                .importDatabase(importType = Database.ImportType.Interactive)
+                .importDatabase()
                 .fold(
                   onSuccess = { filename -> "Successfully Imported $filename" },
                   onFailure = { err ->
@@ -177,6 +177,7 @@ fun SettingsScreen(
         )
     }
   }
+}
 
 @Composable
 fun SettingGroup(

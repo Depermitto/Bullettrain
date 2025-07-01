@@ -35,7 +35,7 @@ fun ExercisesListScreen(
   modifier: Modifier = Modifier,
   filter: ((ExerciseDescriptor) -> Boolean)? = null,
   onSelection: (ExerciseDescriptor) -> Unit,
-) =
+) {
   Box(modifier = modifier.fillMaxSize()) {
     val exerciseFrequencyMap by
       historyDao.getAll
@@ -131,3 +131,4 @@ fun ExercisesListScreen(
       )
     }
   }
+}

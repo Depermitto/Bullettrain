@@ -36,7 +36,7 @@ fun Tile(
   headlineTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
   supportingTextStyle: TextStyle = MaterialTheme.typography.bodyMedium,
   contentPadding: PaddingValues = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
-) =
+) {
   Box(if (onClick == null) modifier else modifier.clickable { onClick() }) {
     ConstraintLayout(Modifier.fillMaxWidth().padding(contentPadding)) {
       val (headline, supporting, trailing) = createRefs()
@@ -84,6 +84,7 @@ fun Tile(
       }
     }
   }
+}
 
 /**
  * Similar to [androidx.compose.material3.ListItem] but with a

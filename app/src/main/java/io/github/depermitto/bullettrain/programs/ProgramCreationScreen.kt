@@ -17,7 +17,7 @@ fun ProgramCreationScreen(
   modifier: Modifier = Modifier,
   programViewModel: ProgramViewModel,
   navController: NavController,
-) =
+) {
   Column(modifier = modifier.fillMaxSize()) {
     TextField(
       modifier = Modifier.fillMaxWidth().padding(horizontal = Dp.Medium),
@@ -35,3 +35,4 @@ fun ProgramCreationScreen(
       navController = navController,
     )
   }
+}

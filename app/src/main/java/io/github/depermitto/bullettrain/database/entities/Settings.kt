@@ -4,18 +4,15 @@ import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import io.github.depermitto.bullettrain.database.Compressor
-import io.github.depermitto.bullettrain.database.Depot
-import io.github.depermitto.bullettrain.database.entities.Theme.Dark
 import io.github.depermitto.bullettrain.theme.palettes.Palette
 import io.github.depermitto.bullettrain.theme.palettes.RhinoButtercupPalette
-import java.io.File
+import io.github.depermitto.bullettrain.util.loadAndUncompressData
+import io.github.depermitto.bullettrain.util.saveAndCompressData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import java.nio.file.Path
 
 enum class UnitSystem {
   Metric,
@@ -47,19 +44,13 @@ data class Settings(
   val trueBlack: Boolean = false,
 )
 
-class SettingsDao(private val depot: SettingsDepot) {
-  internal val item = MutableStateFlow(depot.retrieve())
+class SettingsDao(private val filepath: Path) {
+  internal val item = MutableStateFlow<Settings>(loadAndUncompressData(filepath))
   val getSettings = item.asStateFlow()
 
   fun update(function: (Settings) -> Settings) {
     val state = item.updateAndGet { state -> function(state) }
-    depot.stash(state)
-    Log.i("db-${depot.file.name}", state.toString())
+    saveAndCompressData(filepath, state)
+    Log.i("db-${filepath}", state.toString())
   }
-}
-
-class SettingsDepot(file: File) : Depot<Settings>(file) {
-  override fun retrieve(): Settings = Json.decodeFromString(Compressor.uncompress(file.readText()))
-
-  override fun stash(obj: Settings) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
 }
