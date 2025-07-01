@@ -39,6 +39,8 @@ fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) {
                     value = searchText, onValueChange = { searchText = it },
                     shape = MaterialTheme.shapes.medium,
                     colors = notUnderlinedTextFieldColors(),
+                    maxLines = 1,
+                    singleLine = true,
                     placeholder = { Text(text = "Search Exercises") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                 )

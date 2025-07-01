@@ -8,40 +8,41 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.depermitto.components.AnchoredFloatingActionButton
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.components.WorkoutInfo
 import io.github.depermitto.components.encodeToStringOutput
 import io.github.depermitto.database.HistoryDao
 import io.github.depermitto.database.SettingsDao
+import io.github.depermitto.home.HomeViewModel
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun HistoryTab(
-    modifier: Modifier = Modifier, settingsDao: SettingsDao, historyDao: HistoryDao
+    modifier: Modifier = Modifier, homeViewModel: HomeViewModel, settingsDao: SettingsDao, historyDao: HistoryDao
 ) = Box(modifier = modifier.fillMaxSize()) {
-    var date by rememberSaveable { mutableStateOf(LocalDate.now()) }
-    val historyRecords = runBlocking { historyDao.where(date.month, date.year).firstOrNull() ?: emptyList() }
-    var selectedRecord by remember { mutableStateOf(historyRecords.lastOrNull()) }
+    val historyRecords by historyDao.where(homeViewModel.date.month, homeViewModel.date.year)
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+    LaunchedEffect(historyRecords) { homeViewModel.selectedRecord = historyRecords.firstOrNull() }
 
     fun findWorkout(calendarDay: LocalDate) = historyRecords.find { record ->
         val recordDate = record.date.atZone(ZoneId.systemDefault())
@@ -50,13 +51,17 @@ fun HistoryTab(
 
     Scaffold(modifier = Modifier.padding(horizontal = ItemPadding), topBar = {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { date = date.minusMonths(1) }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) }
+            IconButton(onClick = { homeViewModel.date = homeViewModel.date.minusMonths(1) }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+            }
             Text(
                 modifier = Modifier.weight(1f),
-                text = date.format(DateTimeFormatter.ofPattern("MMM yyyy")),
+                text = homeViewModel.date.format(DateTimeFormatter.ofPattern("MMM yyyy")),
                 textAlign = TextAlign.Center
             )
-            IconButton(onClick = { date = date.plusMonths(1) }) { Icon(Icons.AutoMirrored.Filled.ArrowForward, null) }
+            IconButton(onClick = { homeViewModel.date = homeViewModel.date.plusMonths(1) }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, null)
+            }
         }
     }) { paddingValues ->
         Column(
@@ -65,13 +70,13 @@ fun HistoryTab(
             verticalArrangement = Arrangement.spacedBy(ItemSpacing),
         ) {
             Calendar(
-                date = date,
+                date = homeViewModel.date,
                 modifier = Modifier.heightIn(0.dp, 350.dp),
-                onItemClick = { selectedRecord = findWorkout(it) },
+                onItemClick = { homeViewModel.selectedRecord = findWorkout(it) },
                 ifHighlightItem = { findWorkout(it) != null },
             )
 
-            selectedRecord?.let { record ->
+            homeViewModel.selectedRecord?.let { record ->
                 OutlinedCard(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.outlinedCardColors(containerColor = filledContainerColor())
@@ -96,7 +101,7 @@ fun HistoryTab(
                                 text = exercise.sets.groupBy { it.weight }.map { (weight, sets) ->
                                     "${sets.size} x ${weight.encodeToStringOutput().ifBlank { 0 }}"
                                 }.joinToString(", ") + " " + settingsDao.weightUnit(),
-                                maxLines = 1
+                                maxLines = 1,
                             )
                         })
                 }
@@ -105,10 +110,16 @@ fun HistoryTab(
     }
 
     val today = LocalDate.now()
-    if (date.month != today.month || date.year != today.year) AnchoredFloatingActionButton(
-        modifier = Modifier.align(Alignment.BottomStart),
-        onClick = { date = today },
-        text = { Text("Reset Date") },
-        icon = { Icon(Icons.Filled.Refresh, null) },
-    )
+    if (homeViewModel.date.month != today.month || homeViewModel.date.year != today.year) TextButton(
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .padding(bottom = ItemPadding),
+        onClick = { homeViewModel.date = today },
+        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+        elevation = ButtonDefaults.buttonElevation()
+    ) {
+        Icon(modifier = Modifier.size(ButtonDefaults.IconSize), imageVector = Icons.Filled.Refresh, contentDescription = null)
+        Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+        Text("Reset Date")
+    }
 }

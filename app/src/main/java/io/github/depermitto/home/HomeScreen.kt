@@ -49,6 +49,7 @@ fun HomeScreen(
 
         Screen.HomeScreen.Tabs.History -> HistoryTab(
             modifier = Modifier.padding(paddingValues),
+            homeViewModel = homeViewModel,
             settingsDao = settingsDao,
             historyDao = historyDao,
         )

@@ -73,7 +73,7 @@ fun TrainingScreen(
                         text = "${i + 1}. ${exercise.name}",
                         style = MaterialTheme.typography.titleMedium,
                     )
-                    if (trainViewModel.isWorkoutRunning()) lastPerformedSet?.let<ExerciseSet, Unit> { exerciseSet ->
+                    lastPerformedSet?.let<ExerciseSet, Unit> { exerciseSet ->
                         Card {
                             Text(
                                 modifier = Modifier.padding(4.dp),
@@ -148,7 +148,7 @@ fun TrainingScreen(
                                 value = set.weight,
                                 onValueChange = { trainViewModel.setExerciseSet(i, setIndex, set.copy(weight = it)) },
                                 placeholder = { lastPerformedSet?.let { Placeholder(it.weight.encodeToStringOutput()) } })
-                            if (trainViewModel.isWorkoutRunning()) Checkbox(modifier = Modifier
+                            Checkbox(modifier = Modifier
                                 .size(20.dp)
                                 .weight(ExerciseSetNarrowWeight),
                                 checked = set.date != null,

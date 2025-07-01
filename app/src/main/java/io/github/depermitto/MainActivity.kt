@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
 fun App(db: Database) = MaterialTheme {
     val navController = rememberNavController()
 
-    val homeViewModel = viewModel<HomeViewModel>(factory = HomeViewModel.Factory(Tabs.Train))
+    val homeViewModel = viewModel<HomeViewModel>(factory = HomeViewModel.Factory(startingBar = Tabs.History))
     val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program(), db.programDao))
     val trainViewModel = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController))
 

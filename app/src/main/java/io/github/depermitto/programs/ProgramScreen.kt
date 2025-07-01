@@ -47,6 +47,8 @@ fun ProgramScreen(
                 value = day.name,
                 onValueChange = { programViewModel.setDay(dayIndex, day.copy(name = it)) },
                 textStyle = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                singleLine = true,
                 colors = transparentTextFieldColors()
             )
         }, dropdownItems = {
@@ -168,7 +170,7 @@ fun ProgramExercise(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(color = filledContainerColor())
-                        .padding(ItemPadding),
+                        .padding(vertical = ItemPadding),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(

@@ -34,6 +34,7 @@ fun ProgramCreation(
         value = programViewModel.programName,
         onValueChange = { programViewModel.programName = it },
         maxLines = 1,
+        singleLine = true,
         placeholder = { Text(text = "Workout Name") },
         shape = MaterialTheme.shapes.medium,
         colors = notUnderlinedTextFieldColors()

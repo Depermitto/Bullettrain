@@ -75,8 +75,9 @@ fun TrainTab(
         }
     }
 
-    OutlinedButton(modifier = Modifier.fillMaxWidth(),
+    OutlinedButton(
+        modifier = Modifier.fillMaxWidth(),
         onClick = { trainViewModel.startWorkout(Day(), ProgramDao.EmptyWorkout) }) {
-        Text("Start Empty Workout")
+        Text(modifier = Modifier.padding(vertical = ItemSpacing), text = "Start Empty Workout")
     }
 }
