@@ -4,12 +4,12 @@ import androidx.compose.ui.unit.dp
 
 val SmallPadding = 4.dp
 val RegularPadding = 8.dp
-val WidePadding = 16.dp
-val SuperWidePadding = 24.dp
+val BigPadding = 16.dp
+val SuperBigPadding = 24.dp
 
 val SmallSpacing = 2.dp
 val RegularSpacing = 4.dp
-val WideSpacing = 8.dp
+val BigSpacing = 8.dp
 
 val CompactIconSize = 20.dp
 val SqueezableIconSize = 40.dp

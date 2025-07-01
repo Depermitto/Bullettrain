@@ -14,18 +14,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
+import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
-import io.github.depermitto.bullettrain.components.TransparentCard
 import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.theme.RegularPadding
-import io.github.depermitto.bullettrain.theme.RegularSpacing
 import io.github.depermitto.bullettrain.theme.ScrollPadding
+import io.github.depermitto.bullettrain.theme.SmallSpacing
 import io.github.depermitto.bullettrain.theme.unlinedColors
 import kotlinx.coroutines.flow.map
 
@@ -46,15 +45,11 @@ fun ExercisesListScreen(
         it.sortedByDescending { exerciseFrequencyMap[it.id] }
     }.collectAsStateWithLifecycle(initialValue = emptyList())
 
-    Column(
-        modifier = Modifier
-            .align(Alignment.TopCenter)
-            .padding(horizontal = RegularPadding)
-    ) {
+    Column(modifier = Modifier.align(Alignment.TopCenter)) {
         TextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp)
+                .padding(start = RegularPadding, end = RegularPadding, bottom = 12.dp)
                 .clip(shape = RoundedCornerShape(24.dp))
                 .shadow(2.dp, shape = RoundedCornerShape(24.dp)),
             value = searchText, onValueChange = { searchText = it },
@@ -67,17 +62,16 @@ fun ExercisesListScreen(
         )
 
         LazyColumn(
-            contentPadding = PaddingValues(bottom = ScrollPadding), verticalArrangement = Arrangement.spacedBy(RegularSpacing)
+            contentPadding = PaddingValues(bottom = ScrollPadding), verticalArrangement = Arrangement.spacedBy(SmallSpacing)
         ) {
             items(exercises) { exercise ->
                 val count = exerciseFrequencyMap[exercise.id]
-                TransparentCard(modifier = Modifier.fillMaxWidth(), onClick = { onSelection(exercise) }) {
-                    ListItem(
-                        headlineContent = { Text(exercise.name) },
-                        supportingContent = { if (count != null) Text("$count ${if (count == 1) "record" else "records"}") },
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                    )
-                }
+                ListItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onSelection(exercise) },
+                    headlineContent = { Text(exercise.name) },
+                    supportingContent = { if (count != null) Text("$count ${if (count == 1) "record" else "records"}") },
+                )
             }
         }
     }

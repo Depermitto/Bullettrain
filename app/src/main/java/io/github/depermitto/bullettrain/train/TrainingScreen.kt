@@ -18,8 +18,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -34,7 +32,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,6 +41,7 @@ import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DropdownButton
 import io.github.depermitto.bullettrain.components.Header
+import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.Placeholder
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
@@ -55,6 +53,7 @@ import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
+import io.github.depermitto.bullettrain.theme.BigSpacing
 import io.github.depermitto.bullettrain.theme.CompactIconSize
 import io.github.depermitto.bullettrain.theme.NarrowWeight
 import io.github.depermitto.bullettrain.theme.RegularPadding
@@ -63,7 +62,6 @@ import io.github.depermitto.bullettrain.theme.SmallPadding
 import io.github.depermitto.bullettrain.theme.SmallSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.SwapIcon
-import io.github.depermitto.bullettrain.theme.WideSpacing
 import io.github.depermitto.bullettrain.theme.WideWeight
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.theme.numeric
@@ -85,7 +83,7 @@ fun TrainingScreen(
         .padding(horizontal = RegularPadding)
         .verticalScroll(rememberScrollState(0))
         .padding(bottom = ScrollPadding),
-    verticalArrangement = Arrangement.spacedBy(WideSpacing)
+    verticalArrangement = Arrangement.spacedBy(BigSpacing)
 ) {
     val settings by settingsDao.getSettings.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -98,7 +96,7 @@ fun TrainingScreen(
                 onChoose = { it -> trainViewModel.setExercise(exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
 
             val lastPerformedSet = exercise.lastPerformedSet()
-            ListItem(colors = ListItemDefaults.colors(containerColor = Color.Transparent), headlineContent = {
+            ListItem(headlineContent = {
                 TextLink(
                     "${exerciseIndex + 1}. ${exercise.name}",
                     navController = navController,

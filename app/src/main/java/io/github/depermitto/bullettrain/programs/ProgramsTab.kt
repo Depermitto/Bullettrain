@@ -9,22 +9,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.*
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
+import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.components.TransparentCard
 import io.github.depermitto.bullettrain.database.ProgramDao
@@ -59,7 +60,7 @@ fun ProgramsTab(
                         onClick = { closeDropdown(); showProgramDeleteDialog = true })
                 }) {
                 TransparentCard(modifier = Modifier.align(Alignment.Center)) {
-                    ListItem(colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    ListItem(
                         headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
                         supportingContent = {
                             Column {
@@ -91,7 +92,8 @@ fun ProgramsTab(
 
                 if (showRenameDialog) {
                     var errorMessage by rememberSaveable { mutableStateOf("") }
-                    TextFieldAlertDialog(label = { Text("Program Name") },
+                    TextFieldAlertDialog(
+                        label = { Text("Program Name") },
                         onDismissRequest = { showRenameDialog = false },
                         dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
                         confirmButton = { name ->

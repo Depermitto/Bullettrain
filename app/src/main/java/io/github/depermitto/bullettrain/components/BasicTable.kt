@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,7 +35,6 @@ fun <T> BasicTable(
     headlineContent: @Composable () -> Unit,
     headlineSupportingContent: @Composable (() -> Unit)? = null,
     headlineTrailingContent: @Composable (() -> Unit)? = null,
-    headlineLeadingContent: @Composable (() -> Unit)? = null,
     overlayingContent: @Composable (() -> Unit)? = null,
     emptyMessage: String = "No Information To Present",
     ratio: Ratio = Ratio.Unlimited,
@@ -50,9 +46,7 @@ fun <T> BasicTable(
     ListItem(
         headlineContent = headlineContent,
         supportingContent = headlineSupportingContent,
-        leadingContent = headlineLeadingContent,
         trailingContent = headlineTrailingContent,
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
     )
 
     if (list.isEmpty()) {

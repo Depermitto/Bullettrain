@@ -38,7 +38,7 @@ import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.ScrollPadding
-import io.github.depermitto.bullettrain.theme.WideSpacing
+import io.github.depermitto.bullettrain.theme.BigSpacing
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import java.time.LocalDate
@@ -69,7 +69,7 @@ fun HistoryTab(
             .verticalScroll(verticalScrollState)
             .padding(bottom = ScrollPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(WideSpacing)
+        verticalArrangement = Arrangement.spacedBy(BigSpacing)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = { homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1) }) {

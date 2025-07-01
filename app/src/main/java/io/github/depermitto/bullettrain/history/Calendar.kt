@@ -9,8 +9,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -26,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.ListAlertDialog
+import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.HistoryRecord
@@ -129,9 +128,7 @@ fun Calendar(
                 selectedProgram = program
             }
         }) { program ->
-        ListItem(headlineContent = {
-            Text(program.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }, colors = ListItemDefaults.colors(containerColor = Color.Transparent))
+        ListItem(headlineContent = { Text(program.name, maxLines = 2, overflow = TextOverflow.Ellipsis) })
     }
 
     selectedProgram?.let { program ->
@@ -143,9 +140,7 @@ fun Calendar(
                 selectedProgram = null
                 trainViewModel.startWorkout(day, program, date = longClickedDate)
             }) { day ->
-            ListItem(headlineContent = {
-                Text(day.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }, colors = ListItemDefaults.colors(containerColor = Color.Transparent))
+            ListItem(headlineContent = { Text(day.name, maxLines = 2, overflow = TextOverflow.Ellipsis) })
         }
     }
 
@@ -157,12 +152,10 @@ fun Calendar(
         var text = record.relatedProgram.name
         if (!(record.relatedProgram corresponds Program.EmptyWorkout)) text += ", " + record.workout.name
 
-        ListItem(headlineContent = {
-            Text(text, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }, supportingContent = {
+        ListItem(headlineContent = { Text(text, maxLines = 2, overflow = TextOverflow.Ellipsis) }, supportingContent = {
             val totalSets = record.workout.exercises.sumOf { it.sets.count { it.actualPerfVar != 0f } }
-            if (totalSets != 0) Text(text = "$totalSets total sets")
-        }, colors = ListItemDefaults.colors(containerColor = Color.Transparent))
+            if (totalSets != 0) Text(text = "$totalSets performed sets")
+        })
     }
 }
 

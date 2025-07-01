@@ -18,8 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import io.github.depermitto.bullettrain.theme.SuperWidePadding
-import io.github.depermitto.bullettrain.theme.WidePadding
+import io.github.depermitto.bullettrain.theme.BigPadding
+import io.github.depermitto.bullettrain.theme.SuperBigPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +37,7 @@ fun <T> ListAlertDialog(
             .heightIn(0.dp, 350.dp)
             .clip(MaterialTheme.shapes.extraLarge)
     ) {
-        Text(title, Modifier.padding(SuperWidePadding), style = MaterialTheme.typography.titleLarge, maxLines = 2)
+        Text(title, Modifier.padding(SuperBigPadding), style = MaterialTheme.typography.titleLarge, maxLines = 2)
 
         LazyColumn(Modifier.heightIn(0.dp, 220.dp)) {
             items(list) { item ->
@@ -49,7 +49,7 @@ fun <T> ListAlertDialog(
         Box(
             Modifier
                 .fillMaxWidth()
-                .padding(bottom = WidePadding, end = WidePadding), contentAlignment = Alignment.BottomEnd
+                .padding(bottom = BigPadding, end = BigPadding), contentAlignment = Alignment.BottomEnd
         ) {
             dismissButton()
         }

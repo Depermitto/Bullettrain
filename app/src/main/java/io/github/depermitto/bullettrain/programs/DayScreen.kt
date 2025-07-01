@@ -27,8 +27,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHostState
@@ -42,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -51,6 +48,7 @@ import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DragButton
 import io.github.depermitto.bullettrain.components.Header
+import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
 import io.github.depermitto.bullettrain.components.TextLink
@@ -61,6 +59,7 @@ import io.github.depermitto.bullettrain.database.Intensity
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.PerfVarCategory
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
+import io.github.depermitto.bullettrain.theme.BigSpacing
 import io.github.depermitto.bullettrain.theme.CompactIconSize
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
 import io.github.depermitto.bullettrain.theme.HeartPlusIcon
@@ -72,7 +71,6 @@ import io.github.depermitto.bullettrain.theme.SmallPadding
 import io.github.depermitto.bullettrain.theme.SmallSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.SwapIcon
-import io.github.depermitto.bullettrain.theme.WideSpacing
 import io.github.depermitto.bullettrain.theme.WideWeight
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.util.reorder
@@ -101,7 +99,7 @@ fun DayScreen(
         .verticalScroll(rememberScrollState(0))
         .padding(bottom = ScrollPadding),
         list = day.exercises,
-        verticalArrangement = Arrangement.spacedBy(WideSpacing),
+        verticalArrangement = Arrangement.spacedBy(BigSpacing),
         onMove = {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
@@ -140,7 +138,7 @@ fun DayScreen(
                 }) {
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
                         var showTargetEditDropdown by remember { mutableStateOf(false) }
-                        ListItem(colors = ListItemDefaults.colors(containerColor = Color.Transparent), headlineContent = {
+                        ListItem(headlineContent = {
                             TextLink(
                                 exercise.name,
                                 navController = navController,
