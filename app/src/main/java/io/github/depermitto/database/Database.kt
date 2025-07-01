@@ -21,13 +21,12 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
+private const val SETTINGS_FILENAME = "settings"
+private const val HISTORY_FILENAME = "history"
+private const val PROGRAMS_FILENAME = "programs"
+private const val EXERCISES_FILENAME = "exercises"
+
 class Database(private val databaseDirectory: File) {
-    companion object {
-        const val SETTINGS_FILENAME = "settings"
-        const val HISTORY_FILENAME = "history"
-        const val PROGRAMS_FILENAME = "programs"
-        const val EXERCISES_FILENAME = "exercises"
-    }
 
     private val settingsFile = SettingsFile(File(databaseDirectory, SETTINGS_FILENAME))
     private val historyFile = HistoryFile(File(databaseDirectory, HISTORY_FILENAME))

@@ -13,8 +13,8 @@ import io.github.depermitto.database.ExerciseDao
 
 @Composable
 fun AddExerciseButton(exerciseDao: ExerciseDao, onChoose: (Exercise) -> Unit) {
-    val toggler = exerciseChooser(exerciseDao = exerciseDao, onChoose = onChoose)
-    OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { toggler() }) {
+    val toggle = exerciseChooser(exerciseDao = exerciseDao, onChoose = onChoose)
+    OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { toggle() }) {
         Text(text = "Add Exercise")
     }
 }

@@ -10,20 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 
 @Composable
-fun DropdownButton(modifier: Modifier = Modifier, dropdownItems: @Composable () -> Unit) {
-    var showDropdownMenu by remember { mutableStateOf(false) }
-
-    Box(modifier = Modifier) {
-        IconButton(modifier = modifier, onClick = { showDropdownMenu = true }) {
-            Icon(Icons.Filled.MoreVert, contentDescription = null)
-        }
-        DropdownMenu(expanded = showDropdownMenu, onDismissRequest = { showDropdownMenu = false }) {
-            dropdownItems()
-        }
-    }
-}
-
-@Composable
 fun DropdownButton(
     modifier: Modifier = Modifier,
     show: Boolean,
