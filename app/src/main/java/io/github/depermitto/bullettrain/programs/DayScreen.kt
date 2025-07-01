@@ -65,7 +65,7 @@ import io.github.depermitto.bullettrain.theme.HeartPlusIcon
 import io.github.depermitto.bullettrain.theme.HeartRemoveIcon
 import io.github.depermitto.bullettrain.theme.NarrowWeight
 import io.github.depermitto.bullettrain.theme.RegularPadding
-import io.github.depermitto.bullettrain.theme.RegularSpacing
+import io.github.depermitto.bullettrain.theme.SmallPadding
 import io.github.depermitto.bullettrain.theme.SmallSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.SwapIcon
@@ -145,12 +145,14 @@ fun DayScreen(
                             )
                         }, trailingContent = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                IconButton(modifier = Modifier.size(SqueezableIconSize),
+                                IconButton(
+                                    modifier = Modifier.size(SqueezableIconSize),
                                     onClick = { showSwapExerciseChooser = true }) {
                                     SwapIcon()
                                 }
 
-                                if (!exercise.hasIntensity) IconButton(modifier = Modifier.size(SqueezableIconSize),
+                                if (!exercise.hasIntensity) IconButton(
+                                    modifier = Modifier.size(SqueezableIconSize),
                                     onClick = { setIntensity(Intensity.RPE) }) {
                                     HeartPlusIcon()
                                 }
@@ -163,8 +165,7 @@ fun DayScreen(
                         })
 
                         Row(
-                            modifier = Modifier.padding(top = RegularPadding, bottom = RegularSpacing),
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier.padding(SmallPadding), verticalAlignment = Alignment.CenterVertically
                         ) {
                             Header(Modifier.weight(NarrowWeight), "Set")
                             // PerfVarCategory Dropdown with Icon
@@ -178,7 +179,8 @@ fun DayScreen(
                                 Header(text = exercise.perfVarCategory.prettyName)
                                 Icon(Sharp.KeyboardArrowDown, contentDescription = null)
 
-                                DropdownMenu(expanded = showTargetEditDropdown,
+                                DropdownMenu(
+                                    expanded = showTargetEditDropdown,
                                     onDismissRequest = { showTargetEditDropdown = false }) {
                                     PerfVarCategory.entries.forEach { entry ->
                                         DropdownMenuItem(text = { Text(entry.prettyName) }, onClick = {
@@ -225,7 +227,8 @@ fun DayScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(color = MaterialTheme.colorScheme.focalGround)
-                                        .padding(vertical = RegularPadding), verticalAlignment = Alignment.CenterVertically
+                                        .padding(vertical = RegularPadding, horizontal = SmallPadding),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
                                         modifier = Modifier.weight(NarrowWeight),

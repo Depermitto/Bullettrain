@@ -2,6 +2,7 @@ package io.github.depermitto.bullettrain.theme
 
 import androidx.compose.ui.unit.dp
 
+val SmallPadding = 4.dp
 val RegularPadding = 8.dp
 
 val SmallSpacing = 2.dp

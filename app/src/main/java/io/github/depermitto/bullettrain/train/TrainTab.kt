@@ -16,7 +16,7 @@ import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.RegularPadding
-import io.github.depermitto.bullettrain.theme.RegularSpacing
+import io.github.depermitto.bullettrain.theme.SmallPadding
 import io.github.depermitto.bullettrain.theme.focalGround
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
@@ -54,7 +54,7 @@ fun TrainTab(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = RegularSpacing)
+                .padding(bottom = SmallPadding)
         ) {
             if (programs.isEmpty()) Text(
                 modifier = Modifier

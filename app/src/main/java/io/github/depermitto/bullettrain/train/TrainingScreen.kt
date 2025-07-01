@@ -57,7 +57,7 @@ import io.github.depermitto.bullettrain.exercises.ExerciseChooser
 import io.github.depermitto.bullettrain.theme.CompactIconSize
 import io.github.depermitto.bullettrain.theme.NarrowWeight
 import io.github.depermitto.bullettrain.theme.RegularPadding
-import io.github.depermitto.bullettrain.theme.RegularSpacing
+import io.github.depermitto.bullettrain.theme.SmallPadding
 import io.github.depermitto.bullettrain.theme.SmallSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.SwapIcon
@@ -94,46 +94,44 @@ fun TrainingScreen(
                 onChoose = { it -> trainViewModel.setExercise(exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
 
             val lastPerformedSet = exercise.lastPerformedSet()
-            ListItem(colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                headlineContent = {
-                    TextLink(
-                        "${exerciseIndex + 1}. ${exercise.name}",
-                        navController = navController,
-                        destination = Destination.Exercise(exercise.id),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }, trailingContent = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (!trainViewModel.isWorkoutEditing()) lastPerformedSet?.let { exerciseSet ->
-                            Card {
-                                Text(
-                                    modifier = Modifier.padding(4.dp),
-                                    text = if (exercise.sets.all { it.completed }) "Done"
-                                    else trainViewModel.elapsedSince(exerciseSet.doneTs!!),
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                            }
-                        }
-                        var showDropdownButton by remember { mutableStateOf(false) }
-                        DropdownButton(modifier = Modifier.size(SqueezableIconSize),
-                            show = showDropdownButton,
-                            onShowChange = { showDropdownButton = it }) {
-                            DropdownMenuItem(leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
-                                text = { Text(text = "Delete") },
-                                onClick = {
-                                    showDropdownButton = false
-                                    showExerciseDeleteDialog = true
-                                })
-                            DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
-                                showDropdownButton = false
-                                showSwapExerciseChooser = true
-                            })
+            ListItem(colors = ListItemDefaults.colors(containerColor = Color.Transparent), headlineContent = {
+                TextLink(
+                    "${exerciseIndex + 1}. ${exercise.name}",
+                    navController = navController,
+                    destination = Destination.Exercise(exercise.id),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }, trailingContent = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (!trainViewModel.isWorkoutEditing()) lastPerformedSet?.let { exerciseSet ->
+                        Card {
+                            Text(
+                                modifier = Modifier.padding(4.dp),
+                                text = if (exercise.sets.all { it.completed }) "Done"
+                                else trainViewModel.elapsedSince(exerciseSet.doneTs!!),
+                                style = MaterialTheme.typography.titleMedium
+                            )
                         }
                     }
+                    var showDropdownButton by remember { mutableStateOf(false) }
+                    DropdownButton(modifier = Modifier.size(SqueezableIconSize),
+                        show = showDropdownButton,
+                        onShowChange = { showDropdownButton = it }) {
+                        DropdownMenuItem(leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+                            text = { Text(text = "Delete") },
+                            onClick = {
+                                showDropdownButton = false
+                                showExerciseDeleteDialog = true
+                            })
+                        DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
+                            showDropdownButton = false
+                            showSwapExerciseChooser = true
+                        })
+                    }
                 }
-            )
+            })
 
-            Row(modifier = Modifier.padding(top = RegularPadding, bottom = RegularSpacing)) {
+            Row(modifier = Modifier.padding(SmallPadding)) {
                 Header(Modifier.weight(NarrowWeight), "Set")
                 if (exercise.intensity != null) {
                     Header(Modifier.weight(NarrowWeight), exercise.intensity.name)
@@ -145,7 +143,7 @@ fun TrainingScreen(
                     Header(Modifier.weight(NarrowWeight), "")
                 }
             }
-            HorizontalDivider()
+            HorizontalDivider(modifier = Modifier.padding(horizontal = SmallPadding))
 
             exercise.sets.forEachIndexed { setIndex, set ->
                 SwipeToDeleteBox(onDelete = {
@@ -166,7 +164,8 @@ fun TrainingScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(color = MaterialTheme.colorScheme.focalGround)
-                            .padding(vertical = RegularPadding), verticalAlignment = Alignment.CenterVertically
+                            .padding(vertical = RegularPadding, horizontal = SmallPadding),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             modifier = Modifier.weight(NarrowWeight),
