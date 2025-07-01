@@ -20,37 +20,34 @@ import io.github.depermitto.theme.transparentTextFieldColors
 
 @Deprecated(message = "Do something akin to TrainScreen")
 @Composable
-fun DayScreen(day: Day, onDayChange: (Day?) -> Unit, exerciseDao: ExerciseDao) {
-    ExpandableOutlinedCard(title = {
-        TextField(
-            value = day.name,
-            onValueChange = { onDayChange(day.copy(name = it)) },
-            textStyle = MaterialTheme.typography.titleMedium,
-            colors = transparentTextFieldColors()
-        )
-    }, dropdownItems = {
-        DropdownMenuItem(text = { Text(text = "Delete") },
-            leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
-            onClick = { onDayChange(null) })
-    }, startExpanded = true) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(ItemPadding),
-            verticalArrangement = Arrangement.spacedBy(ItemSpacing)
-        ) {
-            day.exercises.forEachIndexed { i, exercises ->
-                ExpandableOutlinedCard(title = { Text(text = "${i + 1}. ${exercises.first().name}") }) {
-                    SetScreen(set = exercises, onSetChange = {
-                        if (it == null) onDayChange(day.copy(exercises = day.exercises - setOf(exercises)))
-                        else onDayChange(day.copy(exercises = day.exercises.replaceAt(i, it)))
-                    })
-                }
+fun DayScreen(day: Day, onDayChange: (Day?) -> Unit, exerciseDao: ExerciseDao) = ExpandableOutlinedCard(title = {
+    TextField(
+        value = day.name,
+        onValueChange = { onDayChange(day.copy(name = it)) },
+        textStyle = MaterialTheme.typography.titleMedium,
+        colors = transparentTextFieldColors()
+    )
+}, dropdownItems = {
+    DropdownMenuItem(text = { Text(text = "Delete") },
+        leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+        onClick = { onDayChange(null) })
+}, startExpanded = true) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
+    ) {
+        day.exercises.forEachIndexed { i, exercises ->
+            ExpandableOutlinedCard(title = { Text(text = "${i + 1}. ${exercises.first().name}") }) {
+                SetScreen(set = exercises, onSetChange = {
+                    if (it == null) onDayChange(day.copy(exercises = day.exercises - setOf(exercises)))
+                    else onDayChange(day.copy(exercises = day.exercises.replaceAt(i, it)))
+                })
             }
-
-            ExerciseChooser(
-                exerciseDao = exerciseDao,
-                onChoose = { onDayChange(day.copy(exercises = day.exercises + setOf(listOf(it)))) })
         }
+
+        ExerciseChooser(exerciseDao = exerciseDao,
+            onChoose = { onDayChange(day.copy(exercises = day.exercises + setOf(listOf(it)))) })
     }
 }
+

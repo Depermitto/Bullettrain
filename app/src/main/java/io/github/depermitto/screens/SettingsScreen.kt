@@ -15,7 +15,6 @@ import io.github.depermitto.data.GymDatabase
 import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerType
 import io.github.vinceglb.filekit.core.pickFile
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
@@ -25,10 +24,8 @@ fun SettingsScreen(
     db: GymDatabase,
     dbFile: File,
     fallbackBytes: ByteArray,
-    scope: CoroutineScope,
-) = Box(
-    modifier = Modifier.fillMaxSize(),
-) {
+) = Box(modifier = Modifier.fillMaxSize()) {
+    val scope = rememberCoroutineScope { Dispatchers.IO }
     val context = LocalContext.current
     var toast by remember { mutableStateOf("") }
 
@@ -40,7 +37,7 @@ fun SettingsScreen(
 
     Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
         Button(onClick = {
-            scope.launch(Dispatchers.IO) {
+            scope.launch {
                 val pickedFile = FileKit.pickFile(type = PickerType.File())
                 if (pickedFile != null) {
                     db.checkpoint()
@@ -53,7 +50,7 @@ fun SettingsScreen(
         }
 
         Button(onClick = {
-            scope.launch(Dispatchers.IO) {
+            scope.launch {
                 db.checkpoint()
                 val pickedFile = FileKit.saveFile(
                     bytes = dbFile.readBytes(),
@@ -70,7 +67,7 @@ fun SettingsScreen(
     }
 
     Button(modifier = Modifier.align(Alignment.BottomCenter), onClick = {
-        scope.launch(Dispatchers.IO) {
+        scope.launch {
             db.checkpoint()
             dbFile.writeBytes(fallbackBytes)
             toast = "Factory Reset Complete"
@@ -79,5 +76,3 @@ fun SettingsScreen(
         Text(text = "Factory Reset")
     }
 }
-
-        

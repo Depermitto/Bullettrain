@@ -14,11 +14,7 @@ import io.github.depermitto.theme.ItemPadding
 fun ExercisesCreationScreen(newExercise: (Exercise?) -> Unit) {
     var exerciseState by remember { mutableStateOf(Exercise(name = "")) }
 
-    OutlinedCard(
-        modifier = Modifier
-            .height(200.dp)
-            .width(200.dp)
-    ) {
+    OutlinedCard(modifier = Modifier.size(200.dp, 200.dp)) {
         Box(
             modifier = Modifier
                 .fillMaxSize()

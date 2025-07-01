@@ -6,7 +6,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -25,7 +24,6 @@ import io.github.depermitto.screens.Screen
 import io.github.depermitto.screens.SettingsScreen
 import io.github.depermitto.screens.programs.ProgramCreationScreen
 import io.github.depermitto.screens.programs.ProgramScreen
-import kotlinx.coroutines.launch
 import java.io.File
 
 const val DB_FILENAME = "firetent.sqlite"
@@ -33,13 +31,12 @@ const val DB_FILENAME = "firetent.sqlite"
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme {
-    val scope = rememberCoroutineScope()
     val navController = rememberNavController()
 
     val exerciseDao = db.getExerciseDao()
     val programDao = db.getProgramDao()
 
-    val globalProgramVM = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program()))
+    val globalProgramVM = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program(), programDao))
     val globalTrainVM = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(Day()))
 
     NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
@@ -55,31 +52,24 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
         composable(Screen.ProgramCreationScreen.route) {
             RibbonScaffold(ribbon = { Ribbon(navController = navController, title = "New Program") }) {
                 ProgramCreationScreen(
-                    globalProgramVM, programDao = programDao, exerciseDao = exerciseDao, navController = navController
+                    programViewModel = globalProgramVM, exerciseDao = exerciseDao, navController = navController
                 )
             }
         }
 
         composable(Screen.ProgramScreen.route) { navBackStackEntry ->
-            val programId = navBackStackEntry.arguments?.getString("programId") ?: return@composable
-            val program: Program? by programDao.whereId(id = programId.toLong())
-                .collectAsStateWithLifecycle(initialValue = null)
+            val program by programDao.whereId(
+                (navBackStackEntry.arguments?.getString("programId") ?: return@composable).toLong()
+            ).collectAsStateWithLifecycle(initialValue = null)
 
             program?.let {
-                val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(it))
+                val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(it, programDao))
 
                 RibbonScaffold(ribbon = { Ribbon(navController = navController, title = programViewModel.name) }) {
                     ProgramScreen(programViewModel, exerciseDao = exerciseDao)
                     if (programViewModel.days != it.days) {
                         AnchoredFloatingActionButton(text = { Text("Finish Edit") }, onClick = {
-                            scope.launch {
-                                programDao.upsert(
-                                    Program(
-                                        name = programViewModel.name,
-                                        days = programViewModel.days
-                                    )
-                                )
-                            }
+                            programViewModel.upsert()
                             navController.popBackStack(Screen.MainScreen.route, inclusive = false)
                         })
                     }
@@ -90,9 +80,7 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
         composable(Screen.SettingsScreen.route) {
             RibbonScaffold(ribbon = {
                 Ribbon(navController = navController, settingsGear = false, title = "Settings")
-            }) {
-                SettingsScreen(db = db, dbFile = dbFile, fallbackBytes = fallbackBytes, scope = scope)
-            }
+            }) { SettingsScreen(db = db, dbFile = dbFile, fallbackBytes = fallbackBytes) }
         }
     }
 }
