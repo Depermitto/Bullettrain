@@ -1,9 +1,9 @@
-package io.github.depermitto.data
+package io.github.depermitto.data.entities
 
 import androidx.room.*
 import io.github.depermitto.components.encodeToStringOutput
+import io.github.depermitto.data.InstantSerializer
 import kotlinx.coroutines.flow.Flow
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.time.Instant
 
@@ -42,7 +42,7 @@ data class ExerciseSet(
     // val targetIntensity
     val intensity: Float? = null,
     val weight: Float = 0f,
-    @Contextual val date: Instant? = null,
+    @Serializable(with = InstantSerializer::class) val date: Instant? = null,
 )
 
 @Serializable

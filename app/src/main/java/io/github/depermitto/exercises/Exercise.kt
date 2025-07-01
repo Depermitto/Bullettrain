@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import io.github.depermitto.components.DropdownButton
 import io.github.depermitto.components.NumberField
-import io.github.depermitto.data.*
+import io.github.depermitto.data.entities.*
 import io.github.depermitto.misc.DuplicateIcon
 import io.github.depermitto.misc.IntensityIcon
 import io.github.depermitto.misc.set

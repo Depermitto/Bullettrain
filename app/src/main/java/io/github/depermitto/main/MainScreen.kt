@@ -14,23 +14,21 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import io.github.depermitto.components.Ribbon
-import io.github.depermitto.data.ExerciseDao
-import io.github.depermitto.data.HistoryDao
-import io.github.depermitto.data.ProgramDao
+import io.github.depermitto.data.entities.HistoryDao
+import io.github.depermitto.data.entities.ProgramDao
 import io.github.depermitto.history.HistoryTab
 import io.github.depermitto.main.Screen.MainScreen
 import io.github.depermitto.programs.ProgramsTab
-import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.adaptiveIconTint
 import io.github.depermitto.theme.filledContainerColor
 import io.github.depermitto.train.TrainTab
+import io.github.depermitto.train.TrainViewModel
 
 @Composable
 fun MainScreen(
-    settingsViewModel: SettingsViewModel,
+    trainViewModel: TrainViewModel,
     programDao: ProgramDao,
     historyDao: HistoryDao,
-    exerciseDao: ExerciseDao,
     navController: NavController,
     activeTab: MainScreen.Tabs,
 ) {
@@ -64,10 +62,9 @@ fun MainScreen(
 
             MainScreen.Tabs.Train -> TrainTab(
                 modifier = Modifier.padding(paddingValues),
-                settingsViewModel = settingsViewModel,
-                historyDao = historyDao,
+                trainViewModel = trainViewModel,
                 programDao = programDao,
-                exerciseDao = exerciseDao
+                navController = navController
             )
         }
     }

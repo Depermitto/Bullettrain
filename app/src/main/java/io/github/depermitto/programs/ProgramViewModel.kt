@@ -8,9 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import io.github.depermitto.data.Day
-import io.github.depermitto.data.Program
-import io.github.depermitto.data.ProgramDao
+import io.github.depermitto.data.entities.Day
+import io.github.depermitto.data.entities.Program
+import io.github.depermitto.data.entities.ProgramDao
 import kotlinx.coroutines.launch
 
 class ProgramViewModel(program: Program, private val programDao: ProgramDao) : ViewModel() {

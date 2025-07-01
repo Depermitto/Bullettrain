@@ -10,7 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.depermitto.data.HistoryDao
+import io.github.depermitto.data.entities.HistoryDao
 import io.github.depermitto.exercises.Exercise
 import io.github.depermitto.theme.ItemPadding
 

@@ -8,8 +8,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import io.github.depermitto.data.Exercise
-import io.github.depermitto.data.ExerciseDao
+import io.github.depermitto.data.entities.Exercise
+import io.github.depermitto.data.entities.ExerciseDao
 
 @Composable
 fun AddExerciseButton(exerciseDao: ExerciseDao, onChoose: (Exercise) -> Unit) {

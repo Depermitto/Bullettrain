@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.github.depermitto.components.ExpandableOutlinedCard
-import io.github.depermitto.data.ExerciseDao
+import io.github.depermitto.data.entities.ExerciseDao
 import io.github.depermitto.exercises.AddExerciseButton
 import io.github.depermitto.exercises.Exercise
 import io.github.depermitto.misc.set

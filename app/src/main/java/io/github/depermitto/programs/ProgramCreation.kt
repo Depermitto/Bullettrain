@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import io.github.depermitto.components.AnchoredFloatingActionButton
-import io.github.depermitto.data.ExerciseDao
+import io.github.depermitto.data.entities.ExerciseDao
 import io.github.depermitto.main.Screen
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.notUnderlinedTextFieldColors

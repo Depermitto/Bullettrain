@@ -15,8 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.components.AnchoredFloatingActionButton
-import io.github.depermitto.data.Program
-import io.github.depermitto.data.ProgramDao
+import io.github.depermitto.data.entities.Program
+import io.github.depermitto.data.entities.ProgramDao
 import io.github.depermitto.main.Screen
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
@@ -25,15 +25,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun ProgramsTab(modifier: Modifier = Modifier, programDao: ProgramDao, navController: NavController) = Box(
-    modifier = modifier
-        .fillMaxSize()
-        .padding(horizontal = ItemPadding)
-) {
+fun ProgramsTab(
+    modifier: Modifier = Modifier,
+    programDao: ProgramDao,
+    navController: NavController,
+) = Box(modifier = modifier.fillMaxSize()) {
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val programs by programDao.getAll().collectAsStateWithLifecycle(emptyList())
 
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(ItemSpacing)) {
+    LazyColumn(
+        modifier = Modifier.padding(horizontal = ItemPadding),
+        verticalArrangement = Arrangement.spacedBy(ItemSpacing)
+    ) {
         items(programs) { program ->
             OutlinedCard(colors = CardDefaults.cardColors(containerColor = filledContainerColor()), onClick = {
                 navController.navigate(Screen.ProgramScreen.passId(program.programId))
@@ -49,7 +52,6 @@ fun ProgramsTab(modifier: Modifier = Modifier, programDao: ProgramDao, navContro
     }
 
     AnchoredFloatingActionButton(
-        modifier = modifier.offset(x = ItemPadding),
         icon = { Icon(Icons.Filled.Add, contentDescription = null) },
         onClick = { navController.navigate(Screen.ProgramCreationScreen.route) },
     )

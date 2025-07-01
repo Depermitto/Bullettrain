@@ -1,8 +1,8 @@
-package io.github.depermitto.data
+package io.github.depermitto.data.entities
 
 import androidx.room.*
+import io.github.depermitto.data.InstantSerializer
 import kotlinx.coroutines.flow.Flow
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.time.Instant
 
@@ -15,7 +15,10 @@ interface ProgramDao {
     suspend fun delete(program: Program)
 
     @Query("SELECT * FROM programs WHERE program_id = :id LIMIT 1")
-    fun whereIdIs(id: Long): Flow<Program?>
+    fun whereIdFlow(id: Long): Flow<Program?>
+
+    @Query("SELECT * FROM programs WHERE program_id = :id LIMIT 1")
+    suspend fun whereId(id: Long): Program?
 
     @Query("SELECT * FROM programs ORDER BY mostRecentWorkoutDate DESC")
     fun getAll(): Flow<List<Program>>
@@ -31,9 +34,9 @@ data class Program(
     val name: String = "",
     val days: List<Day> = listOf(Day()),
     val followed: Boolean = false,
-    val nextDay: Int = 1,
+    val nextDay: Int = 0,
     val weekStreak: Int = 1,
-    @Contextual val mostRecentWorkoutDate: Instant? = null,
+    @Serializable(with = InstantSerializer::class) val mostRecentWorkoutDate: Instant? = null,
 )
 
 @Serializable

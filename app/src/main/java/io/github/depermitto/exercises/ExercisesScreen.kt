@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.components.AnchoredFloatingActionButton
-import io.github.depermitto.data.Exercise
-import io.github.depermitto.data.ExerciseDao
+import io.github.depermitto.data.entities.Exercise
+import io.github.depermitto.data.entities.ExerciseDao
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor

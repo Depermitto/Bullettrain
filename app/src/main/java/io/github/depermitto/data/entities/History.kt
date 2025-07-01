@@ -1,9 +1,9 @@
-package io.github.depermitto.data
+package io.github.depermitto.data.entities
 
 import androidx.room.*
+import io.github.depermitto.data.InstantSerializer
 import io.github.depermitto.train.WorkoutPhase
 import kotlinx.coroutines.flow.Flow
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.time.Instant
 
@@ -26,8 +26,9 @@ interface HistoryDao {
 @Entity(tableName = "history")
 data class HistoryRecord(
     @ColumnInfo(name = "history_entry_id") @PrimaryKey(autoGenerate = true) val historyEntryId: Long = 0,
-    @Contextual val date: Instant,
+    @Serializable(with = InstantSerializer::class) val date: Instant,
     val day: Day,
+    val relatedProgramId: Long,
     val workoutPhase: WorkoutPhase,
-    @Contextual val workoutStartTime: Instant,
+    @Serializable(with = InstantSerializer::class) val workoutStartTime: Instant,
 )

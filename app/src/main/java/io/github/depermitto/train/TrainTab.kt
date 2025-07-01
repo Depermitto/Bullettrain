@@ -7,11 +7,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.depermitto.data.ExerciseDao
-import io.github.depermitto.data.HistoryDao
-import io.github.depermitto.data.ProgramDao
+import androidx.navigation.NavController
+import io.github.depermitto.data.entities.ProgramDao
+import io.github.depermitto.main.Screen
 import io.github.depermitto.programs.ProgramInfo
-import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
@@ -24,11 +23,10 @@ import io.github.depermitto.theme.filledContainerColor
 @Composable
 fun TrainTab(
     modifier: Modifier = Modifier,
-    settingsViewModel: SettingsViewModel,
-    historyDao: HistoryDao,
+    trainViewModel: TrainViewModel,
     programDao: ProgramDao,
-    exerciseDao: ExerciseDao,
-) = Column(
+    navController: NavController,
+): Unit = Column(
     modifier = modifier.padding(horizontal = ItemPadding),
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Center,
@@ -36,8 +34,6 @@ fun TrainTab(
     val programs by programDao.getAll()
         .collectAsStateWithLifecycle(initialValue = emptyList()) // TODO followed programs P2
     var selectedProgramIndex by remember { mutableIntStateOf(0) }
-//    val trainViewModel =
-//        viewModel<TrainViewModel>(factory = TrainViewModel.Factory(program.days[program.nextDay], historyDao))
 
     OutlinedCard(
         modifier = Modifier
@@ -54,21 +50,24 @@ fun TrainTab(
                 Text(
                     modifier = Modifier
                         .padding(ItemPadding)
-                        .align(Alignment.Center), text = "No Program Found" // TODO maybe some spinning? P3
+                        .align(Alignment.Center),
+                    text = "No Program Found" // TODO maybe some spinning? P3
                 )
             }
 
             programs.getOrNull(selectedProgramIndex)?.let { program ->
                 ProgramInfo(modifier = Modifier.align(Alignment.TopStart), program = program)
                 ElevatedButton(
-                    modifier = Modifier.align(Alignment.BottomCenter), onClick = { /*TODO P1*/ },
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    onClick = {
+                        navController.navigate(Screen.TrainingScreen.route)
+                        trainViewModel.startWorkoutOnce(program.days[program.nextDay], program.programId)
+                    },
                     colors = ButtonDefaults.elevatedButtonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )
-                ) {
-                    Text(text = "Start Week ${program.weekStreak}, Day ${program.nextDay}")
-                }
+                ) { Text(text = "Start Week ${program.weekStreak}, Day ${program.nextDay + 1}") }
             }
         }
     }
