@@ -8,11 +8,11 @@ import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun Header(
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     text: String,
 ) = Text(
     modifier = modifier,
     text = text,
     style = MaterialTheme.typography.titleSmall,
-    textAlign = TextAlign.Companion.Center
+    textAlign = TextAlign.Center
 )

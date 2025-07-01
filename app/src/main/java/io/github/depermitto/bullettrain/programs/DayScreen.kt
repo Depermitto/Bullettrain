@@ -57,7 +57,7 @@ import kotlin.math.min
 fun DayScreen(
     modifier: Modifier = Modifier, programViewModel: ProgramViewModel, dayIndex: Int
 ) {
-    val day = programViewModel.days[dayIndex]
+    val day = programViewModel.getDay(dayIndex)
     ReorderableColumn(modifier = modifier,
         list = day.exercises,
         verticalArrangement = Arrangement.spacedBy(ItemSpacing),
@@ -70,7 +70,7 @@ fun DayScreen(
                 onDelete = { programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises - exercise)) }) {
                 val onExerciseChange = { it: Exercise -> programViewModel.setExercise(dayIndex, exerciseIndex, it) }
                 Card(modifier = Modifier, colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
-                    Column(modifier = Modifier.Companion.padding(ItemPadding)) {
+                    Column(modifier = Modifier.padding(ItemPadding)) {
                         var showTargetEditDropdown by remember { mutableStateOf(false) }
                         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                             Text(
@@ -87,11 +87,11 @@ fun DayScreen(
                                     sets = exercise.sets.map<ExerciseSet, ExerciseSet> { it.copy(intensity = intensity) }))
                             }
 
-                            if (!exercise.hasIntensity) IconButton(modifier = Modifier.Companion.size(SqueezableIconSize),
+                            if (!exercise.hasIntensity) IconButton(modifier = Modifier.size(SqueezableIconSize),
                                 onClick = { setIntensity(IntensityCategory.RPE) }) {
                                 HeartPlusIcon()
                             }
-                            else IconButton(modifier = Modifier.Companion.size(SqueezableIconSize),
+                            else IconButton(modifier = Modifier.size(SqueezableIconSize),
                                 onClick = { setIntensity(null) }) {
                                 HeartRemoveIcon()
                             }
@@ -185,7 +185,7 @@ fun DayScreen(
                                                 )
                                             })
                                     }
-                                    IconButton(modifier = Modifier.Companion
+                                    IconButton(modifier = Modifier
                                         .size(CompactIconSize)
                                         .weight(ExerciseSetNarrowWeight),
                                         onClick = {
@@ -207,7 +207,7 @@ fun DayScreen(
                                     exercise.copy(
                                         sets = exercise.sets + ExerciseSet(
                                             intensity = exercise.intensityCategory?.let<IntensityCategory, Float> { 0f },
-                                            targetPerfVar = PerfVar.Companion.of(exercise.perfVarCategory)
+                                            targetPerfVar = PerfVar.of(exercise.perfVarCategory)
                                         )
                                     )
                                 )

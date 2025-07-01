@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
+import io.github.depermitto.bullettrain.Destinations
 import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Exercise
@@ -13,7 +14,6 @@ import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.HistoryRecord
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.Screen
 import io.github.depermitto.bullettrain.util.smallListSet
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
@@ -70,8 +70,8 @@ class TrainViewModel(
         )
         createState(record)
 
-        navController.navigate(Screen.TrainingScreen.route) {
-            popUpTo(Screen.HomeScreen.route) { inclusive = true }
+        navController.navigate(Destinations.Training) {
+            popUpTo(Destinations.Home(Destinations.Home.Tabs.Train)) { inclusive = true }
             launchSingleTop = true
         }
     }
@@ -112,9 +112,9 @@ class TrainViewModel(
         workoutState = null
         exercises.clear()
 
-        if (!navController.popBackStack(Screen.HomeScreen.route, false)) {
-            navController.navigate(route = Screen.HomeScreen.passTab(tab = Screen.HomeScreen.Tabs.Train)) {
-                popUpTo(Screen.TrainingScreen.route) { inclusive = true }
+        if (!navController.popBackStack(Destinations.Home(tab = Destinations.Home.Tabs.Train), false)) {
+            navController.navigate(route = Destinations.Home(tab = Destinations.Home.Tabs.Train)) {
+                popUpTo(Destinations.Training) { inclusive = true }
                 launchSingleTop = true
             }
         }

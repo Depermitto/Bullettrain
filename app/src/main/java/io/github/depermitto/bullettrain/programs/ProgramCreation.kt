@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.Screen
 import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.notUnderlinedTextFieldColors
 import kotlinx.coroutines.launch
@@ -47,7 +46,7 @@ fun ProgramCreation(
 
             programDao.insert(programViewModel.constructProgram())
             scope.launch { snackbarHostState.showSnackbar("Successfully Created") }
-            navController.popBackStack(Screen.HomeScreen.route, false)
+            navController.popBackStack()
         })
     }
 }

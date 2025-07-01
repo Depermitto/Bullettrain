@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
-import io.github.depermitto.bullettrain.Screen
+import io.github.depermitto.bullettrain.Destinations
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.database.SettingsDao
@@ -32,8 +32,8 @@ fun HomeScreen(
     navController: NavController,
 ) = Scaffold(bottomBar = {
     NavigationBar(containerColor = filledContainerColor()) {
-        Screen.HomeScreen.Tabs.entries.forEach { tab ->
-            NavigationBarItem(selected = homeViewModel.activeBar == tab, onClick = { homeViewModel.activeBar = tab }, icon = {
+        Destinations.Home.Tabs.entries.forEach { tab ->
+            NavigationBarItem(selected = homeViewModel.activeBar == tab, onClick = { homeViewModel.switchTab(tab) }, icon = {
                 Image(
                     painterResource(id = tab.icon),
                     contentDescription = tab.name,
@@ -44,20 +44,20 @@ fun HomeScreen(
     }
 }) { paddingValues ->
     when (homeViewModel.activeBar) {
-        Screen.HomeScreen.Tabs.Programs -> ProgramsTab(
+        Destinations.Home.Tabs.Programs -> ProgramsTab(
             modifier = Modifier.padding(paddingValues),
             programDao = programDao,
             navController = navController,
         )
 
-        Screen.HomeScreen.Tabs.History -> HistoryTab(
+        Destinations.Home.Tabs.History -> HistoryTab(
             modifier = Modifier.padding(paddingValues),
             homeViewModel = homeViewModel,
             settingsDao = settingsDao,
             historyDao = historyDao,
         )
 
-        Screen.HomeScreen.Tabs.Train -> TrainTab(
+        Destinations.Home.Tabs.Train -> TrainTab(
             modifier = Modifier.padding(paddingValues), trainViewModel = trainViewModel, programDao = programDao
         )
     }

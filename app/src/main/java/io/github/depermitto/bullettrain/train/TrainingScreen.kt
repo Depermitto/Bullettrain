@@ -39,7 +39,6 @@ import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.ExerciseSet
 import io.github.depermitto.bullettrain.database.PerfVar
-import io.github.depermitto.bullettrain.database.PerfVarCategory
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.exercises.exerciseChooser
 import io.github.depermitto.bullettrain.theme.CompactIconSize
@@ -72,7 +71,7 @@ fun TrainingScreen(
                 trainViewModel.setExercise(i, exercise.copy(name = exercise.name, id = exercise.id))
             })
 
-            Column(modifier = Modifier.Companion.padding(ItemPadding)) {
+            Column(modifier = Modifier.padding(ItemPadding)) {
                 val lastPerformedSet = exercise.lastPerformedSet
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -92,7 +91,7 @@ fun TrainingScreen(
                             )
                         }
                     }
-                    DropdownButton(modifier = Modifier.Companion.size(SqueezableIconSize),
+                    DropdownButton(modifier = Modifier.size(SqueezableIconSize),
                         show = showDropdownButton,
                         onShowChange = { showDropdownButton = it }) {
                         DropdownMenuItem(leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
@@ -160,7 +159,7 @@ fun TrainingScreen(
                                 completed = set.completed,
                                 placeholder = { lastPerformedSet?.let { Placeholder(it.weight.encodeToStringOutput()) } },
                             )
-                            Checkbox(modifier = Modifier.Companion
+                            Checkbox(modifier = Modifier
                                 .size(CompactIconSize)
                                 .weight(ExerciseSetNarrowWeight),
                                 checked = set.date != null,
@@ -190,7 +189,7 @@ fun TrainingScreen(
                             i, exercise.copy(
                                 sets = exercise.sets + ExerciseSet(
                                     intensity = exercise.intensityCategory?.let { 0f },
-                                    targetPerfVar = PerfVar.Companion.of(exercise.perfVarCategory),
+                                    targetPerfVar = PerfVar.of(exercise.perfVarCategory),
                                 )
                             )
                         )
@@ -201,7 +200,7 @@ fun TrainingScreen(
 
     item {
         val exerciseChooserToggle = exerciseChooser(exerciseDao = exerciseDao, onChoose = {
-            trainViewModel.addExercise(it.copy(sets = listOf(ExerciseSet(targetPerfVar = PerfVar.Companion.of(it.perfVarCategory)))))
+            trainViewModel.addExercise(it.copy(sets = listOf(ExerciseSet(targetPerfVar = PerfVar.of(it.perfVarCategory)))))
         })
         OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { exerciseChooserToggle() }) {
             Text(text = "Add Exercise")

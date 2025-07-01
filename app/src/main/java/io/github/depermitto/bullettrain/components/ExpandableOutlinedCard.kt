@@ -38,7 +38,7 @@ fun ExpandableOutlinedCard(
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 title()
                 Spacer(modifier = Modifier.weight(1f))
-                IconButton(modifier = Modifier.Companion
+                IconButton(modifier = Modifier
                     .size(SqueezableIconSize)
                     .alpha(0.5f)
                     .rotate(rotationState),
@@ -47,7 +47,7 @@ fun ExpandableOutlinedCard(
                 }
                 if (dropdownItems != null) {
                     var showDropdownMenu by remember { mutableStateOf(false) }
-                    IconButton(modifier = Modifier.Companion.size(SqueezableIconSize), onClick = { showDropdownMenu = true }) {
+                    IconButton(modifier = Modifier.size(SqueezableIconSize), onClick = { showDropdownMenu = true }) {
                         Icon(Icons.Filled.MoreVert, contentDescription = null)
 
                         DropdownMenu(expanded = showDropdownMenu, onDismissRequest = { showDropdownMenu = false }) {

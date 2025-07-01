@@ -36,8 +36,8 @@ import io.github.depermitto.bullettrain.components.Ribbon
 import io.github.depermitto.bullettrain.components.RibbonScaffold
 import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Database
-import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Program
+import io.github.depermitto.bullettrain.exercises.exerciseChooser
 import io.github.depermitto.bullettrain.home.HomeScreen
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.programs.DayScreen
@@ -51,9 +51,9 @@ import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.train.TrainingScreen
 import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.time.Instant
 import kotlin.reflect.typeOf
 
 class MainActivity : ComponentActivity() {
@@ -81,27 +81,33 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 @Composable
 fun App(db: Database) = MaterialTheme {
     val navController = rememberNavController()
 
-    val homeViewModel = viewModel<HomeViewModel>(factory = HomeViewModel.Factory(startingBar = Screen.HomeScreen.Tabs.History))
-    val newProgramViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program(), db.programDao))
     val trainViewModel = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController))
+    var programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program()))
 
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { paddingValues ->
         NavHost(
             modifier = Modifier.padding(paddingValues),
             navController = navController,
-            startDestination = if (runBlocking { trainViewModel.restoreWorkout() }) Screen.TrainingScreen.route else Screen.HomeScreen.route
+            startDestination = if (runBlocking { trainViewModel.restoreWorkout() }) {
+                Destinations.Training
+            } else {
+                Destinations.Home(Destinations.Home.Tabs.Programs)
+            }
         ) {
-            composable(Screen.HomeScreen.route) { navBackStackEntry ->
-                navBackStackEntry.arguments?.getString("tab")
-                    ?.let { homeViewModel.activeBar = Screen.HomeScreen.Tabs.valueOf(it) }
+
+            composable<Destinations.Home> { navBackStackEntry ->
+                val homeViewModel = viewModel<HomeViewModel>(
+                    factory = HomeViewModel.Factory(tab = navBackStackEntry.toRoute<Destinations.Home>().tab)
+                )
 
                 RibbonScaffold(ribbon = {
-                    if (homeViewModel.activeBar != Screen.HomeScreen.Tabs.History) {
+                    if (homeViewModel.activeBar != Destinations.Home.Tabs.History) {
                         Ribbon(navController = navController, title = "Home", backButton = false)
                     }
                 }) {
@@ -116,7 +122,7 @@ fun App(db: Database) = MaterialTheme {
                 }
             }
 
-            composable(Screen.TrainingScreen.route) {
+            composable<Destinations.Training> {
                 if (!trainViewModel.isWorkoutRunning()) return@composable
 
                 RibbonScaffold(ribbon = {
@@ -160,16 +166,16 @@ fun App(db: Database) = MaterialTheme {
                 }
             }
 
-            composable(Screen.ProgramCreationScreen.route) {
+            composable<Destinations.ProgramCreation> {
                 RibbonScaffold(ribbon = {
                     Ribbon(
                         navController = navController,
-                        title = newProgramViewModel.programName.ifBlank { "New Program" },
+                        title = programViewModel.programName.ifBlank { "New Program" },
                         settingsGear = false
                     )
                 }) {
                     ProgramCreation(
-                        programViewModel = newProgramViewModel,
+                        programViewModel = programViewModel,
                         programDao = db.programDao,
                         snackbarHostState = snackbarHostState,
                         navController = navController
@@ -177,39 +183,41 @@ fun App(db: Database) = MaterialTheme {
                 }
             }
 
-            var programViewModel = newProgramViewModel
-
-            composable<Program>(
-                typeMap = mapOf(
-                    typeOf<List<Day>>() to serializableType<List<Day>>(),
-                    typeOf<Instant>() to serializableType<Instant>(),
-                )
-            ) { navBackStackEntry ->
-                val program = navBackStackEntry.toRoute<Program>()
+            composable<Destinations.Program>(typeMap = mapOf(typeOf<Program>() to serializableType<Program>())) { navBackStackEntry ->
+                val program = navBackStackEntry.toRoute<Destinations.Program>().program
+                programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(program))
 
                 RibbonScaffold(ribbon = { Ribbon(navController, title = programViewModel.programName, settingsGear = false) }) {
                     ProgramScreen(programViewModel, navController)
-                    if (programViewModel.days.toList() != program.days.toList()) {
+                    if (programViewModel.getDays().toList() != program.days.toList()) {
                         AnchoredFloatingActionButton(text = { Text("Finish Edit") }, onClick = {
                             db.programDao.update(programViewModel.constructProgram())
-                            navController.popBackStack(Screen.HomeScreen.route, inclusive = false)
+                            navController.popBackStack()
                         })
                     }
                 }
             }
 
-            composable<Day> { navBackStackEntry ->
-                val day = navBackStackEntry.toRoute<Day>()
+            composable<Destinations.Day> { navBackStackEntry ->
+                val dayIndex = navBackStackEntry.toRoute<Destinations.Day>().dayIndex
+                val day = programViewModel.getDay(dayIndex)
 
                 RibbonScaffold(ribbon = { Ribbon(navController, title = day.name, settingsGear = false) }) {
-                    DayScreen(programViewModel = programViewModel, dayIndex = programViewModel.days.indexOf(day))
+                    DayScreen(
+                        modifier = Modifier.padding(horizontal = ItemPadding),
+                        programViewModel = programViewModel,
+                        dayIndex = dayIndex
+                    )
+                    val exerciseChooserToggle = exerciseChooser(db.exerciseDao) {
+                        programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises + it))
+                    }
                     AnchoredFloatingActionButton(text = { Text("Add Exercise") },
                         icon = { Icon(Icons.Filled.Add, null) },
-                        onClick = { TODO() })
+                        onClick = { exerciseChooserToggle() })
                 }
             }
 
-            composable(Screen.SettingsScreen.route) {
+            composable<Destinations.Settings> {
                 RibbonScaffold(ribbon = { Ribbon(navController = navController, title = "Settings", settingsGear = false) }) {
                     SettingsScreen(db = db, snackbarHostState = snackbarHostState)
                 }
@@ -222,8 +230,7 @@ inline fun <reified T : Any> serializableType(
     isNullableAllowed: Boolean = false,
     json: Json = Json,
 ) = object : NavType<T>(isNullableAllowed = isNullableAllowed) {
-    override fun get(bundle: Bundle, key: String) =
-        bundle.getString(key)?.let<String, T>(json::decodeFromString)
+    override fun get(bundle: Bundle, key: String) = bundle.getString(key)?.let<String, T>(json::decodeFromString)
 
     override fun parseValue(value: String): T = json.decodeFromString(value)
 

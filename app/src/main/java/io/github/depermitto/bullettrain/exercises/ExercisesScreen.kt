@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
-import io.github.depermitto.bullettrain.components.TextFieldDialogTemplate
+import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.theme.ItemPadding
@@ -62,21 +62,22 @@ fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) =
     )
 
     AnimatedVisibility(visible = showDialog, enter = scaleIn(), exit = scaleOut()) {
-        BasicAlertDialog(onDismissRequest = { showDialog = false }) {
-            var exercise by remember { mutableStateOf(Exercise(name = "")) }
-            TextFieldDialogTemplate(value = exercise.name,
-                onValueChange = { exercise = exercise.copy(name = it) },
-                label = { Text("Exercise Name") },
-                onDismiss = { showDialog = false },
-                onConfirm = { name ->
-                    if (exercises.any { it.name == name }) return@TextFieldDialogTemplate false
+        var isError by remember { mutableStateOf(false) }
+        TextFieldAlertDialog(onDismissRequest = { showDialog = false },
+            cancelButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } },
+            confirmButton = { name ->
+                TextButton(onClick = {
+                    if (exercises.any { it.name == name }) {
+                        isError = true
+                        return@TextButton
+                    }
 
-                    exerciseDao.upsert(exercise)
+                    exerciseDao.upsert(Exercise(name = name))
                     showDialog = false
-
-                    true
-                },
-                errorMessage = { Text("Duplicate Name") })
-        }
+                }) { Text("Confirm") }
+            },
+            errorMessage = "Duplicate Name",
+            isError = isError
+        )
     }
 }

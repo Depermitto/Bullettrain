@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
-import io.github.depermitto.bullettrain.Screen
+import io.github.depermitto.bullettrain.Destinations
 
 @Composable
 fun RibbonScaffold(
@@ -54,7 +54,7 @@ fun BoxScope.Ribbon(
         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
     )
     if (settingsGear) {
-        IconButton(modifier = Modifier.align(Alignment.TopEnd), onClick = { navController.navigate(Screen.SettingsScreen.route) }) {
+        IconButton(modifier = Modifier.align(Alignment.TopEnd), onClick = { navController.navigate(Destinations.Settings) }) {
             Icon(Icons.Filled.Settings, contentDescription = "Settings")
         }
     }

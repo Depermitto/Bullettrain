@@ -39,13 +39,11 @@ fun TrainTab(
                 .fillMaxSize()
                 .padding(bottom = ItemSpacing)
         ) {
-            if (programs.isEmpty()) {
-                Text(
-                    modifier = Modifier.Companion
-                        .padding(ItemPadding)
-                        .align(Alignment.Center), text = "No Program Found"
-                )
-            }
+            if (programs.isEmpty()) Text(
+                modifier = Modifier
+                    .padding(ItemPadding)
+                    .align(Alignment.Center), text = "No Program Found"
+            )
 
             programs.getOrNull(selectedProgramIndex)?.let { program ->
                 WorkoutInfo(modifier = Modifier
@@ -75,9 +73,8 @@ fun TrainTab(
         }
     }
 
-    OutlinedButton(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = { trainViewModel.startWorkout(Day(), ProgramDao.Companion.EmptyWorkout) }) {
+    OutlinedButton(modifier = Modifier.fillMaxWidth(),
+        onClick = { trainViewModel.startWorkout(Day(), ProgramDao.EmptyWorkout) }) {
         Text(text = "Start Empty Workout")
     }
 }

@@ -53,8 +53,7 @@ fun OutlinedTextField(
         interactionSource = interactionSource,
         cursorBrush = cursorBrush
     ) { innerTextField ->
-        OutlinedTextFieldDefaults.DecorationBox(
-            value = value.text,
+        OutlinedTextFieldDefaults.DecorationBox(value = value.text,
             visualTransformation = visualTransformation,
             label = label,
             placeholder = placeholder,
@@ -65,7 +64,7 @@ fun OutlinedTextField(
             interactionSource = interactionSource,
             contentPadding = contentPadding,
             container = {
-                OutlinedTextFieldDefaults.ContainerBox(
+                OutlinedTextFieldDefaults.Container(
                     enabled = enabled,
                     isError = false,
                     interactionSource = interactionSource,
@@ -73,8 +72,7 @@ fun OutlinedTextField(
                     focusedBorderThickness = focusedBorderThickness,
                     unfocusedBorderThickness = unfocusedBorderThickness
                 )
-            }
-        )
+            })
     }
 }
 
@@ -82,7 +80,8 @@ fun OutlinedTextField(
 fun Placeholder(text: String, modifier: Modifier = Modifier.fillMaxWidth()) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Text(
-            text = text, style = MaterialTheme.typography.bodyMedium,
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.40f),
             maxLines = 1
         )
