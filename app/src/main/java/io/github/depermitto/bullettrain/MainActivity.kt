@@ -349,7 +349,7 @@ fun App(db: Database) = MaterialTheme {
         composable<Destination.Exercise> { navBackStackEntry ->
             val exerciseDescriptor = db.exerciseDao.where(navBackStackEntry.toRoute<Destination.Exercise>().exerciseId)
             var showDropdown by remember { mutableStateOf(false) }
-            var showRenameDialog by remember { mutableStateOf(false) }
+            var showRenameDialog by rememberSaveable { mutableStateOf(false) }
             Scaffold(topBar = {
                 TopBarWithBackButton(navController = navController,
                     title = exerciseDescriptor.name.run { if (exerciseDescriptor.obsolete) "$this [Archived]" else this },

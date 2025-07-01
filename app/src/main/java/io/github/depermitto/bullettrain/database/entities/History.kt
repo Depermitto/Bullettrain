@@ -4,7 +4,6 @@ import androidx.compose.runtime.Immutable
 import io.github.depermitto.bullettrain.database.Compressor
 import io.github.depermitto.bullettrain.database.Dao
 import io.github.depermitto.bullettrain.database.Depot
-import io.github.depermitto.bullettrain.database.Entity
 import io.github.depermitto.bullettrain.database.serializers.InstantSerializer
 import io.github.depermitto.bullettrain.database.serializers.LocalDateSerializer
 import io.github.depermitto.bullettrain.train.WorkoutPhase

@@ -14,7 +14,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.DataPanel
-import io.github.depermitto.bullettrain.components.HeroTile
+import io.github.depermitto.bullettrain.components.Tile
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
 import io.github.depermitto.bullettrain.database.entities.ExerciseSet
@@ -46,7 +46,7 @@ fun ExerciseScreen(
                 items = exercise.getPerformedSets(),
                 separateHeaderAndContent = false,
                 headline = {
-                    HeroTile(
+                    Tile(
                         headlineContent = { Text(dateFormatter.format(doneDate)) },
                         headlineTextStyle = MaterialTheme.typography.titleMedium,
                         contentPadding = PaddingValues(Dp.Medium),
@@ -59,7 +59,7 @@ fun ExerciseScreen(
                     Text("Completed", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
                 },
             ) { setIndex, set ->
-                HeroTile(
+                Tile(
                     headlineContent = { Text("${setIndex + 1}", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     trailingContent = {
                         Text(maxLines = 1, overflow = TextOverflow.Ellipsis, text = run {

@@ -38,7 +38,7 @@ import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DropdownButton
-import io.github.depermitto.bullettrain.components.HeroTile
+import io.github.depermitto.bullettrain.components.Tile
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.Placeholder
 import io.github.depermitto.bullettrain.components.TextLink
@@ -72,7 +72,7 @@ fun TrainingScreen(
         val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
         val lastPerformedSet = exercise.lastPerformedSet()
 
-        var showExerciseDeleteDialog by remember { mutableStateOf(false) }
+        var showExerciseDeleteDialog by rememberSaveable { mutableStateOf(false) }
         var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
 
         if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
@@ -87,7 +87,7 @@ fun TrainingScreen(
             // Delete set
             onWorkoutEntryChange = { trainViewModel.setWorkoutEntry(exerciseIndex, it) },
             headline = {
-                HeroTile(headlineContent = {
+                Tile(headlineContent = {
                     TextLink(
                         "${exerciseIndex + 1}. ${exerciseDescriptor.name}",
                         navController = navController,

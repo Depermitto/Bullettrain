@@ -20,7 +20,7 @@ import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.R
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DataPanel
-import io.github.depermitto.bullettrain.components.HeroTile
+import io.github.depermitto.bullettrain.components.Tile
 import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.database.entities.ExerciseDao
 import io.github.depermitto.bullettrain.database.entities.Program
@@ -58,7 +58,7 @@ fun TrainTab(
             }
 
             DataPanel<WorkoutEntry>(items = program.nextDay().entries, backgroundColor = Color.Transparent, headline = {
-                HeroTile(
+                Tile(
                     headlineContent = { Text(text = program.name) },
                     headlineTextStyle = MaterialTheme.typography.titleLarge,
                     supportingContent = { Text(text = program.nextDay().name) },
@@ -70,7 +70,7 @@ fun TrainTab(
             }, contentPadding = PaddingValues(horizontal = Dp.Large)
             ) { entryIndex, entry ->
                 val exerciseDescriptor = exerciseDao.where(entry.descriptorId)
-                HeroTile(
+                Tile(
                     headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
                     trailingContent = { Text(text = entry.sets.size.toString(), overflow = TextOverflow.Ellipsis, maxLines = 2) },
                     modifier = Modifier.clip(MaterialTheme.shapes.small),
@@ -106,7 +106,7 @@ fun TrainTab(
                     showChangeDayIndexDialog = false
                     programDao.update(program.copy(nextDayIndex = program.workouts.indexOf(day)))
                 }) { day ->
-                HeroTile(headlineContent = { Text(day.name) })
+                Tile(headlineContent = { Text(day.name) })
             }
         }
 

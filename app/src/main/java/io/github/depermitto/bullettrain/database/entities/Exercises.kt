@@ -5,7 +5,6 @@ import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.Compressor
 import io.github.depermitto.bullettrain.database.Dao
 import io.github.depermitto.bullettrain.database.Depot
-import io.github.depermitto.bullettrain.database.Entity
 import io.github.depermitto.bullettrain.database.serializers.InstantSerializer
 import io.github.depermitto.bullettrain.util.BKTree
 import kotlinx.coroutines.flow.map

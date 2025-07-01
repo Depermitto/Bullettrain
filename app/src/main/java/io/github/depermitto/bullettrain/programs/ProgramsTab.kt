@@ -26,7 +26,7 @@ import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
-import io.github.depermitto.bullettrain.components.HeroTile
+import io.github.depermitto.bullettrain.components.Tile
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.entities.ProgramDao
@@ -66,7 +66,7 @@ fun ProgramsTab(
                     modifier = Modifier.align(Alignment.Center),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround(settings.theme))
                 ) {
-                    HeroTile(headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
+                    Tile(headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
                         supportingContent = {
                             Column {
                                 Text(text = "${program.workouts.size} day program")

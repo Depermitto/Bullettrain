@@ -1,4 +1,4 @@
-package io.github.depermitto.bullettrain.database
+package io.github.depermitto.bullettrain.database.entities
 
 interface Entity {
     val id: Int

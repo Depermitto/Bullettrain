@@ -31,7 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.DataPanel
-import io.github.depermitto.bullettrain.components.HeroTile
+import io.github.depermitto.bullettrain.components.Tile
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.home.HomeViewModel
@@ -109,7 +109,7 @@ fun HistoryTab(
                 },
                 backgroundColor = MaterialTheme.colorScheme.focalGround(settings.theme),
                 headline = {
-                    HeroTile(headlineContent = { Text(text = relatedProgram.name) },
+                    Tile(headlineContent = { Text(text = relatedProgram.name) },
                         headlineTextStyle = MaterialTheme.typography.titleLarge,
                         supportingContent = { Text(text = record.workout.name) },
                         trailingContent = {
@@ -139,7 +139,7 @@ fun HistoryTab(
                 }
 
                 val exerciseDescriptor = exerciseDao.where(entry.descriptorId)
-                HeroTile(headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
+                Tile(headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
                     trailingContent = { Text(text = bestSet ?: "skipped", overflow = TextOverflow.Ellipsis, maxLines = 2) },
                     modifier = Modifier.clip(MaterialTheme.shapes.small),
                     onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },

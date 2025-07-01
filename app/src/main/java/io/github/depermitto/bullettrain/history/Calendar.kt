@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,11 +26,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.depermitto.bullettrain.components.HeroTile
 import io.github.depermitto.bullettrain.components.ListAlertDialog
+import io.github.depermitto.bullettrain.components.Tile
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.train.TrainViewModel
+import kotlinx.serialization.json.Json
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -63,7 +65,7 @@ fun Calendar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 repeat(7) { j ->
-                    var showDropdown by rememberSaveable { mutableStateOf(false) }
+                    var showDropdown by remember { mutableStateOf(false) }
                     Box(modifier = Modifier.weight(1f)) {
                         if (i == 0) {
                             CalendarItem(
@@ -78,21 +80,16 @@ fun Calendar(
                             CalendarItem(text = "")
                         } else {
                             val day = LocalDate.of(currentDate.year, currentDate.month, dayOfMonth)
-                            CalendarItem(
-                                modifier = Modifier
-                                    .padding(4.dp)
-                                    .clip(shape = CircleShape)
-                                    .aspectRatio(1f)
-                                    .combinedClickable(onClick = { homeViewModel.selectedDate = day },
-                                        onLongClick = { showDropdown = true }),
-                                backgroundColor = when {
-                                    homeViewModel.selectedDate == day -> MaterialTheme.colorScheme.tertiaryContainer
-                                    currentHistoryRecords.any { it.date == day } -> MaterialTheme.colorScheme.primaryContainer
-                                    else -> Color.Transparent
-                                },
-                                underline = day == today,
-                                text = dayOfMonth.toString()
-                            )
+                            CalendarItem(modifier = Modifier
+                                .padding(4.dp)
+                                .clip(shape = CircleShape)
+                                .aspectRatio(1f)
+                                .combinedClickable(onClick = { homeViewModel.selectedDate = day },
+                                    onLongClick = { showDropdown = true }), backgroundColor = when {
+                                homeViewModel.selectedDate == day -> MaterialTheme.colorScheme.tertiaryContainer
+                                currentHistoryRecords.any { it.date == day } -> MaterialTheme.colorScheme.primaryContainer
+                                else -> Color.Transparent
+                            }, underline = day == today, text = dayOfMonth.toString())
 
                             DropdownMenu(expanded = showDropdown, onDismissRequest = { showDropdown = false }) {
                                 DropdownMenuItem(
@@ -114,7 +111,13 @@ fun Calendar(
     }
 
     val programs by programDao.getPerformable.collectAsStateWithLifecycle(initialValue = emptyList())
-    var selectedProgram: Program? by rememberSaveable { mutableStateOf(null) }
+    var selectedProgram: Program? by rememberSaveable(
+        saver = Saver(
+            save = { original -> Json.encodeToString(Program.serializer(), original.value ?: return@Saver null) },
+            restore = { saveable -> mutableStateOf(Json.decodeFromString(Program.serializer(), saveable)) },
+        ),
+        init = { mutableStateOf(null) },
+    )
 
     if (showProgramListDialog) ListAlertDialog(title = "Which program does the workout belong to?",
         onDismissRequest = { showProgramListDialog = false },
@@ -128,7 +131,7 @@ fun Calendar(
                 selectedProgram = program
             }
         }) { program ->
-        HeroTile(headlineContent = { Text(program.name, maxLines = 2, overflow = TextOverflow.Ellipsis) })
+        Tile(headlineContent = { Text(program.name, maxLines = 2, overflow = TextOverflow.Ellipsis) })
     }
 
     selectedProgram?.let { program ->
@@ -140,7 +143,7 @@ fun Calendar(
                 selectedProgram = null
                 trainViewModel.startWorkout(day, program.id, date = longClickedDate)
             }) { day ->
-            HeroTile(headlineContent = { Text(day.name, maxLines = 2, overflow = TextOverflow.Ellipsis) })
+            Tile(headlineContent = { Text(day.name, maxLines = 2, overflow = TextOverflow.Ellipsis) })
         }
     }
 
@@ -153,7 +156,7 @@ fun Calendar(
         var text = relatedProgram.name
         if (relatedProgram correspondsNot Program.EmptyWorkout) text += ", " + record.workout.name
 
-        HeroTile(headlineContent = { Text(text, maxLines = 2, overflow = TextOverflow.Ellipsis) }, supportingContent = {
+        Tile(headlineContent = { Text(text, maxLines = 2, overflow = TextOverflow.Ellipsis) }, supportingContent = {
             val totalSets = record.workout.entries.sumOf { it.sets.count { it.actualPerfVar != 0f } }
             if (totalSets != 0) Text(text = "$totalSets performed sets")
         })

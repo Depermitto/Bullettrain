@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.depermitto.bullettrain.components.HeroTile
+import io.github.depermitto.bullettrain.components.Tile
 import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.components.RadioTile
 import io.github.depermitto.bullettrain.database.Database
@@ -25,6 +25,7 @@ import io.github.depermitto.bullettrain.database.entities.UnitSystem
 import io.github.depermitto.bullettrain.theme.palettes.*
 import io.github.depermitto.bullettrain.util.splitOnUppercase
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
@@ -75,7 +76,7 @@ fun SettingsScreen(
 
     SettingGroup(headline = "Data Management") {
         Setting(headline = "Export", supporting = "Create a backup and store all your data in a file", onClick = {
-            scope.launch {
+            scope.launch(Dispatchers.IO) {
                 val msg = db.exportDatabase().fold(
                     onSuccess = { filename -> "Successfully saved to $filename" },
                     onFailure = { err -> err.message ?: "Unknown error occurred while exporting to file" },
@@ -84,7 +85,7 @@ fun SettingsScreen(
             }
         })
         Setting(headline = "Import", supporting = "Restore a previously created data backup", onClick = {
-            scope.launch {
+            scope.launch(Dispatchers.IO) {
                 val msg = db.importDatabase(importType = Database.ImportType.Interactive).fold(
                     onSuccess = { filename -> "Successfully Imported $filename" },
                     onFailure = { err -> err.message ?: "Unknown error occurred while restoring from file" },
@@ -103,7 +104,7 @@ fun SettingsScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showConfirmFactoryResetDialog = false
-                    scope.launch {
+                    scope.launch(Dispatchers.IO) {
                         if (db.exportDatabase().isFailure) snackbarHostState.showSnackbar(
                             "You are required to save your data if you want to reset to factory", withDismissAction = true
                         ) else if (db.factoryReset()) snackbarHostState.showSnackbar(
@@ -141,8 +142,8 @@ fun <T> SettingList(
     onClick: (T) -> Unit,
     content: @Composable (T) -> Unit
 ) {
-    var showDialog by remember { mutableStateOf(false) }
-    HeroTile(
+    var showDialog by rememberSaveable { mutableStateOf(false) }
+    Tile(
         modifier = modifier,
         headlineContent = { Text(headline) },
         supportingContent = { Text(supporting) },
@@ -164,7 +165,7 @@ fun Setting(
     onClick: () -> Unit,
     headline: String,
     supporting: String,
-) = HeroTile(
+) = Tile(
     modifier = modifier,
     headlineContent = { Text(headline) },
     supportingContent = { Text(supporting) },
@@ -180,7 +181,7 @@ fun SettingSwitch(
     onChecked: (Boolean) -> Unit,
     checked: Boolean,
     enabled: Boolean = true
-) = HeroTile(modifier = modifier,
+) = Tile(modifier = modifier,
     headlineContent = { Text(headline) },
     supportingContent = { Text(supporting) },
     onClick = { onChecked(!checked) }.takeIf { enabled },

@@ -40,7 +40,7 @@ import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DragButton
-import io.github.depermitto.bullettrain.components.HeroTile
+import io.github.depermitto.bullettrain.components.Tile
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
 import io.github.depermitto.bullettrain.components.TextLink
@@ -111,7 +111,7 @@ fun DayScreen(
                     workoutEntry = exercise,
                     onWorkoutEntryChange = { programViewModel.setExercise(dayIndex, exerciseIndex, it) },
                     headline = {
-                        HeroTile(headlineContent = {
+                        Tile(headlineContent = {
                             TextLink(
                                 exerciseDescriptor.name,
                                 navController = navController,

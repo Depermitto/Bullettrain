@@ -25,7 +25,7 @@ import androidx.constraintlayout.compose.Dimension
  * @see [RadioTile]
  */
 @Composable
-fun HeroTile(
+fun Tile(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     supportingContent: (@Composable () -> Unit)? = null,
@@ -84,7 +84,7 @@ fun HeroTile(
 
 /**
  * Similar to [androidx.compose.material3.ListItem] but with a [androidx.compose.material3.RadioButton] as leading content.
- * @see [HeroTile]
+ * @see [Tile]
  */
 @Composable
 fun RadioTile(
