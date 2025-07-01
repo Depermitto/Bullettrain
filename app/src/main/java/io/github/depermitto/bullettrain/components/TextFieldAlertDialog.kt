@@ -57,7 +57,7 @@ fun TextFieldAlertDialog(
                     ),
                 ),
                 isError = isError,
-                supportingText = { Text(errorMessage) },
+                supportingText = { if (isError) Text(errorMessage) },
             )
 
             Row(modifier = Modifier.align(Alignment.BottomEnd)) {
