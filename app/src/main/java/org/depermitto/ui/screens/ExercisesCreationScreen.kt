@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.depermitto.database.ExerciseDao
 import org.depermitto.database.ExerciseListing
+import org.depermitto.ui.theme.horizontalDp
 import org.depermitto.ui.theme.transparentTextFieldColors
 
 @Composable
@@ -33,7 +34,9 @@ fun ExercisesCreationScreen(
             )
 
             OutlinedButton(
-                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontalDp),
                 onClick = { CoroutineScope(Dispatchers.IO).launch { exerciseDao.upsert(ExerciseListing(name = name)) } },
             ) {
                 Text(text = "Create")

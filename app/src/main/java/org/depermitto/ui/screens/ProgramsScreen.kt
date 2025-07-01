@@ -11,24 +11,25 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.depermitto.database.ProgramDao
 import org.depermitto.ui.theme.filledContainerColor
+import org.depermitto.ui.theme.horizontalDp
+import org.depermitto.ui.theme.spacingDp
 
 @Composable
 fun ProgramsScreen(programDao: ProgramDao, navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp), horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = horizontalDp), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val programs by programDao.getAllFlow().collectAsState(emptyList())
 
-        LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(spacingDp)) {
             items(programs) { program ->
                 // TODO Navigate to ProgramOverviewScreen, seeing history of the plan and trainingWork
                 OutlinedCard(colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
@@ -36,7 +37,7 @@ fun ProgramsScreen(programDao: ProgramDao, navController: NavController) {
                         Column(
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(16.dp)
+                                .padding(horizontalDp * 2)
                         ) {
                             Text(
                                 text = program.name,

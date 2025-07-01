@@ -7,12 +7,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import org.depermitto.ui.screens.Screen
 
@@ -52,7 +51,17 @@ fun Scaffold(
 }
 
 @Composable
-fun BoxScope.Ribbon(navController: NavController, backButton: Boolean = true, settingsGear: Boolean = true) {
-    if (backButton) BackButton(navController = navController)
-    if (settingsGear) SettingsGear(navController = navController)
+fun BoxScope.Ribbon(
+    navController: NavController,
+    backButton: Boolean = true,
+    settingsGear: Boolean = true,
+    title: String? = null,
+) {
+    if (backButton) BackButton(modifier = Modifier.align(Alignment.CenterStart), navController = navController)
+    if (title != null) Text(
+        modifier = Modifier.align(Alignment.Center),
+        text = title,
+        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+    )
+    if (settingsGear) SettingsGear(modifier = Modifier.align(Alignment.CenterEnd), navController = navController)
 }

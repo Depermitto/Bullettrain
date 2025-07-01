@@ -4,7 +4,6 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -13,30 +12,33 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.depermitto.database.Day
+import org.depermitto.database.ExerciseDao
 import org.depermitto.database.Program
 import org.depermitto.database.ProgramDao
 import org.depermitto.presentation.ProgramCreationViewModel
 import org.depermitto.ui.DayCreation
+import org.depermitto.ui.theme.horizontalDp
 import org.depermitto.ui.theme.notUnderlinedTextFieldColors
+import org.depermitto.ui.theme.spacingDp
 
 @Composable
 fun ProgramsCreationScreen(
     viewModel: ProgramCreationViewModel,
+    exerciseDao: ExerciseDao,
     programDao: ProgramDao,
     navController: NavController,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp),
+            .padding(horizontal = horizontalDp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(spacingDp)
     ) {
         TextField(
             modifier = Modifier.fillMaxWidth(),
@@ -50,14 +52,15 @@ fun ProgramsCreationScreen(
         LazyColumn(
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(spacingDp)
         ) {
             items(viewModel.state.days) { day ->
                 DayCreation(
                     day = day, onDayChanged = {
                         if (it != null) viewModel.set(day, it)
                         else viewModel.removeDay(day)
-                    }, navController = navController
+                    },
+                    exerciseDao = exerciseDao
                 )
             }
             item {

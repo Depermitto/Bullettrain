@@ -1,49 +1,65 @@
 package org.depermitto.ui.screens
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import org.depermitto.database.ExerciseDao
+import org.depermitto.database.WorkoutEntry
+import org.depermitto.ui.theme.filledContainerColor
+import org.depermitto.ui.theme.horizontalDp
+import org.depermitto.ui.theme.notUnderlinedTextFieldColors
+import org.depermitto.ui.theme.spacingDp
 
 @Composable
-fun ExercisesScreen(exerciseDao: ExerciseDao, navController: NavController) {
-    val scope = rememberCoroutineScope { Dispatchers.IO }
+fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (WorkoutEntry) -> Unit) {
+    Box {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = horizontalDp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            val exercises by exerciseDao.getAllFlow().collectAsState(emptyList())
+            var searchText by remember { mutableStateOf("") }
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(spacingDp)) {
+                item {
+                    TextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = searchText, onValueChange = { searchText = it },
+                        shape = MaterialTheme.shapes.medium,
+                        colors = notUnderlinedTextFieldColors(),
+                        placeholder = { Text(text = "Search Exercises") },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                    )
+                }
 
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        val exercises by exerciseDao.getAllFlow().collectAsState(emptyList())
-        LazyColumn(modifier = Modifier.weight(1.0f)) {
-            items(exercises) { exercise ->
-                Text(
-                    text = "${exercise.exerciseId}      ${exercise.name}",
-                    modifier = Modifier.clickable {
-                        scope.launch {
-                            exerciseDao.delete(exercise)
-                        }
+                items(exercises.filter { it.name.lowercase().contains(searchText.lowercase()) }) { exercise ->
+                    OutlinedCard(colors = CardDefaults.cardColors(containerColor = filledContainerColor()),
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { onSelection(WorkoutEntry(exercise)) }) {
+                        Text(text = exercise.name, modifier = Modifier.padding(10.dp))
                     }
-                )
+                }
             }
         }
 
-        Button(onClick = { navController.navigate(Screen.ExercisesCreationScreen.route) }) {
-            Text("Create Exercise")
+        FloatingActionButton(
+            modifier = Modifier
+                .padding(bottom = 3 * horizontalDp, end = 2 * horizontalDp)
+                .align(Alignment.BottomEnd),
+            onClick = { TODO() },
+            shape = MaterialTheme.shapes.large,
+        ) {
+            Icon(Icons.Filled.Add, contentDescription = null)
         }
     }
 }

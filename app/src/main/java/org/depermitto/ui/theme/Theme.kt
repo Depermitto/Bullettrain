@@ -37,6 +37,9 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+val horizontalDp = 8.dp
+val spacingDp = 4.dp
+
 @Composable
 fun GymAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

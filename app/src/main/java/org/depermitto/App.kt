@@ -23,7 +23,7 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
 
     val programCreationViewModel: ProgramCreationViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
+    NavHost(navController = navController, startDestination = Screen.ProgramsCreationScreen.route) {
         composable(Screen.MainScreen.route) {
             Scaffold(ribbon = { Ribbon(navController = navController, backButton = false) }) {
                 MainScreen(db.getProgramDao(), navController)
@@ -31,18 +31,19 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
         }
 
         composable(Screen.ProgramsCreationScreen.route) {
-            Scaffold(ribbon = { Ribbon(navController = navController) }) {
+            Scaffold(ribbon = { Ribbon(navController = navController, title = "New Program") }) {
                 ProgramsCreationScreen(
                     programCreationViewModel,
                     programDao = db.getProgramDao(),
+                    exerciseDao = db.getExerciseDao(),
                     navController = navController
                 )
             }
         }
 
         composable(Screen.ExercisesScreen.route) {
-            Scaffold(ribbon = { Ribbon(navController = navController) }) {
-                ExercisesScreen(exerciseDao = db.getExerciseDao(), navController = navController)
+            Scaffold(ribbon = { Ribbon(navController = navController, title = "Exercises") }) {
+                ExercisesScreen(exerciseDao = db.getExerciseDao(), onSelection = { })
             }
         }
 
@@ -53,7 +54,7 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
         }
 
         composable(Screen.SettingsScreen.route) {
-            Scaffold(ribbon = { Ribbon(navController = navController, settingsGear = false) }) {
+            Scaffold(ribbon = { Ribbon(navController = navController, settingsGear = false, title = "Settings") }) {
                 SettingsScreen(db = db, dbFile = dbFile, fallbackBytes = fallbackBytes, scope = scope)
             }
         }
