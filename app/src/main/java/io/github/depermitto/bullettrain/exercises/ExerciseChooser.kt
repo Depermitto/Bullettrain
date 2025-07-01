@@ -2,9 +2,9 @@ package io.github.depermitto.bullettrain.exercises
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import io.github.depermitto.bullettrain.database.ExerciseDao
-import io.github.depermitto.bullettrain.database.ExerciseDescriptor
-import io.github.depermitto.bullettrain.database.HistoryDao
+import io.github.depermitto.bullettrain.database.entities.ExerciseDao
+import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
+import io.github.depermitto.bullettrain.database.entities.HistoryDao
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

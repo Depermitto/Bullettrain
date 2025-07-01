@@ -8,9 +8,9 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import io.github.depermitto.bullettrain.database.Workout
-import io.github.depermitto.bullettrain.database.WorkoutEntry
-import io.github.depermitto.bullettrain.database.Program
+import io.github.depermitto.bullettrain.database.entities.Program
+import io.github.depermitto.bullettrain.database.entities.Workout
+import io.github.depermitto.bullettrain.database.entities.WorkoutEntry
 import io.github.depermitto.bullettrain.util.smallListSet
 
 class ProgramViewModel(private val baseProgram: Program) : ViewModel() {

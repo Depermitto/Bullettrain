@@ -1,17 +1,24 @@
 package io.github.depermitto.bullettrain.settings
 
+import android.os.Build
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.database.Database
-import io.github.depermitto.bullettrain.database.Theme
-import io.github.depermitto.bullettrain.database.UnitSystem
+import io.github.depermitto.bullettrain.database.entities.Theme
+import io.github.depermitto.bullettrain.database.entities.UnitSystem
+import io.github.depermitto.bullettrain.theme.palettes.CreamCanFlamePeaPalette
+import io.github.depermitto.bullettrain.theme.palettes.Palette
+import io.github.depermitto.bullettrain.theme.palettes.RhinoButtercupPalette
 import io.github.depermitto.bullettrain.util.splitOnUppercase
 
 @Composable
@@ -20,7 +27,18 @@ fun SettingsScreen(
     db: Database,
     snackbarHostState: SnackbarHostState,
 ) = Column(modifier) {
+    val context = LocalContext.current
+    val dynamicPalette = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) null else Palette(
+        lightScheme = dynamicLightColorScheme(context), darkScheme = dynamicDarkColorScheme(context), name = "Dynamic"
+    )
     val settings by db.settingsDao.getSettings.collectAsStateWithLifecycle()
+
+    SettingList(headline = "Palette",
+        supporting = settings.palette.name,
+        list = listOfNotNull(dynamicPalette, RhinoButtercupPalette, CreamCanFlamePeaPalette),
+        onClick = { db.settingsDao.update { state -> state.copy(palette = it) } }) { palette ->
+        ListItem(headlineContent = { Text(palette.name) }, selected = palette.name == settings.palette.name)
+    }
 
     SettingList(headline = "Unit System",
         supporting = settings.unitSystem.name,

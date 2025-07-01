@@ -25,11 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.components.ListItem
-import io.github.depermitto.bullettrain.database.HistoryDao
-import io.github.depermitto.bullettrain.database.HistoryRecord
-import io.github.depermitto.bullettrain.database.Program
-import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.database.Workout
+import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import java.time.DayOfWeek
@@ -80,17 +76,18 @@ fun Calendar(
                             CalendarItem(text = "")
                         } else {
                             val day = LocalDate.of(currentDate.year, currentDate.month, dayOfMonth)
-                            CalendarItem(modifier = Modifier
-                                .padding(4.dp)
-                                .clip(shape = CircleShape)
-                                .aspectRatio(1f)
-                                .combinedClickable(onClick = { homeViewModel.selectedDate = day },
-                                    onLongClick = { showDropdown = true })
-                                .background(
-                                    color = if (homeViewModel.selectedDate == day) MaterialTheme.colorScheme.tertiaryContainer
-                                    else if (currentHistoryRecords.any { it.date == day }) MaterialTheme.colorScheme.primaryContainer
-                                    else Color.Transparent
-                                ), underline = day == today, text = dayOfMonth.toString()
+                            CalendarItem(
+                                modifier = Modifier
+                                    .padding(4.dp)
+                                    .clip(shape = CircleShape)
+                                    .aspectRatio(1f)
+                                    .combinedClickable(onClick = { homeViewModel.selectedDate = day },
+                                        onLongClick = { showDropdown = true })
+                                    .background(
+                                        color = if (homeViewModel.selectedDate == day) MaterialTheme.colorScheme.tertiaryContainer
+                                        else if (currentHistoryRecords.any { it.date == day }) MaterialTheme.colorScheme.primaryContainer
+                                        else Color.Transparent
+                                    ), underline = day == today, text = dayOfMonth.toString()
                             )
 
                             DropdownMenu(expanded = showDropdown, onDismissRequest = { showDropdown = false }) {

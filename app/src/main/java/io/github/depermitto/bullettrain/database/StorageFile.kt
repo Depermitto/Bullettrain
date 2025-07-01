@@ -1,41 +1,19 @@
 package io.github.depermitto.bullettrain.database
 
 import android.util.Log
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.IOException
 
 abstract class StorageFile<Object>(val file: File) {
     abstract fun read(): Object
-    abstract fun write(obj: Object)
-}
+    abstract fun writeNoLog(obj: Object)
 
-class SettingsFile(file: File) : StorageFile<Settings>(file) {
-    override fun read(): Settings = Json.decodeFromString(Compressor.uncompress(file.readText()))
-    override fun write(obj: Settings) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
-}
-
-class HistoryFile(file: File) : StorageFile<List<HistoryRecord>>(file) {
-    override fun read(): List<HistoryRecord> = Json.decodeFromString(Compressor.uncompress(file.readText()))
-    override fun write(obj: List<HistoryRecord>) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
-}
-
-class ProgramsFile(file: File) : StorageFile<List<Program>>(file) {
-    override fun read(): List<Program> = Json.decodeFromString(Compressor.uncompress(file.readText()))
-    override fun write(obj: List<Program>) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
-}
-
-class ExerciseFile(file: File) : StorageFile<List<ExerciseDescriptor>>(file) {
-    override fun read(): List<ExerciseDescriptor> = Json.decodeFromString(Compressor.uncompress(file.readText()))
-    override fun write(obj: List<ExerciseDescriptor>) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
-}
-
-fun <Object> StorageFile<Object>.write(obj: Object, log: Boolean) {
-    try {
-        this.write(obj)
-        if (log) Log.i("db-${file.name}", "backed up '$obj'")
-    } catch (err: IOException) {
-        if (log) Log.wtf("db-${file.name}", err.toString())
+    fun writeLog(obj: Object) {
+        try {
+            this.writeNoLog(obj)
+            Log.i("db-${file.name}", "backed up '$obj'")
+        } catch (err: IOException) {
+            Log.wtf("db-${file.name}", err.toString())
+        }
     }
 }

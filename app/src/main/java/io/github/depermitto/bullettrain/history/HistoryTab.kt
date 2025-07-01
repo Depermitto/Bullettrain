@@ -33,10 +33,7 @@ import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.components.Ratio
 import io.github.depermitto.bullettrain.components.WorkoutTable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
-import io.github.depermitto.bullettrain.database.ExerciseDao
-import io.github.depermitto.bullettrain.database.HistoryDao
-import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.database.Settings
+import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium

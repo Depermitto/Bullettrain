@@ -14,9 +14,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.BasicTable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
-import io.github.depermitto.bullettrain.database.ExerciseDescriptor
-import io.github.depermitto.bullettrain.database.HistoryDao
-import io.github.depermitto.bullettrain.database.SettingsDao
+import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
+import io.github.depermitto.bullettrain.database.entities.HistoryDao
+import io.github.depermitto.bullettrain.database.entities.SettingsDao
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small

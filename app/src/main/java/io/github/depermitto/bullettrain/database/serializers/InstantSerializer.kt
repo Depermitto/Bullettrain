@@ -1,4 +1,4 @@
-package io.github.depermitto.bullettrain.database
+package io.github.depermitto.bullettrain.database.serializers
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

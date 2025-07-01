@@ -29,7 +29,7 @@ import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.components.TransparentCard
-import io.github.depermitto.bullettrain.database.ProgramDao
+import io.github.depermitto.bullettrain.database.entities.ProgramDao
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
@@ -60,8 +60,7 @@ fun ProgramsTab(
                         onClick = { closeDropdown(); showProgramDeleteDialog = true })
                 }) {
                 TransparentCard(modifier = Modifier.align(Alignment.Center)) {
-                    ListItem(
-                        headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
+                    ListItem(headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
                         supportingContent = {
                             Column {
                                 Text(text = "${program.workouts.size} day program")

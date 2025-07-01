@@ -20,9 +20,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
-import io.github.depermitto.bullettrain.database.ExerciseDao
-import io.github.depermitto.bullettrain.database.ExerciseDescriptor
-import io.github.depermitto.bullettrain.database.HistoryDao
+import io.github.depermitto.bullettrain.database.entities.ExerciseDao
+import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
+import io.github.depermitto.bullettrain.database.entities.HistoryDao
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.unlinedColors

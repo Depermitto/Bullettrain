@@ -65,7 +65,7 @@ import io.github.depermitto.bullettrain.components.TopBarWithBackButton
 import io.github.depermitto.bullettrain.components.TopBarWithSettingsButton
 import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Database
-import io.github.depermitto.bullettrain.database.Program
+import io.github.depermitto.bullettrain.database.entities.Program
 import io.github.depermitto.bullettrain.exercises.ExerciseScreen
 import io.github.depermitto.bullettrain.home.HomeScreen
 import io.github.depermitto.bullettrain.home.HomeViewModel

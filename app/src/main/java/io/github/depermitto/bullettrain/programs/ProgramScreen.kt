@@ -29,7 +29,7 @@ import io.github.depermitto.bullettrain.components.DragButton
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
-import io.github.depermitto.bullettrain.database.PerfVar
+import io.github.depermitto.bullettrain.database.entities.PerfVar
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium

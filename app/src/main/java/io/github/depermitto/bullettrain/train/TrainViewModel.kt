@@ -7,12 +7,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.database.BackgroundSlave
-import io.github.depermitto.bullettrain.database.ExerciseSet
-import io.github.depermitto.bullettrain.database.HistoryDao
-import io.github.depermitto.bullettrain.database.HistoryRecord
-import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.database.Workout
-import io.github.depermitto.bullettrain.database.WorkoutEntry
+import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.util.smallListSet
 import kotlinx.serialization.Serializable
 import java.time.Instant

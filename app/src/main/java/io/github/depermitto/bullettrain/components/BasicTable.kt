@@ -20,10 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
-import io.github.depermitto.bullettrain.database.ExerciseDao
-import io.github.depermitto.bullettrain.database.Program
-import io.github.depermitto.bullettrain.database.Workout
-import io.github.depermitto.bullettrain.database.WorkoutEntry
+import io.github.depermitto.bullettrain.database.entities.*
 
 sealed class Ratio {
     data object Unlimited : Ratio()

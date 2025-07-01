@@ -19,11 +19,11 @@ import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.components.Ratio
 import io.github.depermitto.bullettrain.components.WorkoutTable
-import io.github.depermitto.bullettrain.database.ExerciseDao
-import io.github.depermitto.bullettrain.database.Program
-import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.database.Settings
-import io.github.depermitto.bullettrain.database.Workout
+import io.github.depermitto.bullettrain.database.entities.ExerciseDao
+import io.github.depermitto.bullettrain.database.entities.Program
+import io.github.depermitto.bullettrain.database.entities.ProgramDao
+import io.github.depermitto.bullettrain.database.entities.Settings
+import io.github.depermitto.bullettrain.database.entities.Workout
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.focalGround
 
