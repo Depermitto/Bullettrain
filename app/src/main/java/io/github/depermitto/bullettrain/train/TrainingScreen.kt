@@ -83,7 +83,7 @@ fun TrainingScreen(
         dismissButton = {
           TextButton(onClick = { showReorderExerciseDialog = false }) { Text("Close") }
         },
-        list = trainViewModel.getExercises(),
+        exercises = trainViewModel.getExercises(),
         onSettle = { from, to -> trainViewModel.reorderExercises(from, to) },
       ) { exerciseIndex, exercise ->
         val exerciseDescriptor = exerciseDao.where(id = exercise.descriptorId)

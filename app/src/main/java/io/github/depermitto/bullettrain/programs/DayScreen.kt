@@ -81,7 +81,7 @@ fun DayScreen(
         dismissButton = {
           TextButton(onClick = { showReorderExerciseDialog = false }) { Text("Close") }
         },
-        list = programViewModel.getExercises(dayIndex),
+        exercises = programViewModel.getExercises(dayIndex),
         onSettle = { from, to -> programViewModel.reorderExercises(dayIndex, from, to) },
       ) { exerciseIndex, exercise ->
         val exerciseDescriptor = exerciseDao.where(id = exercise.descriptorId)

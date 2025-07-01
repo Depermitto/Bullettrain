@@ -5,8 +5,9 @@ import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -25,17 +26,18 @@ import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.ConfirmationAlertDialog
-import io.github.depermitto.bullettrain.components.DragButton
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.protos.SettingsProto.*
+import io.github.depermitto.bullettrain.theme.DragHandleIcon
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
 import io.github.depermitto.bullettrain.theme.focalGround
-import sh.calvin.reorderable.ReorderableColumn
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Composable
 fun ProgramScreen(
@@ -45,74 +47,27 @@ fun ProgramScreen(
   navController: NavController,
 ) {
   Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-    val view = LocalView.current
     val days = programViewModel.getDays()
-    ReorderableColumn(
-      list = days,
-      modifier =
-        Modifier.padding(horizontal = Dp.Medium)
-          .verticalScroll(rememberScrollState(0))
-          .padding(bottom = Dp.EmptyScrollSpace),
-      verticalArrangement = Arrangement.spacedBy(Dp.Small),
-      onMove = {
+    val view = LocalView.current
+    val lazyListState = rememberLazyListState()
+    val reorderableLazyListState =
+      rememberReorderableLazyListState(lazyListState) { from, to ->
+        programViewModel.reorderDays(from.index, to.index)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
           view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
         }
-      },
-      onSettle = { from, to -> programViewModel.reorderDays(from, to) },
-    ) { dayIndex, day, isDragging ->
-      val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
-
-      key(day) {
-        Surface(shadowElevation = elevation, shape = MaterialTheme.shapes.medium) {
-          var showRenameDialog by rememberSaveable { mutableStateOf(false) }
-          var showDayDeleteDialog by rememberSaveable { mutableStateOf(false) }
-          HoldToShowOptionsBox(
-            onClick = { navController.navigate(Destination.Day(dayIndex)) },
-            holdOptions = { closeDropdown ->
-              DropdownMenuItem(
-                text = { Text(text = "Rename") },
-                leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = "Rename Day") },
-                onClick = {
-                  closeDropdown()
-                  showRenameDialog = true
-                },
-              )
-              DropdownMenuItem(
-                text = { Text(text = "Duplicate") },
-                leadingIcon = { DuplicateIcon() },
-                onClick = {
-                  closeDropdown()
-                  programViewModel.addDay(day)
-                },
-              )
-              DropdownMenuItem(
-                text = { Text(text = "Delete") },
-                leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = "Delete Day") },
-                onClick = {
-                  closeDropdown()
-                  showDayDeleteDialog = true
-                },
-              )
-            },
-          ) {
-            Card(colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme))) {
-              ExtendedListItem(
-                headlineContent = { Text(text = day.name, maxLines = 1) },
-                supportingContent = {
-                  Text(text = "${day.exercisesList.sumOf { it.setsCount }} sets", maxLines = 1)
-                },
-                trailingContent = { DragButton(this@ReorderableColumn, view) },
-              )
-            }
-
-            if (showDayDeleteDialog)
-              ConfirmationAlertDialog(
-                text = "Do you definitely want to delete ${day.name}?",
-                onDismissRequest = { showDayDeleteDialog = false },
-                onConfirm = { programViewModel.removeDayAt(dayIndex) },
-              )
-
+      }
+    LazyColumn(
+      contentPadding =
+        PaddingValues(start = Dp.Medium, end = Dp.Medium, bottom = Dp.EmptyScrollSpace),
+      verticalArrangement = Arrangement.spacedBy(Dp.Small),
+      state = lazyListState,
+    ) {
+      itemsIndexed(days, key = { _, it -> it.name }) { dayIndex, day ->
+        ReorderableItem(reorderableLazyListState, key = day.name) { isDragging ->
+          val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
+          Surface(shadowElevation = elevation, shape = MaterialTheme.shapes.medium) {
+            var showRenameDialog by rememberSaveable { mutableStateOf(false) }
             if (showRenameDialog)
               TextFieldAlertDialog(
                 label = { Text("Day Name") },
@@ -131,6 +86,72 @@ fun ProgramScreen(
                   }
                 },
               )
+
+            var showDayDeleteDialog by rememberSaveable { mutableStateOf(false) }
+            if (showDayDeleteDialog)
+              ConfirmationAlertDialog(
+                text = "Do you definitely want to delete ${day.name}?",
+                onDismissRequest = { showDayDeleteDialog = false },
+                onConfirm = { programViewModel.removeDayAt(dayIndex) },
+              )
+
+            HoldToShowOptionsBox(
+              onClick = { navController.navigate(Destination.Day(dayIndex)) },
+              holdOptions = { closeDropdown ->
+                DropdownMenuItem(
+                  text = { Text(text = "Rename") },
+                  leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = "Rename Day") },
+                  onClick = {
+                    closeDropdown()
+                    showRenameDialog = true
+                  },
+                )
+                DropdownMenuItem(
+                  text = { Text(text = "Duplicate") },
+                  leadingIcon = DuplicateIcon,
+                  onClick = {
+                    closeDropdown()
+                    programViewModel.addDay(day)
+                  },
+                )
+                DropdownMenuItem(
+                  text = { Text(text = "Delete") },
+                  leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = "Delete Day") },
+                  onClick = {
+                    closeDropdown()
+                    showDayDeleteDialog = true
+                  },
+                )
+              },
+            ) {
+              Card(colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme))) {
+                ExtendedListItem(
+                  headlineContent = { Text(text = day.name, maxLines = 1) },
+                  supportingContent = {
+                    Text(text = "${day.exercisesList.sumOf { it.setsCount }} sets", maxLines = 1)
+                  },
+                  trailingContent = {
+                    IconButton(
+                      modifier =
+                        Modifier.draggableHandle(
+                          onDragStarted = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                              view.performHapticFeedback(HapticFeedbackConstants.DRAG_START)
+                            }
+                          },
+                          onDragStopped = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                              view.performHapticFeedback(HapticFeedbackConstants.GESTURE_END)
+                            }
+                          },
+                        ),
+                      onClick = {},
+                      content = DragHandleIcon,
+                    )
+                  },
+                )
+              }
+            }
           }
         }
       }
