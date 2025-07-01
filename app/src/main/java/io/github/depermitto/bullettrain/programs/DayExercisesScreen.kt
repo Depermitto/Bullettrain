@@ -65,7 +65,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 @Composable
-fun DayScreen(
+fun DayExercisesScreen(
     modifier: Modifier = Modifier, programViewModel: ProgramViewModel, dayIndex: Int, exerciseDao: ExerciseDao
 ) = Box(modifier = modifier.fillMaxSize()) {
     val day = programViewModel.getDay(dayIndex)
@@ -95,8 +95,9 @@ fun DayScreen(
                             fun setIntensity(cat: IntensityCategory?) {
                                 val intensity = if (cat != null) 0f else null
                                 onExerciseChange(
-                                    exercise.copy(intensityCategory = cat,
-                                        sets = exercise.sets.map<ExerciseSet, ExerciseSet> { it.copy(intensity = intensity) })
+                                    exercise.copy(
+                                        intensityCategory = cat,
+                                        sets = exercise.sets.map { it.copy(intensity = intensity) })
                                 )
                             }
 
@@ -178,9 +179,7 @@ fun DayScreen(
                                         onValueChange = {
                                             programViewModel.setExercise(
                                                 dayIndex, exerciseIndex, exercise.copy(
-                                                    sets = exercise.sets.smallListSet(
-                                                        setIndex, set.copy(targetPerfVar = it)
-                                                    )
+                                                    sets = exercise.sets.smallListSet(setIndex, set.copy(targetPerfVar = it))
                                                 )
                                             )
                                         })

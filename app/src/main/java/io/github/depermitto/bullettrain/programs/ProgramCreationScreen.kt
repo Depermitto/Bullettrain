@@ -16,7 +16,7 @@ import io.github.depermitto.bullettrain.theme.notUnderlinedTextFieldColors
 import kotlinx.coroutines.launch
 
 @Composable
-fun ProgramCreation(
+fun ProgramCreationScreen(
     programViewModel: ProgramViewModel,
     programDao: ProgramDao,
     snackbarHostState: SnackbarHostState,
@@ -37,7 +37,7 @@ fun ProgramCreation(
         colors = notUnderlinedTextFieldColors()
     )
     Box(modifier = Modifier.weight(1f)) {
-        ProgramScreen(programViewModel = programViewModel, navController = navController)
+        ProgramDaysScreen(programViewModel = programViewModel, navController = navController)
         AnchoredFloatingActionButton(text = { Text(text = "Complete Program") }, onClick = {
             if (programViewModel.programName.isBlank()) {
                 scope.launch { snackbarHostState.showSnackbar("Blank Program Name") }

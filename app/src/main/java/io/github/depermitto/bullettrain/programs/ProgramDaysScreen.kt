@@ -29,7 +29,7 @@ import io.github.depermitto.bullettrain.util.DuplicateIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProgramScreen(
+fun ProgramDaysScreen(
     programViewModel: ProgramViewModel, navController: NavController
 ) = LazyColumn(
     modifier = Modifier.fillMaxSize(),

@@ -38,9 +38,9 @@ import io.github.depermitto.bullettrain.database.Database
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.home.HomeScreen
 import io.github.depermitto.bullettrain.home.HomeViewModel
-import io.github.depermitto.bullettrain.programs.DayScreen
-import io.github.depermitto.bullettrain.programs.ProgramCreation
-import io.github.depermitto.bullettrain.programs.ProgramScreen
+import io.github.depermitto.bullettrain.programs.DayExercisesScreen
+import io.github.depermitto.bullettrain.programs.ProgramCreationScreen
+import io.github.depermitto.bullettrain.programs.ProgramDaysScreen
 import io.github.depermitto.bullettrain.programs.ProgramViewModel
 import io.github.depermitto.bullettrain.settings.SettingsScreen
 import io.github.depermitto.bullettrain.theme.GymAppTheme
@@ -172,7 +172,7 @@ fun App(db: Database) = MaterialTheme {
                         settingsGear = false
                     )
                 }) {
-                    ProgramCreation(
+                    ProgramCreationScreen(
                         programViewModel = programViewModel,
                         programDao = db.programDao,
                         snackbarHostState = snackbarHostState,
@@ -186,7 +186,7 @@ fun App(db: Database) = MaterialTheme {
                 programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(program))
 
                 RibbonScaffold(ribbon = { Ribbon(navController, title = programViewModel.programName, settingsGear = false) }) {
-                    ProgramScreen(programViewModel, navController)
+                    ProgramDaysScreen(programViewModel, navController)
                     if (programViewModel.getDays().toList() != program.days.toList()) {
                         AnchoredFloatingActionButton(text = { Text("Finish Edit") }, onClick = {
                             db.programDao.update(programViewModel.constructProgram())
@@ -201,7 +201,7 @@ fun App(db: Database) = MaterialTheme {
                 val day = programViewModel.getDay(dayIndex)
 
                 RibbonScaffold(ribbon = { Ribbon(navController, title = day.name, settingsGear = false) }) {
-                    DayScreen(
+                    DayExercisesScreen(
                         modifier = Modifier.padding(horizontal = ItemPadding),
                         programViewModel = programViewModel,
                         exerciseDao = db.exerciseDao,
