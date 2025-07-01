@@ -29,8 +29,14 @@ class ProgramViewModel(program: Program) : ViewModel() {
         dayIndex, getDay(dayIndex).copy(exercises = getDay(dayIndex).exercises.smallListSet(exerciseIndex, exercise))
     )
 
-    fun isEqual(program: Program): Boolean = getDays().toList() == program.days.toList()
-    fun isEmpty(): Boolean = programName.isEmpty() && days.isEmpty()
+    fun areDaysEqual(program: Program): Boolean = getDays().toList() == program.days.toList()
+    fun hasContent(ignoreDay1: Boolean = false): Boolean {
+        if (programName.isNotBlank()) return true
+        return if (!ignoreDay1) {
+            val isDefault = days.toList() == listOf(Day())
+            if (!isDefault) days.isNotEmpty() else false
+        } else days.isNotEmpty()
+    }
 
     fun constructProgram(): Program = Program(id = programId, name = programName, days = days.toList(), followed = followed)
     fun clear() {

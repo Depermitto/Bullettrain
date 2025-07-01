@@ -19,7 +19,7 @@ fun ProgramScreen(
     navController: NavController
 ) = Box(modifier.fillMaxSize()) {
     ProgramDaysScreen(programViewModel = programViewModel, navController = navController)
-    if (!programViewModel.isEqual(program)) {
+    if (!programViewModel.areDaysEqual(program)) {
         AnchoredFloatingActionButton(text = { Text("Finish Edit") }, onClick = {
             programDao.update(programViewModel.constructProgram())
             navController.popBackStack()

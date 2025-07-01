@@ -41,7 +41,6 @@ import io.github.depermitto.bullettrain.components.Ribbon
 import io.github.depermitto.bullettrain.components.RibbonScaffold
 import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Database
-import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.home.HomeScreen
 import io.github.depermitto.bullettrain.home.HomeViewModel
@@ -212,7 +211,7 @@ fun App(db: Database) = MaterialTheme {
                     text = "Do you want to discard ${programViewModel.programName.ifBlank { "your new creation" }}?",
                     onConfirm = { navController.navigateUp(); programViewModel.clear() })
 
-                if (!programViewModel.isEmpty() && programViewModel.getDays().toList() != listOf(Day())) {
+                if (programViewModel.hasContent(ignoreDay1 = false)) {
                     BackHandler { showDiscardDialog = true }
                 }
             }
@@ -234,7 +233,7 @@ fun App(db: Database) = MaterialTheme {
                     text = "Do you want to discard changes made to ${programViewModel.programName}?",
                     onConfirm = { navController.navigateUp() })
 
-                if (!programViewModel.isEqual(program)) BackHandler { showDiscardDialog = true }
+                if (!programViewModel.areDaysEqual(program)) BackHandler { showDiscardDialog = true }
             }
 
             composable<Destinations.Day> { navBackStackEntry ->
