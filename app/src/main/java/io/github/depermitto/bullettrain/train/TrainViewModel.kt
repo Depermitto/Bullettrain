@@ -30,8 +30,7 @@ enum class WorkoutPhase { During, Completed }
 
 data class WorkoutState(
     val historyRecord: HistoryRecord,
-    val clockTimer: Timer,
-    val saveTimer: Timer,
+    val timer: Timer,
 )
 
 class TrainViewModel(
@@ -88,8 +87,7 @@ class TrainViewModel(
 
     fun completeWorkout() = endWorkout { state ->
         val record = state.historyRecord.copy(
-            workoutPhase = WorkoutPhase.Completed,
-            workout = state.historyRecord.workout.copy(exercises = exercises.toList())
+            workoutPhase = WorkoutPhase.Completed, workout = state.historyRecord.workout.copy(exercises = exercises.toList())
         )
         val program = runBlocking { programDao.where(record.relatedProgram.id).firstOrNull() } ?: return@endWorkout
         val nextDay = (program.nextDay + 1) % program.days.size
@@ -107,8 +105,7 @@ class TrainViewModel(
     fun cancelWorkout() = endWorkout { historyDao.delete(it.historyRecord) }
 
     private fun endWorkout(deinit: (WorkoutState) -> Unit) = workoutState?.let { state ->
-        state.saveTimer.cancel()
-        state.clockTimer.cancel()
+        state.timer.cancel()
 
         deinit(state)
 
@@ -123,11 +120,20 @@ class TrainViewModel(
         }
     }
 
-    private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("m:ss").withZone(ZoneId.systemDefault())
-    fun elapsedSince(instant: Instant? = null): String = workoutState?.let { state ->
-        val millis = instant?.toEpochMilli() ?: state.historyRecord.workoutStartTime.toEpochMilli()
-        formatter.format(Instant.ofEpochMilli(max(0, clock.toEpochMilli() - millis)))
-    } ?: ""
+    fun elapsedSince(instant: Instant? = null): String {
+        val formatter = DateTimeFormatter.ofPattern("m:ss").withZone(ZoneId.systemDefault())
+        val hourFormatter = DateTimeFormatter.ofPattern("mm:ss").withZone(ZoneId.systemDefault())
+
+        val millis = instant?.toEpochMilli() ?: workoutState?.historyRecord?.workoutStartTime?.toEpochMilli() ?: return ""
+        val differenceMillis = max(0, clock.toEpochMilli() - millis)
+        val hours = differenceMillis / (1000 * 60 * 60)
+
+        return if (hours == 0L) {
+            formatter.format(Instant.ofEpochMilli(differenceMillis))
+        } else {
+            "$hours:${hourFormatter.format(Instant.ofEpochMilli(differenceMillis))}"
+        }
+    }
 
     private fun createState(historyRecord: HistoryRecord) {
         if (workoutState == null) {
@@ -136,17 +142,16 @@ class TrainViewModel(
 
             clock = Instant.now()
             exercises = historyRecord.workout.exercises.toMutableStateList()
-            workoutState = WorkoutState(historyRecord = record,
-                clockTimer = timer(initialDelay = 1000L, period = 1000L) { clock = clock.plusSeconds(1L) },
-                saveTimer = timer(initialDelay = 1000L, period = 1000L) {
-                    BackgroundSlave.enqueue {
-                        workoutState = workoutState?.let {
-                            it.copy(historyRecord = it.historyRecord.copy(workout = it.historyRecord.workout.copy(exercises = exercises.toList())))
-                        }
-
-                        historyDao.upsert(workoutState?.historyRecord ?: return@enqueue)
+            workoutState = WorkoutState(historyRecord = record, timer = timer(initialDelay = 1000L, period = 1000L) {
+                clock = Instant.now()
+                BackgroundSlave.enqueue {
+                    workoutState = workoutState?.let {
+                        it.copy(historyRecord = it.historyRecord.copy(workout = it.historyRecord.workout.copy(exercises = exercises.toList())))
                     }
-                })
+
+                    historyDao.upsert(workoutState?.historyRecord ?: return@enqueue)
+                }
+            })
         } else throw UnsupportedOperationException("WorkoutState Is Not Null")
     }
 
