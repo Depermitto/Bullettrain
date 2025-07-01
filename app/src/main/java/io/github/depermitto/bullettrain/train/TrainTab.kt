@@ -18,7 +18,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.R
-import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DataPanel
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.ListAlertDialog
@@ -26,6 +25,7 @@ import io.github.depermitto.bullettrain.db.ExerciseDao
 import io.github.depermitto.bullettrain.db.ProgramDao
 import io.github.depermitto.bullettrain.protos.ProgramsProto.Workout
 import io.github.depermitto.bullettrain.protos.SettingsProto.*
+import io.github.depermitto.bullettrain.theme.ExtraLarge
 import io.github.depermitto.bullettrain.theme.Large
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.focalGround
@@ -41,18 +41,15 @@ fun TrainTab(
   settings: Settings,
   navController: NavController,
 ) {
-  Box(modifier.fillMaxSize()) {
-    Column(
-      Modifier.padding(horizontal = Dp.Medium),
-      horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
+  Column(modifier.fillMaxSize().padding(horizontal = Dp.Medium)) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
       val programs by
         programDao.getUserPrograms.collectAsStateWithLifecycle(initialValue = emptyList())
       var showChangeDayIndexDialog by rememberSaveable { mutableStateOf(false) }
       var selectedProgramIndex by rememberSaveable { mutableIntStateOf(0) }
 
       Card(
-        modifier = Modifier.heightIn(0.dp, 400.dp),
+        modifier = Modifier.heightIn(0.dp, 360.dp),
         colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
       ) {
         val program =
@@ -165,11 +162,21 @@ fun TrainTab(
       }
     }
 
-    AnchoredFloatingActionButton(
-      icon = { Icon(painterResource(R.drawable.checkbox_blank), null) },
-      text = { Text("Start Empty Workout") },
-    ) {
-      trainViewModel.startWorkout(Workout.getDefaultInstance(), -1, Instant.now().toTimestamp())
+    Spacer(modifier = Modifier.height(Dp.ExtraLarge))
+
+    Column {
+      Text(modifier = Modifier.padding(start = 8.dp), text = "No idea for a session?")
+      ElevatedButton(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = {
+          trainViewModel.startWorkout(Workout.getDefaultInstance(), -1, Instant.now().toTimestamp())
+        },
+        colors =
+          ButtonDefaults.elevatedButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
+        shape = RoundedCornerShape(16.dp),
+      ) {
+        Text("Impromptu Workout")
+      }
     }
   }
 }

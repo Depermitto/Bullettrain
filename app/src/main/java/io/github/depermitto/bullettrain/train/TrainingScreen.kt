@@ -115,7 +115,7 @@ fun TrainingScreen(
             onExerciseChange = { trainViewModel.setExercise(exerciseIndex, it) },
             headline = {
               ExtendedListItem(
-                contentPadding = PaddingValues(vertical = 12.dp, horizontal = 8.dp),
+                contentPadding = PaddingValues(8.dp, 12.dp, 12.dp, 12.dp),
                 headlineContent = {
                   TextLink(
                     "${exerciseIndex + 1}. ${exerciseDescriptor.name}",

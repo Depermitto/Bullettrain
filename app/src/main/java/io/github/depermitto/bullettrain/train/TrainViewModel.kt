@@ -28,8 +28,8 @@ import kotlin.properties.Delegates
 /**
  * [ViewModel] for creating and editing a [Workout]. When the class is initialized, some of its
  * fields are not. To properly work and not crash the app, you must initialize [TrainViewModel]'s
- * state with [startWorkout] or [editWorkout]. These methods use hardcoded [Destination]s for
- * navigation. Use [completeWorkout] or [cancelWorkout] to shutdown.
+ * state with [startWorkout], [restoreWorkout] or [editWorkout]. These methods use hardcoded
+ * [Destination]s for navigation. Use [completeWorkout] or [cancelWorkout] to shutdown.
  *
  * [TrainViewModel] is for:
  * - Realtime training on any [LocalDate],

@@ -174,9 +174,7 @@ fun App(db: Db) = MaterialTheme {
                     scope.launch { homeScreenPager.animateScrollToPage(tabIndex) }
                   }
                 },
-                icon = {
-                  Icon(painter = painterResource(id = tab.icon), contentDescription = tab.name)
-                },
+                icon = { Icon(painterResource(id = tab.icon), tab.name) },
                 label = { Text(text = tab.name) },
                 alwaysShowLabel = false,
               )
