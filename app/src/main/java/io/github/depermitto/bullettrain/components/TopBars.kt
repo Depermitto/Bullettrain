@@ -16,11 +16,11 @@ import io.github.depermitto.bullettrain.Destination
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreenTopBar(navController: NavController, title: String) {
+fun HomeTopBar(navController: NavController, scrollBehavior: TopAppBarScrollBehavior? = null) {
   TopAppBar(
     title = {
       Text(
-        title,
+        "Home",
         style = MaterialTheme.typography.titleLarge,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
@@ -31,17 +31,22 @@ fun HomeScreenTopBar(navController: NavController, title: String) {
         Icon(Icons.Filled.Settings, "Settings")
       }
     },
-    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+    colors =
+      TopAppBarDefaults.topAppBarColors(
+        containerColor = Color.Transparent,
+        scrolledContainerColor = Color.Transparent,
+      ),
+    scrollBehavior = scrollBehavior,
   )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBarWithBackButton(
-  modifier: Modifier = Modifier,
-  navController: NavController,
-  endContent: (@Composable () -> Unit)? = null,
+fun Toolbar(
   title: String,
+  navController: NavController,
+  modifier: Modifier = Modifier,
+  endContent: (@Composable () -> Unit)? = null,
 ) {
   val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
   TopAppBar(

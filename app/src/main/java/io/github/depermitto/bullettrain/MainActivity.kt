@@ -52,6 +52,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -69,9 +70,9 @@ import io.github.depermitto.bullettrain.Destination.Home.Tab
 import io.github.depermitto.bullettrain.components.ConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DropdownButton
 import io.github.depermitto.bullettrain.components.ExtendedListItem
-import io.github.depermitto.bullettrain.components.HomeScreenTopBar
+import io.github.depermitto.bullettrain.components.HomeTopBar
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
-import io.github.depermitto.bullettrain.components.TopBarWithBackButton
+import io.github.depermitto.bullettrain.components.Toolbar
 import io.github.depermitto.bullettrain.db.Db
 import io.github.depermitto.bullettrain.exercises.ExerciseScreen
 import io.github.depermitto.bullettrain.exercises.ExercisesSetsListings
@@ -174,8 +175,10 @@ fun App(db: Db) = MaterialTheme {
     popExitTransition = { scaleOutOfContainer() },
   ) {
     composable<Destination.Home> {
+      val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
       Scaffold(
-        topBar = { HomeScreenTopBar(navController = navController, title = "Home") },
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = { HomeTopBar(navController = navController, scrollBehavior = scrollBehavior) },
         bottomBar = {
           NavigationBar(tonalElevation = 8.dp) {
             Tab.entries.forEachIndexed { tabIndex, tab ->
@@ -297,9 +300,9 @@ fun App(db: Db) = MaterialTheme {
     composable<Destination.ProgramCreation> {
       Scaffold(
         topBar = {
-          TopBarWithBackButton(
-            navController = navController,
+          Toolbar(
             title = programViewModel.programName.ifBlank { "New program" },
+            navController = navController,
             endContent = {
               TextButton(
                 onClick = {
@@ -359,12 +362,68 @@ fun App(db: Db) = MaterialTheme {
       }
     }
 
+    composable<Destination.DirectDay> { navBackStackEntry ->
+      val route = navBackStackEntry.toRoute<Destination.DirectDay>()
+      val program by db.programDao.whereAsState(route.programId)
+      val day = program.getWorkouts(route.dayIndex)
+
+      programViewModel = viewModel(factory = ProgramViewModel.Factory(program))
+      val hasChanged = day != programViewModel.getDay(route.dayIndex)
+
+      Scaffold(
+        topBar = {
+          Toolbar(
+            title = day.name,
+            navController = navController,
+            endContent = {
+              if (hasChanged)
+                TextButton(
+                  onClick = {
+                    db.programDao.update(programViewModel.getProgram())
+                    navController.popBackStack()
+                  }
+                ) {
+                  Icon(
+                    Icons.Filled.Check,
+                    "Complete workout edit",
+                    modifier = Modifier.size(ButtonDefaults.IconSize),
+                  )
+                  Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+                  Text("Finish Edit")
+                }
+            },
+          )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+      ) { paddingValues ->
+        DayScreen(
+          modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
+          programViewModel = programViewModel,
+          exerciseDao = db.exerciseDao,
+          historyDao = db.historyDao,
+          dayIndex = route.dayIndex,
+          navController = navController,
+          snackbarHostState = snackbarHostState,
+          settings = settings,
+        )
+      }
+
+      if (showDiscardOrDeleteDialog)
+        ConfirmationAlertDialog(
+          onDismissRequest = { showDiscardOrDeleteDialog = false },
+          text = "Do you want to discard changes made to ${day.name}?",
+          onConfirm = { navController.navigateUp() },
+        )
+
+      BackHandler(enabled = hasChanged) { showDiscardOrDeleteDialog = true }
+    }
+
     composable<Destination.Day> { navBackStackEntry ->
       val dayIndex = navBackStackEntry.toRoute<Destination.Day>().dayIndex
       val day = programViewModel.getDay(dayIndex)
 
       Scaffold(
-        topBar = { TopBarWithBackButton(navController = navController, title = day.name) },
+        topBar = { Toolbar(navController = navController, title = day.name) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
       ) { paddingValues ->
         DayScreen(
@@ -383,14 +442,15 @@ fun App(db: Db) = MaterialTheme {
     composable<Destination.Program> { navBackStackEntry ->
       val program by
         db.programDao.whereAsState(navBackStackEntry.toRoute<Destination.Program>().programId)
+
       programViewModel = viewModel(factory = ProgramViewModel.Factory(program))
       val hasChanged = program.workoutsList != programViewModel.getDays()
 
       Scaffold(
         topBar = {
-          TopBarWithBackButton(
-            navController = navController,
+          Toolbar(
             title = programViewModel.programName,
+            navController = navController,
             endContent = {
               if (hasChanged)
                 TextButton(
@@ -437,7 +497,7 @@ fun App(db: Db) = MaterialTheme {
       var showRenameDialog by rememberSaveable { mutableStateOf(false) }
       Scaffold(
         topBar = {
-          TopBarWithBackButton(
+          Toolbar(
             navController = navController,
             title = if (descriptor.obsolete) "${descriptor.name} [Archived]" else descriptor.name,
             endContent = {
@@ -593,7 +653,7 @@ fun App(db: Db) = MaterialTheme {
           }
       Scaffold(
         topBar = {
-          TopBarWithBackButton(
+          Toolbar(
             navController = navController,
             title = record.workout.name,
             endContent = {
@@ -639,7 +699,7 @@ fun App(db: Db) = MaterialTheme {
 
     composable<Destination.Settings> {
       Scaffold(
-        topBar = { TopBarWithBackButton(navController = navController, title = "Settings") },
+        topBar = { Toolbar(navController = navController, title = "Settings") },
         snackbarHost = { SnackbarHost(snackbarHostState) },
       ) { paddingValues ->
         SettingsScreen(

@@ -29,6 +29,7 @@ import io.github.depermitto.bullettrain.components.ConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
+import io.github.depermitto.bullettrain.protos.ProgramsProto.*
 import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.DragHandleIcon
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
@@ -146,31 +147,25 @@ fun ProgramScreen(
               },
             ) {
               Card(colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme))) {
-                ExtendedListItem(
-                  headlineContent = { Text(day.name, maxLines = 1) },
-                  supportingContent = {
-                    Text("${day.exercisesList.sumOf { it.setsCount }} sets", maxLines = 1)
-                  },
-                  trailingContent = {
-                    IconButton(
-                      modifier =
-                        Modifier.draggableHandle(
-                          onDragStarted = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                              view.performHapticFeedback(HapticFeedbackConstants.DRAG_START)
-                            }
-                          },
-                          onDragStopped = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                              view.performHapticFeedback(HapticFeedbackConstants.GESTURE_END)
-                            }
-                          },
-                        ),
-                      onClick = {},
-                      content = DragHandleIcon,
-                    )
-                  },
-                )
+                DayItem(day) {
+                  IconButton(
+                    modifier =
+                      Modifier.draggableHandle(
+                        onDragStarted = {
+                          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                            view.performHapticFeedback(HapticFeedbackConstants.DRAG_START)
+                          }
+                        },
+                        onDragStopped = {
+                          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            view.performHapticFeedback(HapticFeedbackConstants.GESTURE_END)
+                          }
+                        },
+                      ),
+                    onClick = {},
+                    content = DragHandleIcon,
+                  )
+                }
               }
             }
           }
@@ -185,4 +180,16 @@ fun ProgramScreen(
         icon = { Icon(Icons.Filled.Add, "Add new day") },
       )
   }
+}
+
+@Composable
+fun DayItem(day: Workout, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+  ExtendedListItem(
+    modifier = modifier,
+    headlineContent = { Text(day.name, maxLines = 1) },
+    supportingContent = {
+      Text("${day.exercisesList.sumOf { e -> e.setsCount }} sets", maxLines = 1)
+    },
+    trailingContent = content,
+  )
 }

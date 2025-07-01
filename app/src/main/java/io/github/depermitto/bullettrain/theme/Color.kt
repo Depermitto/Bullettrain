@@ -25,13 +25,15 @@ fun TextFieldDefaults.unlinedColors() =
   )
 
 @Composable
-fun focalGround(theme: Theme) =
-  if (theme.isDarkMode())
+private fun ground(theme: Theme, value: Float): Color {
+  require(value in 0.0..1.0)
+
+  return if (theme.isDarkMode())
     Color(
       ColorUtils.blendARGB(
         MaterialTheme.colorScheme.background.toArgb(),
         MaterialTheme.colorScheme.surfaceBright.toArgb(),
-        0.4F,
+        value,
       )
     )
   else
@@ -39,9 +41,22 @@ fun focalGround(theme: Theme) =
       ColorUtils.blendARGB(
         MaterialTheme.colorScheme.background.toArgb(),
         MaterialTheme.colorScheme.surfaceDim.toArgb(),
-        0.6F,
+        1F - value,
       )
     )
+}
+
+@Composable
+fun focalGround(theme: Theme) =
+  Color(
+    ColorUtils.blendARGB(
+      ground(theme, 0.3F).toArgb(),
+      MaterialTheme.colorScheme.tertiaryContainer.toArgb(),
+      0.1F,
+    )
+  )
+
+@Composable fun secondaryGround(theme: Theme) = ground(theme, 0.8F)
 
 @Composable
 fun TextStyle.Companion.numeric(

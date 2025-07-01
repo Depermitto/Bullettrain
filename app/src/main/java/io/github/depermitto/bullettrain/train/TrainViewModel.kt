@@ -219,7 +219,7 @@ class TrainViewModel(private val historyDao: HistoryDao, private val programDao:
     deinit()
     exercises.clear()
     if (!navController.popBackStack(Destination.Home, false)) {
-      navController.navigate(route = Destination.Home) {
+      navController.navigate(Destination.Home) {
         popUpTo(Destination.Training) { inclusive = true }
         launchSingleTop = true
       }

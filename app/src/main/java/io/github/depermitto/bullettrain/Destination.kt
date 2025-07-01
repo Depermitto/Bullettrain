@@ -20,9 +20,11 @@ sealed interface Destination {
 
   @Serializable data object Settings : Destination
 
-  @Serializable data class Day(val dayIndex: Int) : Destination
+  @Serializable data class DirectDay(val programId: Int, val dayIndex: Int) : Destination
 
   @Serializable data class Program(val programId: Int) : Destination
+
+  @Serializable data class Day(val dayIndex: Int) : Destination
 
   @Serializable data class Exercise(val descriptorId: Int) : Destination
 
