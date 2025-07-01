@@ -15,7 +15,7 @@ import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
 
-// TODO P2 empty workout starter
+// TODO THIS BRANCH empty workout starter, training session
 @Composable
 fun TrainTab(
     modifier: Modifier = Modifier,

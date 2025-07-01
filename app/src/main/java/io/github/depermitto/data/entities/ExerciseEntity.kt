@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import java.time.Instant
 
-// TODO P1 TimeRange, Intensity variations?
+// TODO TimeRange, Intensity variations?
 @Dao
 interface ExerciseDao {
     @Upsert
