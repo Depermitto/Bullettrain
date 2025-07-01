@@ -1,8 +1,5 @@
 package io.github.depermitto.bullettrain.theme
 
-import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
@@ -13,15 +10,14 @@ import androidx.compose.ui.unit.sp
 import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.util.isDarkMode
 
-@RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun BullettrainTheme(context: Context, settings: Settings, content: @Composable () -> Unit) {
+fun BullettrainTheme(settings: Settings, content: @Composable () -> Unit) {
   val colorScheme =
     when {
       settings.theme.isDarkMode() && settings.trueBlack ->
-        dynamicDarkColorScheme(context).copy(background = Color.Black)
-      settings.theme.isDarkMode() -> dynamicDarkColorScheme(context)
-      else -> dynamicLightColorScheme(context)
+        originalDarkColorScheme().copy(background = Color.Black)
+      settings.theme.isDarkMode() -> originalDarkColorScheme()
+      else -> originalLightColorScheme()
     }
 
   MaterialTheme(

@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
@@ -18,9 +18,7 @@ import androidx.compose.ui.unit.Dp
 import io.github.depermitto.bullettrain.components.DataPanel
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
 import io.github.depermitto.bullettrain.protos.ExercisesProto.Exercise
-import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.Medium
-import io.github.depermitto.bullettrain.theme.focalGround
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -30,17 +28,15 @@ fun Exercise(
   onExerciseChange: (Exercise) -> Unit,
   modifier: Modifier = Modifier,
   headline: @Composable () -> Unit,
-  headerContent: @Composable RowScope.() -> Unit,
-  settings: Settings,
+  headerContent: @Composable (RowScope.() -> Unit),
   descriptor: Exercise.Descriptor,
   scope: CoroutineScope = rememberCoroutineScope(),
   snackbarHostState: SnackbarHostState,
-  content: @Composable RowScope.(Int, Exercise.Set) -> Unit,
+  content: @Composable (RowScope.(Int, Exercise.Set) -> Unit),
 ) {
   DataPanel(
     items = exercise.setsList,
     modifier = modifier,
-    colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
     headerPadding = PaddingValues(horizontal = Dp.Medium),
     headline = headline,
     headerContent = headerContent,
@@ -65,7 +61,7 @@ fun Exercise(
       Row(
         modifier =
           Modifier.fillMaxWidth()
-            .background(color = focalGround(settings.theme))
+            .background(color = MaterialTheme.colorScheme.surfaceContainerLow)
             .padding(Dp.Medium),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically,

@@ -4,8 +4,18 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -15,15 +25,19 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,12 +57,11 @@ import io.github.depermitto.bullettrain.db.ProgramDao
 import io.github.depermitto.bullettrain.exercises.format
 import io.github.depermitto.bullettrain.exercises.oneRepMax
 import io.github.depermitto.bullettrain.home.HomeViewModel
-import io.github.depermitto.bullettrain.protos.ExercisesProto.*
-import io.github.depermitto.bullettrain.protos.SettingsProto.*
+import io.github.depermitto.bullettrain.protos.ExercisesProto.Exercise
+import io.github.depermitto.bullettrain.protos.SettingsProto.Settings
 import io.github.depermitto.bullettrain.theme.Large
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
-import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.util.DateFormatters
 import io.github.depermitto.bullettrain.util.date
@@ -138,7 +151,6 @@ fun HistoryTab(
               val planned = plannedExercises.any { it.descriptorId == exercise.descriptorId }
               !skipped || planned
             },
-          colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
           headline = {
             ExtendedListItem(
               headlineContent = { Text(workoutName) },

@@ -1,13 +1,39 @@
 package io.github.depermitto.bullettrain.train
 
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
-import io.github.depermitto.bullettrain.Destination.Home.Tab.*
+import io.github.depermitto.bullettrain.Destination.Home.Tab.History
 import io.github.depermitto.bullettrain.R
 import io.github.depermitto.bullettrain.components.DataPanel
 import io.github.depermitto.bullettrain.components.EmptyScreen
@@ -29,11 +55,9 @@ import io.github.depermitto.bullettrain.db.ExerciseDao
 import io.github.depermitto.bullettrain.db.ProgramDao
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.protos.ProgramsProto.Workout
-import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.ExtraLarge
 import io.github.depermitto.bullettrain.theme.Large
 import io.github.depermitto.bullettrain.theme.Medium
-import io.github.depermitto.bullettrain.theme.focalGround
 import java.time.Instant
 import kotlinx.coroutines.launch
 
@@ -44,7 +68,6 @@ fun TrainTab(
   trainViewModel: TrainViewModel,
   programDao: ProgramDao,
   exerciseDao: ExerciseDao,
-  settings: Settings,
   navController: NavController,
 ) {
   val scope = rememberCoroutineScope()
@@ -60,7 +83,8 @@ fun TrainTab(
 
       Card(
         modifier = Modifier.heightIn(0.dp, 350.dp),
-        colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
+        colors =
+          CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
       ) {
         val program =
           programs.getOrElse(selectedProgramIndex) {
@@ -127,12 +151,8 @@ fun TrainTab(
           }
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-          ElevatedButton(
+          OutlinedButton(
             onClick = { showChangeDayIndexDialog = true },
-            colors =
-              ButtonDefaults.elevatedButtonColors(
-                contentColor = MaterialTheme.colorScheme.secondary
-              ),
             shape = RoundedCornerShape(16.dp, 4.dp, 4.dp, 16.dp),
           ) {
             Icon(
@@ -142,7 +162,7 @@ fun TrainTab(
             )
           }
           Spacer(Modifier.width(2.dp))
-          ElevatedButton(
+          Button(
             onClick = {
               trainViewModel.startWorkout(
                 program.getWorkouts(program.nextDayIndex),
@@ -151,15 +171,12 @@ fun TrainTab(
                 navController,
               )
             },
-            colors =
-              ButtonDefaults.elevatedButtonColors(
-                contentColor = MaterialTheme.colorScheme.secondary
-              ),
             shape = RoundedCornerShape(4.dp, 16.dp, 16.dp, 4.dp),
           ) {
             Text("Start ${program.getWorkouts(program.nextDayIndex).name}")
           }
         }
+        Spacer(Modifier.height(4.dp))
       }
 
       Row {
@@ -180,9 +197,9 @@ fun TrainTab(
     Spacer(modifier = Modifier.height(Dp.ExtraLarge))
 
     Text("Other Options", modifier = Modifier.padding(start = 8.dp))
-    Column {
-      OutlinedButton(
-        modifier = Modifier.fillMaxWidth(),
+    OutlinedCard(colors = CardDefaults.outlinedCardColors(containerColor = Color.Transparent)) {
+      TextButton(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
         onClick = {
           trainViewModel.startWorkout(
             Workout.getDefaultInstance(),
@@ -191,26 +208,34 @@ fun TrainTab(
             navController,
           )
         },
-        shape = RoundedCornerShape(16.dp, 16.dp, 4.dp, 4.dp),
+        shape = RoundedCornerShape(12.dp, 12.dp, 4.dp, 4.dp),
+        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
       ) {
         Text("Start Empty Session", maxLines = 1)
       }
-      Row(modifier = Modifier.offset(y = (-4).dp)) {
-        ElevatedButton(
+
+      HorizontalDivider()
+
+      Row(modifier = Modifier.padding(horizontal = 4.dp)) {
+        TextButton(
           modifier = Modifier.weight(1F),
           onClick = {
             homeViewModel.mostRecentWorkout()
             scope.launch { homeViewModel.screenPager.animateScrollToPage(History.ordinal) }
           },
-          shape = RoundedCornerShape(4.dp, 4.dp, 4.dp, 16.dp),
+          shape = RoundedCornerShape(4.dp, 4.dp, 4.dp, 12.dp),
+          colors =
+            ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
         ) {
           Text("Review Last Workout", maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        Spacer(modifier = Modifier.width(2.dp))
-        ElevatedButton(
+
+        TextButton(
           modifier = Modifier.weight(1F),
           onClick = { navController.navigate(Destination.ProgramCreation) },
-          shape = RoundedCornerShape(4.dp, 4.dp, 16.dp, 4.dp),
+          shape = RoundedCornerShape(4.dp, 4.dp, 12.dp, 4.dp),
+          colors =
+            ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
         ) {
           Text("Create a Program", maxLines = 1, overflow = TextOverflow.Ellipsis)
         }

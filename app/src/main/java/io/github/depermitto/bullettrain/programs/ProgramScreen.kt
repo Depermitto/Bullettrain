@@ -3,8 +3,10 @@ package io.github.depermitto.bullettrain.programs
 import android.os.Build
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -12,11 +14,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
@@ -29,14 +40,10 @@ import io.github.depermitto.bullettrain.components.ConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
-import io.github.depermitto.bullettrain.protos.ProgramsProto.*
-import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.DragHandleIcon
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
-import io.github.depermitto.bullettrain.theme.Small
-import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.util.capwords
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -45,7 +52,6 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 fun ProgramScreen(
   modifier: Modifier = Modifier,
   programViewModel: ProgramViewModel,
-  settings: Settings,
   navController: NavController,
 ) {
   Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
@@ -62,7 +68,7 @@ fun ProgramScreen(
     LazyColumn(
       contentPadding =
         PaddingValues(start = Dp.Medium, end = Dp.Medium, bottom = Dp.EmptyScrollSpace),
-      verticalArrangement = Arrangement.spacedBy(Dp.Small),
+      verticalArrangement = Arrangement.spacedBy(Dp.Medium),
       state = lazyListState,
     ) {
       itemsIndexed(days, key = { _, it -> it.name }) { dayIndex, day ->
@@ -146,26 +152,37 @@ fun ProgramScreen(
                 )
               },
             ) {
-              Card(colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme))) {
-                DayItem(day) {
-                  IconButton(
-                    modifier =
-                      Modifier.draggableHandle(
-                        onDragStarted = {
-                          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                            view.performHapticFeedback(HapticFeedbackConstants.DRAG_START)
-                          }
-                        },
-                        onDragStopped = {
-                          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                            view.performHapticFeedback(HapticFeedbackConstants.GESTURE_END)
-                          }
-                        },
-                      ),
-                    onClick = {},
-                    content = DragHandleIcon,
+              Card(
+                colors =
+                  CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                   )
-                }
+              ) {
+                ExtendedListItem(
+                  headlineContent = { Text(day.name, maxLines = 1) },
+                  supportingContent = {
+                    Text("${day.exercisesList.sumOf { e -> e.setsCount }} sets", maxLines = 1)
+                  },
+                  trailingContent = {
+                    IconButton(
+                      modifier =
+                        Modifier.draggableHandle(
+                          onDragStarted = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                              view.performHapticFeedback(HapticFeedbackConstants.DRAG_START)
+                            }
+                          },
+                          onDragStopped = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                              view.performHapticFeedback(HapticFeedbackConstants.GESTURE_END)
+                            }
+                          },
+                        ),
+                      onClick = {},
+                      content = DragHandleIcon,
+                    )
+                  },
+                )
               }
             }
           }
@@ -180,16 +197,4 @@ fun ProgramScreen(
         icon = { Icon(Icons.Filled.Add, "Add new day") },
       )
   }
-}
-
-@Composable
-fun DayItem(day: Workout, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-  ExtendedListItem(
-    modifier = modifier,
-    headlineContent = { Text(day.name, maxLines = 1) },
-    supportingContent = {
-      Text("${day.exercisesList.sumOf { e -> e.setsCount }} sets", maxLines = 1)
-    },
-    trailingContent = content,
-  )
 }

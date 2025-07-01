@@ -31,7 +31,7 @@ fun <T> DataPanel(
   headerPadding: PaddingValues = PaddingValues(horizontal = Dp.Large),
   headerContent: @Composable RowScope.() -> Unit,
   colors: CardColors =
-    CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
+    CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
   separateHeaderAndContent: Boolean = true,
   textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
   contentPadding: PaddingValues = PaddingValues(0.dp),

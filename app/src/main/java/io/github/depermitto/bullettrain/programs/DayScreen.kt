@@ -45,7 +45,6 @@ import io.github.depermitto.bullettrain.db.HistoryDao
 import io.github.depermitto.bullettrain.exercises.Exercise
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
 import io.github.depermitto.bullettrain.protos.ExercisesProto.*
-import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.*
 import kotlin.math.max
 import kotlin.math.min
@@ -58,7 +57,6 @@ fun DayScreen(
   dayIndex: Int,
   exerciseDao: ExerciseDao,
   historyDao: HistoryDao,
-  settings: Settings,
   navController: NavController,
   snackbarHostState: SnackbarHostState,
 ) {
@@ -244,6 +242,9 @@ fun DayScreen(
                 Text("RPE", Modifier.weight(.6F), textAlign = TextAlign.Center)
               Spacer(Modifier.weight(.2F))
             },
+            descriptor = descriptor,
+            scope = scope,
+            snackbarHostState = snackbarHostState,
             content = { setIndex, set ->
               Text((setIndex + 1).toString(), Modifier.weight(.2F), textAlign = TextAlign.Center)
               Box(modifier = Modifier.weight(.9F).padding(horizontal = 2.dp)) {
@@ -331,10 +332,6 @@ fun DayScreen(
                 content = DuplicateIcon,
               )
             },
-            descriptor = descriptor,
-            settings = settings,
-            scope = scope,
-            snackbarHostState = snackbarHostState,
           )
         }
       }

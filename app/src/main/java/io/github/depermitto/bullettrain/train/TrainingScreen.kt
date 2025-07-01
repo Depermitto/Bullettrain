@@ -117,10 +117,6 @@ fun TrainingScreen(
         Exercise(
           exercise = exercise,
           onExerciseChange = { trainViewModel.setExercise(exerciseIndex, it) },
-          descriptor = descriptor,
-          settings = settings,
-          scope = scope,
-          snackbarHostState = snackbarHostState,
           headline = {
             ExtendedListItem(
               onClick = { navController.navigate(Destination.Exercise(descriptor.id)) },
@@ -200,6 +196,9 @@ fun TrainingScreen(
             )
             Spacer(Modifier.weight(.3F))
           },
+          descriptor = descriptor,
+          scope = scope,
+          snackbarHostState = snackbarHostState,
           content = { setIndex, set ->
             Text(
               (setIndex + 1).toString(),

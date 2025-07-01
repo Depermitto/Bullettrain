@@ -43,8 +43,7 @@ fun ExtendedListItem(
       createHorizontalChain(headline, trailing, chainStyle = ChainStyle.SpreadInside)
 
       CompositionLocalProvider(
-        LocalContentColor provides ListItemDefaults.colors().headlineColor,
-        LocalTextStyle provides LocalTextStyle.current.merge(headlineTextStyle),
+        LocalTextStyle provides LocalTextStyle.current.merge(headlineTextStyle)
       ) {
         Box(
           Modifier.constrainAs(headline) {
@@ -59,8 +58,7 @@ fun ExtendedListItem(
 
       if (supportingContent != null) {
         CompositionLocalProvider(
-          LocalContentColor provides ListItemDefaults.colors().supportingTextColor,
-          LocalTextStyle provides LocalTextStyle.current.merge(supportingTextStyle),
+          LocalTextStyle provides LocalTextStyle.current.merge(supportingTextStyle)
         ) {
           Box(
             Modifier.constrainAs(supporting) {

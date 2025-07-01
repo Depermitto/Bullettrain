@@ -1,12 +1,19 @@
 package io.github.depermitto.bullettrain.programs
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -14,12 +21,16 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -33,19 +44,15 @@ import io.github.depermitto.bullettrain.components.EmptyScreen
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.db.ProgramDao
-import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
-import io.github.depermitto.bullettrain.theme.focalGround
-import io.github.depermitto.bullettrain.theme.secondaryGround
 
 @Composable
 fun ProgramsTab(
   modifier: Modifier = Modifier,
   programViewModel: ProgramViewModel,
   programDao: ProgramDao,
-  settings: Settings,
   navController: NavController,
 ) {
   Box(modifier = Modifier.fillMaxHeight() then modifier) {
@@ -107,7 +114,8 @@ fun ProgramsTab(
 
         Card(
           onClick = { navController.navigate(Destination.Program(program.id)) },
-          colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
+          colors =
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         ) {
           Column(
             modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp),
@@ -150,22 +158,18 @@ fun ProgramsTab(
             Spacer(Modifier.height(20.dp))
 
             Text("Next up...")
-            for (i in 0..<minOf(2, program.workoutsCount)) {
-              val day = program.workoutsList[(program.nextDayIndex + i) % program.workoutsCount]
-              val dayIndex = program.workoutsList.indexOfFirst { d -> d.name == day.name }
-              Card(
-                colors = CardDefaults.cardColors(containerColor = secondaryGround(settings.theme)),
-                onClick = { navController.navigate(Destination.DirectDay(program.id, dayIndex)) },
-              ) {
-                DayItem(day) {
-                  IconButton(
-                    onClick = {
-                      navController.navigate(Destination.DirectDay(program.id, dayIndex))
-                    }
-                  ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, "Go to ${day.name}")
-                  }
-                }
+            Row(
+              modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+              horizontalArrangement = Arrangement.spacedBy(Dp.Small),
+            ) {
+              for (i in 0..<program.workoutsCount) {
+                val day = program.workoutsList[(program.nextDayIndex + i) % program.workoutsCount]
+                val dayIndex = program.workoutsList.indexOfFirst { d -> d.name == day.name }
+
+                SuggestionChip(
+                  onClick = { navController.navigate(Destination.DirectDay(program.id, dayIndex)) },
+                  label = { Text(day.name, maxLines = 1) },
+                )
               }
             }
           }

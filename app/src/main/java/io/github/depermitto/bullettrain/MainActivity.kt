@@ -1,6 +1,5 @@
 package io.github.depermitto.bullettrain
 
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -8,7 +7,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -100,7 +98,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 class MainActivity : ComponentActivity() {
-  @RequiresApi(Build.VERSION_CODES.S)
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
     super.onCreate(savedInstanceState)
@@ -122,7 +119,7 @@ class MainActivity : ComponentActivity() {
       }
 
       val settings by db.settingsDao.get.collectAsStateWithLifecycle()
-      BullettrainTheme(applicationContext, settings) {
+      BullettrainTheme(settings) {
         // this is for color flashing during navigating
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
           App(db)
@@ -236,17 +233,7 @@ fun App(db: Db) = MaterialTheme {
                 Text("Drop")
               }
             },
-            actions = {
-              TextButton(
-                onClick = { showFinishDialog = true },
-                colors =
-                  ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colorScheme.secondary
-                  ),
-              ) {
-                Text("Conclude")
-              }
-            },
+            actions = { TextButton(onClick = { showFinishDialog = true }) { Text("Conclude") } },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
           )
         },
@@ -399,12 +386,11 @@ fun App(db: Db) = MaterialTheme {
         DayScreen(
           modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
           programViewModel = programViewModel,
+          dayIndex = route.dayIndex,
           exerciseDao = db.exerciseDao,
           historyDao = db.historyDao,
-          dayIndex = route.dayIndex,
           navController = navController,
           snackbarHostState = snackbarHostState,
-          settings = settings,
         )
       }
 
@@ -429,12 +415,11 @@ fun App(db: Db) = MaterialTheme {
         DayScreen(
           modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
           programViewModel = programViewModel,
+          dayIndex = dayIndex,
           exerciseDao = db.exerciseDao,
           historyDao = db.historyDao,
-          dayIndex = dayIndex,
           navController = navController,
           snackbarHostState = snackbarHostState,
-          settings = settings,
         )
       }
     }
@@ -474,7 +459,6 @@ fun App(db: Db) = MaterialTheme {
         ProgramScreen(
           modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
           programViewModel = programViewModel,
-          settings = settings,
           navController = navController,
         )
       }

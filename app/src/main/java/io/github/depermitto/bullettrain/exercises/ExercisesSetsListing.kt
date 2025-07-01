@@ -8,10 +8,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -20,10 +19,9 @@ import io.github.depermitto.bullettrain.components.DataPanel
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.format
 import io.github.depermitto.bullettrain.protos.ExercisesProto.Exercise
-import io.github.depermitto.bullettrain.protos.SettingsProto.*
+import io.github.depermitto.bullettrain.protos.SettingsProto.Settings
 import io.github.depermitto.bullettrain.theme.Large
 import io.github.depermitto.bullettrain.theme.Medium
-import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.util.weightUnit
 
 /**
@@ -50,7 +48,6 @@ fun ExercisesSetsListings(
       DataPanel(
         items = sets,
         separateHeaderAndContent = false,
-        colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
         headline = {
           ExtendedListItem(
             headlineContent = { headline(exercise) },

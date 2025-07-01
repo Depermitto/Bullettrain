@@ -34,7 +34,6 @@ fun ProgramCreationScreen(
     ProgramScreen(
       modifier = Modifier.padding(top = Dp.Medium),
       programViewModel = programViewModel,
-      settings = settings,
       navController = navController,
     )
   }

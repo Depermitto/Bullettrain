@@ -85,10 +85,10 @@ fun Calendar(
               backgroundColor =
                 when {
                   homeViewModel.selectedDate == day ->
-                    MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = alpha)
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = alpha)
 
                   records.binarySearch { ChronoUnit.DAYS.between(it.date, day).toInt() } >= 0 ->
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = alpha)
+                    MaterialTheme.colorScheme.secondary.copy(alpha = alpha)
 
                   else -> Color.Transparent
                 },
