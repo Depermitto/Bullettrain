@@ -38,6 +38,7 @@ import java.time.format.DateTimeFormatter
 fun HistoryTab(
     modifier: Modifier = Modifier, settingsViewModel: SettingsViewModel, historyDao: HistoryDao
 ) = Box(modifier = modifier.fillMaxSize()) {
+    var date by rememberSaveable { mutableStateOf(LocalDate.now()) }
     val historyRecords = runBlocking { historyDao.getAll() }
     var selectedRecord by remember { mutableStateOf(historyRecords.lastOrNull()) }
 
@@ -46,7 +47,6 @@ fun HistoryTab(
         calendarDay.dayOfMonth == recordDate.dayOfMonth && calendarDay.month == recordDate.month
     }
 
-    var date by rememberSaveable { mutableStateOf(LocalDate.now()) }
     Scaffold(modifier = Modifier.padding(horizontal = ItemPadding), topBar = {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = { date = date.minusMonths(1) }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) }

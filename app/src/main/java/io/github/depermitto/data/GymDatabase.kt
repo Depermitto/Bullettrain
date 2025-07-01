@@ -5,7 +5,7 @@ import androidx.room.*
 import androidx.sqlite.db.SimpleSQLiteQuery
 import io.github.depermitto.data.entities.*
 
-@Database(entities = [Exercise::class, HistoryRecord::class, Program::class], version = 25, exportSchema = true)
+@Database(entities = [Exercise::class, HistoryRecord::class, Program::class], version = 29, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class GymDatabase : RoomDatabase() {
     abstract fun getGymDao(): GymDao
@@ -13,7 +13,7 @@ abstract class GymDatabase : RoomDatabase() {
     abstract fun getHistoryDao(): HistoryDao
     abstract fun getProgramDao(): ProgramDao
 
-    fun checkpoint() = getGymDao().rawQuery(SimpleSQLiteQuery("pragma wal_checkpoint(full)"))
+    fun checkpoint() = getGymDao().rawQuery(SimpleSQLiteQuery("pragma wal_checkpoint(TRUNCATE)"))
 }
 
 @Dao

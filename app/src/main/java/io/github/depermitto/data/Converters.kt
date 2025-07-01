@@ -8,12 +8,10 @@ import java.time.Instant
 
 class Converters {
     @TypeConverter
-    fun instantFromTimestamp(value: Long?): Instant? = value?.let(Instant::ofEpochMilli)
+    fun instantFromTimestamp(value: String): Instant = Instant.parse(value)
 
     @TypeConverter
-    fun instantToTimestamp(instant: Instant?): Long? = instant?.toEpochMilli()
-
-// ---------------------------------------Custom Types-------------------------------------------------
+    fun instantToTimestamp(instant: Instant): String = instant.toString()
 
     @TypeConverter
     fun dayFromString(value: String): Day = Json.decodeFromString(value)
@@ -28,12 +26,6 @@ class Converters {
     fun programToString(program: Program): String = Json.encodeToString(program)
 
 // ---------------------------------------Categories---------------------------------------------------
-
-    @TypeConverter
-    fun exerciseTargetFromString(value: String?): PerfVar? = value?.let(Json::decodeFromString)
-
-    @TypeConverter
-    fun exerciseTargetToString(perfVar: PerfVar?): String? = perfVar?.let(Json::encodeToString)
 
     @TypeConverter
     fun exerciseTargetCategoryFromString(value: String): PerfVarCategory = PerfVarCategory.valueOf(value)

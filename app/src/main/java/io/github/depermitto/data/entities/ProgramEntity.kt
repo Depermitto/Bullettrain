@@ -9,15 +9,18 @@ import java.time.Instant
 @Dao
 interface ProgramDao {
     @Upsert
-    suspend fun upsert(program: Program)
+    suspend fun upsert(vararg programs: Program)
 
     @Delete
-    suspend fun delete(program: Program)
+    suspend fun delete(vararg programs: Program)
+    
+    @Query("DELETE FROM programs")
+    suspend fun deleteAll()
 
-    @Query("SELECT * FROM programs WHERE program_id = :id LIMIT 1")
+    @Query("SELECT * FROM programs WHERE programId = :id LIMIT 1")
     fun whereIdFlow(id: Long): Flow<Program?>
 
-    @Query("SELECT * FROM programs WHERE program_id = :id LIMIT 1")
+    @Query("SELECT * FROM programs WHERE programId = :id LIMIT 1")
     suspend fun whereId(id: Long): Program?
 
     @Query("SELECT * FROM programs ORDER BY mostRecentWorkoutDate DESC")
@@ -33,7 +36,7 @@ interface ProgramDao {
 @Serializable
 @Entity(tableName = "programs")
 data class Program(
-    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "program_id") val programId: Long = 0,
+    @PrimaryKey(autoGenerate = true) val programId: Long = 0,
     val name: String = "",
     val days: List<Day> = listOf(Day()),
     val followed: Boolean = false,

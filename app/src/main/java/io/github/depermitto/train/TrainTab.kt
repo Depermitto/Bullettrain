@@ -7,7 +7,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import io.github.depermitto.Screen
 import io.github.depermitto.components.WorkoutInfo
 import io.github.depermitto.data.entities.ProgramDao
 import io.github.depermitto.theme.ItemPadding
@@ -58,12 +57,9 @@ fun TrainTab(
                     program = program,
                     exerciseInfo = { Text(text = it.sets.size.toString()) })
                 ElevatedButton(
-                    modifier = Modifier.align(Alignment.BottomCenter), onClick = {
-                        trainViewModel.startWorkout(program.days[program.nextDay], program)
-                        navController.navigate(Screen.TrainingScreen.route) {
-                            popUpTo(Screen.MainScreen.route) { inclusive = true }
-                        }
-                    }, colors = ButtonDefaults.elevatedButtonColors(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    onClick = { trainViewModel.startWorkout(program.days[program.nextDay], program) },
+                    colors = ButtonDefaults.elevatedButtonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )

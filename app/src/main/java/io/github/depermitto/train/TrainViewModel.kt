@@ -65,6 +65,11 @@ class TrainViewModel(
             workoutStartTime = Instant.now(),
         )
         createState(record)
+
+        navController.navigate(Screen.TrainingScreen.route) {
+            popUpTo(Screen.MainScreen.route) { inclusive = true }
+            launchSingleTop = true
+        }
     }
 
     suspend fun restoreWorkout(): Boolean {
@@ -104,9 +109,11 @@ class TrainViewModel(
 
         workoutState = null
         exercises.clear()
+        
         if (!navController.popBackStack(Screen.MainScreen.route, false)) {
             navController.navigate(route = Screen.MainScreen.passTab(tab = Screen.MainScreen.Tabs.Train)) {
                 popUpTo(Screen.TrainingScreen.route) { inclusive = true }
+                launchSingleTop = true
             }
         }
     }

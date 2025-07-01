@@ -6,6 +6,7 @@ import io.github.depermitto.train.WorkoutPhase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import java.time.Instant
+import java.time.Month
 
 @Dao
 interface HistoryDao {
@@ -31,7 +32,7 @@ interface HistoryDao {
 @Serializable
 @Entity(tableName = "history")
 data class HistoryRecord(
-    @ColumnInfo(name = "history_entry_id") @PrimaryKey(autoGenerate = true) val historyEntryId: Long = 0,
+    @PrimaryKey(autoGenerate = true) val historyEntryId: Long = 0,
     val relatedProgram: Program,
     val workout: Day,
     val workoutPhase: WorkoutPhase,

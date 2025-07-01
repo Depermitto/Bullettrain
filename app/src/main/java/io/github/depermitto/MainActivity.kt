@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
+import androidx.room.RoomDatabase.JournalMode
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import io.github.depermitto.Screen.*
 import io.github.depermitto.Screen.MainScreen
@@ -66,7 +67,7 @@ class MainActivity : ComponentActivity() {
                         fallbackBytes = resources.openRawResource(R.raw.firetent).readBytes(),
                         db = Room.databaseBuilder<GymDatabase>(context = applicationContext, name = dbFile.absolutePath)
                             .openHelperFactory(FrameworkSQLiteOpenHelperFactory()).fallbackToDestructiveMigration(true)
-                            .build(),
+                            .setJournalMode(JournalMode.TRUNCATE).build(),
                         settingsFile = application.getFileStreamPath(SETTINGS_FILENAME),
                     )
 

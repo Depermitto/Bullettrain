@@ -14,7 +14,7 @@ interface ExerciseDao {
     suspend fun upsert(exercise: Exercise)
 
     @Delete
-    suspend fun delete(exercise: Exercise)
+    suspend fun delete(vararg exercises: Exercise)
 
     @Query("SELECT * FROM exercises")
     fun getAllFlow(): Flow<List<Exercise>>
@@ -23,7 +23,7 @@ interface ExerciseDao {
 @Serializable
 @Entity(tableName = "exercises")
 data class Exercise(
-    @ColumnInfo(name = "exercise_id") @PrimaryKey(autoGenerate = true) val exerciseId: Long = 0,
+    @PrimaryKey(autoGenerate = true) val exerciseId: Long = 0,
     val name: String,
     val perfVarCategory: PerfVarCategory = PerfVarCategory.Reps,
     val intensityCategory: IntensityCategory? = null,
@@ -60,15 +60,15 @@ enum class PerfVarCategory {
 }
 
 @Serializable
-sealed class PerfVar(val category: PerfVarCategory) {
+sealed class PerfVar() {
     @Serializable
-    data class Reps(val reps: Float = 0f) : PerfVar(PerfVarCategory.Reps)
+    data class Reps(val reps: Float = 0f) : PerfVar()
 
     @Serializable
-    data class Time(val time: Float = 0f) : PerfVar(PerfVarCategory.Time)
+    data class Time(val time: Float = 0f) : PerfVar()
 
     @Serializable
-    data class RepRange(val min: Float = 0f, val max: Float = 0f) : PerfVar(PerfVarCategory.RepRange)
+    data class RepRange(val min: Float = 0f, val max: Float = 0f) : PerfVar()
 
     companion object {
         fun of(category: PerfVarCategory) = when (category) {
