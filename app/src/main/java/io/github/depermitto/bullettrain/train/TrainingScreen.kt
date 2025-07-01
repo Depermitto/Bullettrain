@@ -52,6 +52,7 @@ import io.github.depermitto.bullettrain.database.ExerciseSet
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.SettingsDao
+import io.github.depermitto.bullettrain.database.WorkoutEntry
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
 import io.github.depermitto.bullettrain.theme.BigSpacing
 import io.github.depermitto.bullettrain.theme.CompactIconSize
@@ -82,25 +83,26 @@ fun TrainingScreen(
     modifier = modifier
         .padding(horizontal = RegularPadding)
         .verticalScroll(rememberScrollState(0))
-        .padding(bottom = ScrollPadding),
-    verticalArrangement = Arrangement.spacedBy(BigSpacing)
+        .padding(bottom = ScrollPadding), verticalArrangement = Arrangement.spacedBy(BigSpacing)
 ) {
     val settings by settingsDao.getSettings.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
-    trainViewModel.getExercises().forEachIndexed { exerciseIndex, exercise ->
+    trainViewModel.getWorkoutEntries().forEachIndexed { exerciseIndex, exercise ->
+        val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
         var showExerciseDeleteDialog by remember { mutableStateOf(false) }
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
             var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
-            if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao, historyDao = historyDao,
+            if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
+                historyDao = historyDao,
                 onDismissRequest = { showSwapExerciseChooser = false },
-                onChoose = { it -> trainViewModel.setExercise(exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
+                onChoose = { it -> trainViewModel.setExercise(exerciseIndex, exercise.copy(descriptorId = it.id)) })
 
             val lastPerformedSet = exercise.lastPerformedSet()
             ListItem(headlineContent = {
                 TextLink(
-                    "${exerciseIndex + 1}. ${exercise.name}",
+                    "${exerciseIndex + 1}. ${exerciseDescriptor.name}",
                     navController = navController,
-                    destination = Destination.Exercise(exercise.id),
+                    destination = Destination.Exercise(exerciseDescriptor.id),
                     contentPadding = PaddingValues(RegularPadding),
                     style = MaterialTheme.typography.titleMedium,
                 )
@@ -154,7 +156,7 @@ fun TrainingScreen(
                     trainViewModel.removeExerciseSet(exerciseIndex, setIndex)
                     if (set.actualPerfVar != 0f) scope.launch {
                         val snackBarResult = snackbarHostState.showSnackbar(
-                            message = "Set ${setIndex + 1} of ${exercise.name} deleted",
+                            message = "Set ${setIndex + 1} of ${exerciseDescriptor.name} deleted",
                             actionLabel = "Undo",
                             withDismissAction = true,
                         )
@@ -233,14 +235,19 @@ fun TrainingScreen(
         }
 
         if (showExerciseDeleteDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showExerciseDeleteDialog = false },
-            text = "Do you definitely want to discard ${exercise.name}?",
-            onConfirm = { trainViewModel.removeExercise(exerciseIndex) })
+            text = "Do you definitely want to discard ${exerciseDescriptor.name}?",
+            onConfirm = { trainViewModel.removeWorkoutEntryAt(exerciseIndex) })
     }
 
     var showExerciseChooser by rememberSaveable { mutableStateOf(false) }
-    if (showExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao, historyDao = historyDao,
+    if (showExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
+        historyDao = historyDao,
         onDismissRequest = { showExerciseChooser = false },
-        onChoose = { trainViewModel.addExercise(it.copy(sets = listOf(ExerciseSet(targetPerfVar = PerfVar.of(it.perfVarCategory))))) })
+        onChoose = {
+            trainViewModel.addWorkoutEntry(
+                WorkoutEntry(descriptorId = it.id, sets = listOf(ExerciseSet(targetPerfVar = PerfVar.Reps())))
+            )
+        })
     OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { showExerciseChooser = true }) {
         Text(text = "Add Exercise")
     }

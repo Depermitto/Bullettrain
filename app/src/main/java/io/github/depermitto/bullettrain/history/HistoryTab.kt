@@ -32,6 +32,7 @@ import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.components.Ratio
 import io.github.depermitto.bullettrain.components.WorkoutTable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
+import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.database.SettingsDao
@@ -51,6 +52,7 @@ fun HistoryTab(
     trainViewModel: TrainViewModel,
     settingsDao: SettingsDao,
     historyDao: HistoryDao,
+    exerciseDao: ExerciseDao,
     programDao: ProgramDao,
     navController: NavController
 ) = Box(modifier = modifier.fillMaxSize()) {
@@ -97,34 +99,33 @@ fun HistoryTab(
         )
 
         selectedHistoryRecords.forEach { record ->
-            val relatedProgram by programDao.where(record.relatedProgramId).collectAsStateWithLifecycle(initialValue = null)
-            relatedProgram?.let { relatedProgram ->
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
-                    WorkoutTable(
-                        modifier = Modifier.fillMaxWidth(),
-                        workout = record.workout,
-                        program = relatedProgram,
-                        headers = Pair("Exercise", "Best Set"),
-                        navController = navController,
-                        trailingContent = {
-                            IconButton(onClick = { trainViewModel.editWorkout(record) }) {
-                                Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit Workout")
-                            }
-                        },
-                        ratio = Ratio.Strict(0.7f),
-                        exstractor = { exercise ->
-                            exercise.getPerformedSets().maxByOrNull { set -> set.weight * set.actualPerfVar }?.let { bestSet ->
-                                val perfVar = bestSet.actualPerfVar.encodeToStringOutput() // is always non-zero
-                                val weight = bestSet.weight.encodeToStringOutput()
+            val relatedProgram = programDao.where(record.relatedProgramId)
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
+                WorkoutTable(
+                    modifier = Modifier.fillMaxWidth(),
+                    workout = record.workout,
+                    program = relatedProgram,
+                    headers = Pair("Exercise", "Best Set"),
+                    navController = navController,
+                    exerciseDao = exerciseDao,
+                    trailingContent = {
+                        IconButton(onClick = { trainViewModel.editWorkout(record) }) {
+                            Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit Workout")
+                        }
+                    },
+                    ratio = Ratio.Strict(0.7f),
+                    exstractor = { exercise ->
+                        exercise.getPerformedSets().maxByOrNull { set -> set.weight * set.actualPerfVar }?.let { bestSet ->
+                            val perfVar = bestSet.actualPerfVar.encodeToStringOutput() // is always non-zero
+                            val weight = bestSet.weight.encodeToStringOutput()
 
-                                when {
-                                    weight.isBlank() -> "$perfVar ${bestSet.targetPerfVar.category.shortName.lowercase()}"
-                                    else -> "$perfVar x $weight ${settings.weightUnit()}"
-                                }
+                            when {
+                                weight.isBlank() -> "$perfVar ${bestSet.targetPerfVar.category.shortName.lowercase()}"
+                                else -> "$perfVar x $weight ${settings.weightUnit()}"
                             }
-                        },
-                    )
-                }
+                        }
+                    },
+                )
             }
         }
     }

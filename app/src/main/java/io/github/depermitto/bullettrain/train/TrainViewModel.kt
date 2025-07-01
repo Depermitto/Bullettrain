@@ -2,21 +2,18 @@ package io.github.depermitto.bullettrain.train
 
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.database.BackgroundSlave
-import io.github.depermitto.bullettrain.database.Day
-import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.ExerciseSet
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.HistoryRecord
 import io.github.depermitto.bullettrain.database.ProgramDao
+import io.github.depermitto.bullettrain.database.Workout
+import io.github.depermitto.bullettrain.database.WorkoutEntry
 import io.github.depermitto.bullettrain.util.smallListSet
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.LocalDate
@@ -38,42 +35,42 @@ class TrainViewModel(
 ) : ViewModel() {
     private lateinit var timer: Timer
     private var workoutState: HistoryRecord? = null
-    private var exercises = mutableStateListOf<Exercise>()
+    private var workoutEntries = mutableStateListOf<WorkoutEntry>()
     private var clock: Instant by mutableStateOf(Instant.ofEpochMilli(0))
 
     fun isWorkoutRunning(): Boolean = workoutState?.workoutPhase != WorkoutPhase.Completed
     fun isWorkoutEditing(): Boolean = workoutState?.workoutPhase == WorkoutPhase.Editing
 
-    fun setExercise(index: Int, exercise: Exercise) {
-        exercises[index] = exercise
+    fun setExercise(index: Int, workoutEntry: WorkoutEntry) {
+        workoutEntries[index] = workoutEntry
         backup()
     }
 
     fun setExerciseSet(exerciseIndex: Int, setIndex: Int, set: ExerciseSet) = setExercise(
-        exerciseIndex, getExercise(exerciseIndex).copy(sets = getExercise(exerciseIndex).sets.smallListSet(setIndex, set))
+        exerciseIndex, getWorkoutEntry(exerciseIndex).copy(sets = getWorkoutEntry(exerciseIndex).sets.smallListSet(setIndex, set))
     )
 
-    fun getExercise(index: Int) = exercises[index]
-    fun getExercises() = exercises
+    fun getWorkoutEntry(index: Int) = workoutEntries[index]
+    fun getWorkoutEntries() = workoutEntries
 
-    fun addExercise(exercise: Exercise) {
-        exercises.add(exercise)
+    fun addWorkoutEntry(workoutEntry: WorkoutEntry) {
+        workoutEntries.add(workoutEntry)
         backup()
     }
 
-    fun removeExercise(index: Int) {
-        exercises.removeAt(index)
+    fun removeWorkoutEntryAt(index: Int) {
+        workoutEntries.removeAt(index)
         backup()
     }
 
     fun removeExerciseSet(exerciseIndex: Int, setIndex: Int) = setExercise(
         exerciseIndex,
-        getExercise(exerciseIndex).copy(sets = getExercise(exerciseIndex).sets.filterIndexed { i, _ -> i != setIndex })
+        getWorkoutEntry(exerciseIndex).copy(sets = getWorkoutEntry(exerciseIndex).sets.filterIndexed { i, _ -> i != setIndex })
     )
 
     fun toggleCompletion(checked: Boolean, exerciseIndex: Int, setIndex: Int) = workoutState?.let { state ->
-        val lastPerformedSet = getExercise(exerciseIndex).lastPerformedSet()
-        var set = getExercise(exerciseIndex).sets[setIndex]
+        val lastPerformedSet = getWorkoutEntry(exerciseIndex).lastPerformedSet()
+        var set = getWorkoutEntry(exerciseIndex).sets[setIndex]
         set = if (checked) set.copy(
             doneTs = state.date.atTimeNow(),
 
@@ -88,11 +85,11 @@ class TrainViewModel(
         setExerciseSet(exerciseIndex, setIndex, set)
     }
 
-    fun startWorkout(day: Day, programId: Int, date: LocalDate = LocalDate.now()) {
+    fun startWorkout(workout: Workout, programId: Int, date: LocalDate = LocalDate.now()) {
         if (workoutState != null) return
 
         val record = HistoryRecord(
-            workout = day,
+            workout = workout,
             relatedProgramId = programId,
             date = date,
             workoutPhase = WorkoutPhase.During,
@@ -115,7 +112,7 @@ class TrainViewModel(
         }
     }
 
-    suspend fun restoreWorkout(): Boolean {
+    fun restoreWorkout(): Boolean {
         val session = historyDao.getUnfinishedBusiness()
         if (session != null && workoutState == null) {
             createState(session)
@@ -126,16 +123,13 @@ class TrainViewModel(
 
     fun completeWorkout() = endWorkout { state ->
         val record = state.copy(
-            workoutPhase = WorkoutPhase.Completed, workout = state.workout.copy(exercises = exercises.toList())
+            workoutPhase = WorkoutPhase.Completed, workout = state.workout.copy(entries = workoutEntries.toList())
         )
-        viewModelScope.launch {
-            val relatedProgram = programDao.where(record.relatedProgramId).firstOrNull()
-            check(relatedProgram != null)
-            val nextDayIndex = (relatedProgram.days.indexOf(record.workout) + 1) % relatedProgram.days.size
+        val relatedProgram = programDao.where(record.relatedProgramId)
+        val nextDayIndex = (relatedProgram.workouts.indexOf(record.workout) + 1) % relatedProgram.workouts.size
 
-            historyDao.upsert(record)
-            programDao.upsert(relatedProgram.copy(nextDayIndex = nextDayIndex, mostRecentWorkoutDate = record.date))
-        }
+        historyDao.upsert(record)
+        programDao.upsert(relatedProgram.copy(nextDayIndex = nextDayIndex, mostRecentWorkoutDate = record.date))
     }
 
     fun cancelWorkout() = endWorkout { state ->
@@ -154,7 +148,7 @@ class TrainViewModel(
         deinit(state)
 
         workoutState = null
-        exercises.clear()
+        workoutEntries.clear()
 
         if (!navController.popBackStack(destination, false)) {
             navController.navigate(route = destination) {
@@ -167,8 +161,6 @@ class TrainViewModel(
     fun elapsedSince(instant: Instant? = null): String {
         val formatter = DateTimeFormatter.ofPattern("m:ss").withZone(ZoneId.systemDefault())
         val hourFormatter = DateTimeFormatter.ofPattern("mm:ss").withZone(ZoneId.systemDefault())
-
-        if (isWorkoutEditing()) return "Editing"
 
         val millis = instant?.toEpochMilli() ?: workoutState?.workoutStartTs?.toEpochMilli() ?: return ""
         val differenceMillis = max(0, clock.toEpochMilli() - millis)
@@ -183,19 +175,23 @@ class TrainViewModel(
 
     private fun backup() = BackgroundSlave.enqueue {
         workoutState = workoutState?.let { state ->
-            state.copy(workout = state.workout.copy(exercises = exercises.toList())).also { historyDao.upsert(it) }
+            state.copy(workout = state.workout.copy(entries = workoutEntries.toList())).also { historyDao.upsert(it) }
         }
     }
 
     private fun createState(historyRecord: HistoryRecord) {
         if (workoutState == null) {
-            val newId = historyDao.upsert(historyRecord)
-            val record = if (newId == -1) historyRecord else historyRecord.copy(id = newId)
+            val record = when (val newId = historyDao.upsert(historyRecord)) {
+                // updated -> no change, same id
+                -1 -> historyRecord
+                // inserted -> we need new id representing the record
+                else -> historyRecord.copy(id = newId)
+            }
 
             timer = timer(initialDelay = 1000L, period = 1000L) {
                 clock = record.date.atTimeNow()
             }
-            exercises = record.workout.exercises.toMutableStateList()
+            workoutEntries = record.workout.entries.toMutableStateList()
             workoutState = record
             backup()
         } else throw UnsupportedOperationException("WorkoutState Is Not Null")

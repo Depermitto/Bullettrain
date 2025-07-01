@@ -58,6 +58,7 @@ import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.Intensity
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.PerfVarCategory
+import io.github.depermitto.bullettrain.database.WorkoutEntry
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
 import io.github.depermitto.bullettrain.theme.BigSpacing
 import io.github.depermitto.bullettrain.theme.CompactIconSize
@@ -98,7 +99,7 @@ fun DayScreen(
         .fillMaxSize()
         .verticalScroll(rememberScrollState(0))
         .padding(bottom = ScrollPadding),
-        list = day.exercises,
+        list = day.entries,
         verticalArrangement = Arrangement.spacedBy(BigSpacing),
         onMove = {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -106,7 +107,7 @@ fun DayScreen(
             }
         },
         onSettle = { fromIndex, toIndex ->
-            programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises.reorder(fromIndex, toIndex)))
+            programViewModel.setDay(dayIndex, day.copy(entries = day.entries.reorder(fromIndex, toIndex)))
         }) { exerciseIndex, exercise, isDragging ->
         fun setIntensity(cat: Intensity?) {
             val intensity = if (cat != null) 0f else null
@@ -117,17 +118,18 @@ fun DayScreen(
             )
         }
 
-        key(exercise.id) {
+        key(exercise.descriptorId) {
+            val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
             val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
             var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
 
             Surface(shadowElevation = elevation, shape = MaterialTheme.shapes.medium) {
                 SwipeToDeleteBox(modifier = Modifier.clip(MaterialTheme.shapes.medium), threshold = 0.9f, onDelete = {
                     val deletedDay = day
-                    programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises - exercise))
+                    programViewModel.setDay(dayIndex, day.copy(entries = day.entries - exercise))
                     scope.launch {
                         val snackBarResult = snackbarHostState.showSnackbar(
-                            message = (if (exercise.sets.size == 1) "A set" else "${exercise.sets.size} sets") + " of ${exercise.name} deleted",
+                            message = (if (exercise.sets.size == 1) "A set" else "${exercise.sets.size} sets") + " of ${exerciseDescriptor.name} deleted",
                             actionLabel = "Undo",
                             withDismissAction = true
                         )
@@ -140,9 +142,9 @@ fun DayScreen(
                         var showTargetEditDropdown by remember { mutableStateOf(false) }
                         ListItem(headlineContent = {
                             TextLink(
-                                exercise.name,
+                                exerciseDescriptor.name,
                                 navController = navController,
-                                destination = Destination.Exercise(exercise.id),
+                                destination = Destination.Exercise(exerciseDescriptor.id),
                                 contentPadding = PaddingValues(RegularPadding),
                                 style = MaterialTheme.typography.titleMedium,
                             )
@@ -211,7 +213,7 @@ fun DayScreen(
                                 scope.launch {
                                     if (set.targetPerfVar != PerfVar.of(exercise.perfVarCategory)) {
                                         val snackBarResult = snackbarHostState.showSnackbar(
-                                            message = "${set.targetPerfVar.encodeToStringOutput()} of ${exercise.name} deleted",
+                                            message = "${set.targetPerfVar.encodeToStringOutput()} of ${exerciseDescriptor.name} deleted",
                                             actionLabel = "Undo",
                                             withDismissAction = true
                                         )
@@ -296,7 +298,7 @@ fun DayScreen(
             if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
                 historyDao = historyDao,
                 onDismissRequest = { showSwapExerciseChooser = false },
-                onChoose = { programViewModel.setExercise(dayIndex, exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
+                onChoose = { programViewModel.setExercise(dayIndex, exerciseIndex, exercise.copy(descriptorId = it.id)) })
         }
     }
 
@@ -306,8 +308,11 @@ fun DayScreen(
         onDismissRequest = { showAddExerciseChooser = false },
         onChoose = {
             programViewModel.setDay(
-                dayIndex,
-                day.copy(exercises = day.exercises + it.copy(sets = listOf(ExerciseSet(targetPerfVar = PerfVar.of(it.perfVarCategory)))))
+                dayIndex, day.copy(
+                    entries = day.entries + WorkoutEntry(
+                        descriptorId = it.id, sets = listOf(ExerciseSet(targetPerfVar = PerfVar.Reps()))
+                    )
+                )
             )
         })
     AnchoredFloatingActionButton(text = { Text("Add Exercise") },

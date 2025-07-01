@@ -20,9 +20,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
-import io.github.depermitto.bullettrain.database.Day
-import io.github.depermitto.bullettrain.database.Exercise
+import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.Program
+import io.github.depermitto.bullettrain.database.Workout
+import io.github.depermitto.bullettrain.database.WorkoutEntry
 
 sealed class Ratio {
     data object Unlimited : Ratio()
@@ -99,13 +100,14 @@ fun <T> BasicTable(
 @Composable
 fun WorkoutTable(
     modifier: Modifier = Modifier,
-    workout: Day,
+    workout: Workout,
     program: Program,
     headers: Pair<String, String>,
     trailingContent: (@Composable () -> Unit)? = null,
     overlayingContent: (@Composable () -> Unit)? = null,
-    exstractor: (Exercise) -> String?,
+    exstractor: (WorkoutEntry) -> String?,
     ratio: Ratio = Ratio.Unlimited,
+    exerciseDao: ExerciseDao,
     navController: NavController,
 ) {
     var header = program.name
@@ -125,10 +127,11 @@ fun WorkoutTable(
         ratio = ratio,
         emptyMessage = "Empty Workout",
         headers = headers,
-        list = workout.exercises.mapNotNull { exercise -> exstractor(exercise)?.let { text -> exercise to text } },
+        list = workout.entries.mapNotNull { exercise -> exstractor(exercise)?.let { text -> exercise to text } },
     ) { _, (exercise, text) ->
+        val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
         Pair(first = {
-            TextLink(exercise.name, navController, Destination.Exercise(exercise.id), maxLines = 2)
+            TextLink(exerciseDescriptor.name, navController, Destination.Exercise(exerciseDescriptor.id), maxLines = 2)
         }, second = {
             Text(text = text, overflow = TextOverflow.Ellipsis, maxLines = 2)
         })

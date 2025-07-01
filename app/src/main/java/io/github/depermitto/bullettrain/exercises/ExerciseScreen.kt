@@ -13,7 +13,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.BasicTable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
-import io.github.depermitto.bullettrain.database.Exercise
+import io.github.depermitto.bullettrain.database.ExerciseDescriptor
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.theme.RegularPadding
@@ -23,9 +23,11 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun ExerciseScreen(modifier: Modifier = Modifier, historyDao: HistoryDao, settingsDao: SettingsDao, exercise: Exercise) {
+fun ExerciseScreen(
+    modifier: Modifier = Modifier, historyDao: HistoryDao, settingsDao: SettingsDao, exerciseDescriptor: ExerciseDescriptor
+) {
     val settings by settingsDao.getSettings.collectAsStateWithLifecycle()
-    val exercises by historyDao.where(exercise).collectAsStateWithLifecycle(initialValue = emptyList())
+    val exercises by historyDao.where(exerciseDescriptor).collectAsStateWithLifecycle(initialValue = emptyList())
     val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMM dd yyyy")
 
     LazyColumn(

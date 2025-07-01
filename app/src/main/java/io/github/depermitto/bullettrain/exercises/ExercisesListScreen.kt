@@ -19,8 +19,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
-import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.ExerciseDao
+import io.github.depermitto.bullettrain.database.ExerciseDescriptor
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.ScrollPadding
@@ -33,11 +33,11 @@ fun ExercisesListScreen(
     exerciseDao: ExerciseDao,
     historyDao: HistoryDao,
     modifier: Modifier = Modifier,
-    onSelection: (Exercise) -> Unit,
+    onSelection: (ExerciseDescriptor) -> Unit,
 ) = Box(modifier = modifier.fillMaxSize()) {
     val exerciseFrequencyMap by historyDao.getAll.map { records ->
-        records.flatMap { record -> record.workout.exercises.filter { it.sets.any { it.completed } } }.groupingBy { it.id }
-            .eachCount()
+        records.flatMap { record -> record.workout.entries.filter { it.sets.any { it.completed } } }
+            .groupingBy { it.descriptorId }.eachCount()
     }.collectAsStateWithLifecycle(initialValue = emptyMap())
 
     var searchText by rememberSaveable { mutableStateOf("") }
@@ -64,12 +64,12 @@ fun ExercisesListScreen(
         LazyColumn(
             contentPadding = PaddingValues(bottom = ScrollPadding), verticalArrangement = Arrangement.spacedBy(SmallSpacing)
         ) {
-            items(exercises) { exercise ->
-                val count = exerciseFrequencyMap[exercise.id]
+            items(exercises) { exerciseDescriptor ->
+                val count = exerciseFrequencyMap[exerciseDescriptor.id]
                 ListItem(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { onSelection(exercise) },
-                    headlineContent = { Text(exercise.name) },
+                    onClick = { onSelection(exerciseDescriptor) },
+                    headlineContent = { Text(exerciseDescriptor.name) },
                     supportingContent = { if (count != null) Text("$count ${if (count == 1) "record" else "records"}") },
                 )
             }
@@ -93,7 +93,7 @@ fun ExercisesListScreen(
                 TextButton(onClick = {
                     errorMessage = exerciseDao.validateName(name) ?: "".also {
                         showDialog = false
-                        exerciseDao.insert(Exercise(name = name))
+                        exerciseDao.insert(ExerciseDescriptor(name = name))
                     }
                 }) {
                     Text("Confirm")

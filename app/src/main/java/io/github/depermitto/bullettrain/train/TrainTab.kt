@@ -18,15 +18,20 @@ import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.components.Ratio
 import io.github.depermitto.bullettrain.components.WorkoutTable
-import io.github.depermitto.bullettrain.database.Day
+import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
+import io.github.depermitto.bullettrain.database.Workout
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.focalGround
 
 @Composable
 fun TrainTab(
-    modifier: Modifier = Modifier, trainViewModel: TrainViewModel, programDao: ProgramDao, navController: NavController
+    modifier: Modifier = Modifier,
+    trainViewModel: TrainViewModel,
+    programDao: ProgramDao,
+    exerciseDao: ExerciseDao,
+    navController: NavController
 ) = Box(modifier.fillMaxSize()) {
     Column(Modifier.padding(horizontal = RegularPadding), horizontalAlignment = Alignment.CenterHorizontally) {
         val programs by programDao.getUserPrograms.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -50,6 +55,7 @@ fun TrainTab(
                 exstractor = { exercise -> exercise.sets.size.toString() },
                 ratio = Ratio.Strict(0.9f),
                 navController = navController,
+                exerciseDao = exerciseDao,
                 overlayingContent = {
                     Row(horizontalArrangement = Arrangement.Center) {
                         ElevatedButton(
@@ -73,10 +79,10 @@ fun TrainTab(
             if (showChangeDayIndexDialog) ListAlertDialog(title = "Which day would you like to swap with?",
                 onDismissRequest = { showChangeDayIndexDialog = false },
                 dismissButton = { TextButton(onClick = { showChangeDayIndexDialog = false }) { Text("Cancel") } },
-                list = program.days,
+                list = program.workouts,
                 onSelected = { day ->
                     showChangeDayIndexDialog = false
-                    programDao.update(program.copy(nextDayIndex = program.days.indexOf(day)))
+                    programDao.update(program.copy(nextDayIndex = program.workouts.indexOf(day)))
                 }) { day ->
                 ListItem(headlineContent = { Text(day.name) })
             }
@@ -100,6 +106,6 @@ fun TrainTab(
 
     AnchoredFloatingActionButton(icon = { Icon(painterResource(R.drawable.checkbox_blank), null) },
         text = { Text("Start Empty Workout") }) {
-        trainViewModel.startWorkout(Day(), Program.EmptyWorkout.id)
+        trainViewModel.startWorkout(Workout(), Program.EmptyWorkout.id)
     }
 }

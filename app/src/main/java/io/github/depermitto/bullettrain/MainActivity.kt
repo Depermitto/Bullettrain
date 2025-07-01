@@ -50,7 +50,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -83,7 +82,6 @@ import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.train.TrainingScreen
 import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -129,7 +127,7 @@ fun App(db: Database) = MaterialTheme {
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
     NavHost(navController = navController,
-        startDestination = if (runBlocking { trainViewModel.restoreWorkout() }) Destination.Training else Destination.Home,
+        startDestination = if (trainViewModel.restoreWorkout()) Destination.Training else Destination.Home,
         modifier = Modifier.pointerInput(Unit) {
             detectTapGestures(onTap = {
                 focusManager.clearFocus()
@@ -198,15 +196,19 @@ fun App(db: Database) = MaterialTheme {
                             Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
                             Text("Discard")
                         }
-                        Text(
+                        if (!trainViewModel.isWorkoutEditing()) Text(
                             modifier = Modifier.align(Alignment.Center),
                             text = trainViewModel.elapsedSince(),
                             style = MaterialTheme.typography.titleMedium
                         )
                         TextButton(
-                            modifier = Modifier.align(Alignment.CenterEnd),
-                            onClick = { showFinishDialog = true },
-                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
+                            modifier = Modifier.align(Alignment.CenterEnd), onClick = {
+                                if (trainViewModel.isWorkoutEditing()) {
+                                    trainViewModel.completeWorkout()
+                                } else {
+                                    showFinishDialog = true
+                                }
+                            }, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
                         ) {
                             Text("Finish")
                         }
@@ -311,98 +313,97 @@ fun App(db: Database) = MaterialTheme {
         }
 
         composable<Destination.Program> { navBackStackEntry ->
-            val program by db.programDao.where(navBackStackEntry.toRoute<Destination.Program>().programId)
-                .collectAsStateWithLifecycle(null)
-            program?.let { program ->
-                programViewModel = viewModel(factory = ProgramViewModel.Factory(program))
+            val program = db.programDao.where(navBackStackEntry.toRoute<Destination.Program>().programId)
+            programViewModel = viewModel(factory = ProgramViewModel.Factory(program))
 
-                Scaffold(topBar = {
-                    TopBarWithBackButton(navController = navController, title = programViewModel.programName, topEndContent = {
-                        if (programViewModel.hasChanged) TextButton(onClick = {
-                            db.programDao.update(programViewModel.getProgram())
-                            navController.popBackStack()
-                        }) {
-                            Icon(
-                                modifier = Modifier.size(ButtonDefaults.IconSize),
-                                imageVector = Icons.Filled.Check,
-                                contentDescription = "Complete Program Edit"
-                            )
-                            Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                            Text("Finish Edit")
-                        }
-                    })
-                }) { paddingValues ->
-                    ProgramScreen(
-                        modifier = Modifier
-                            .consumeWindowInsets(paddingValues)
-                            .padding(paddingValues),
-                        programViewModel = programViewModel,
-                        navController = navController
-                    )
-                }
-
-                if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
-                    text = "Do you want to discard changes made to ${programViewModel.programName}?",
-                    onConfirm = { navController.navigateUp() })
-
-                BackHandler(enabled = programViewModel.hasChanged) { showDiscardDialog = true }
+            Scaffold(topBar = {
+                TopBarWithBackButton(navController = navController, title = programViewModel.programName, topEndContent = {
+                    if (programViewModel.hasChanged) TextButton(onClick = {
+                        db.programDao.update(programViewModel.getProgram())
+                        navController.popBackStack()
+                    }) {
+                        Icon(
+                            modifier = Modifier.size(ButtonDefaults.IconSize),
+                            imageVector = Icons.Filled.Check,
+                            contentDescription = "Complete Program Edit"
+                        )
+                        Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+                        Text("Finish Edit")
+                    }
+                })
+            }) { paddingValues ->
+                ProgramScreen(
+                    modifier = Modifier
+                        .consumeWindowInsets(paddingValues)
+                        .padding(paddingValues),
+                    programViewModel = programViewModel,
+                    navController = navController
+                )
             }
+
+            if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
+                text = "Do you want to discard changes made to ${programViewModel.programName}?",
+                onConfirm = { navController.navigateUp() })
+
+            BackHandler(enabled = programViewModel.hasChanged) { showDiscardDialog = true }
         }
 
         composable<Destination.Exercise> { navBackStackEntry ->
-            val exercise by db.exerciseDao.where(navBackStackEntry.toRoute<Destination.Exercise>().exerciseId)
-                .collectAsStateWithLifecycle(null)
-            exercise?.let { exercise ->
-                var showDropdown by remember { mutableStateOf(false) }
-                var showRenameDialog by remember { mutableStateOf(false) }
-                Scaffold(topBar = {
-                    TopBarWithBackButton(navController = navController, title = exercise.name, topEndContent = {
+            val exerciseDescriptor = db.exerciseDao.where(navBackStackEntry.toRoute<Destination.Exercise>().exerciseId)
+            var showDropdown by remember { mutableStateOf(false) }
+            var showRenameDialog by remember { mutableStateOf(false) }
+            Scaffold(topBar = {
+                TopBarWithBackButton(navController = navController,
+                    title = exerciseDescriptor.name.run { if (exerciseDescriptor.obsolete) "$this [Archived]" else this },
+                    topEndContent = {
                         DropdownButton(showDropdown, { showDropdown = it }) {
                             DropdownMenuItem(text = { Text("Rename") },
                                 leadingIcon = { Icon(Icons.Filled.Edit, "Rename Exercise") },
                                 onClick = { showDropdown = false; showRenameDialog = true })
-                            DropdownMenuItem(text = { Text("Delete") },
+                            if (!exerciseDescriptor.obsolete) DropdownMenuItem(text = { Text("Delete") },
                                 leadingIcon = { Icon(Icons.Filled.Delete, "Delete Exercise") },
                                 onClick = { showDropdown = false; showDiscardDialog = true })
                         }
                     })
-                }) { paddingValues ->
-                    ExerciseScreen(
-                        modifier = Modifier
-                            .consumeWindowInsets(paddingValues)
-                            .padding(paddingValues),
-                        historyDao = db.historyDao,
-                        settingsDao = db.settingsDao,
-                        exercise = exercise
-                    )
-                }
-
-                // This is a essentially copy from ExercisesListScreen.kt
-                if (showRenameDialog) {
-                    var errorMessage by rememberSaveable { mutableStateOf("") }
-                    TextFieldAlertDialog(onDismissRequest = { showRenameDialog = false },
-                        startingText = exercise.name,
-                        label = { Text("Exercise Name") },
-                        dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
-                        confirmButton = { name ->
-                            TextButton(onClick = {
-                                errorMessage = db.exerciseDao.validateName(name) ?: "".also {
-                                    showRenameDialog = false
-                                    db.exerciseDao.update(exercise.copy(name = name))
-                                }
-                            }) {
-                                Text("Confirm")
-                            }
-                        },
-                        errorMessage = errorMessage,
-                        isError = errorMessage.isNotBlank()
-                    )
-                }
-
-                if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
-                    text = "All data associated with this exercise will be lost forever. Do you definitely want to remove ${exercise.name}?",
-                    onConfirm = { db.exerciseDao.delete(exercise); navController.navigateUp() })
+            }) { paddingValues ->
+                ExerciseScreen(
+                    modifier = Modifier
+                        .consumeWindowInsets(paddingValues)
+                        .padding(paddingValues),
+                    historyDao = db.historyDao,
+                    settingsDao = db.settingsDao,
+                    exerciseDescriptor = exerciseDescriptor
+                )
             }
+
+            // This is a essentially copy from ExercisesListScreen.kt
+            if (showRenameDialog) {
+                var errorMessage by rememberSaveable { mutableStateOf("") }
+                TextFieldAlertDialog(
+                    onDismissRequest = { showRenameDialog = false },
+                    startingText = exerciseDescriptor.name,
+                    label = { Text("Exercise Name") },
+                    dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
+                    confirmButton = { name ->
+                        TextButton(onClick = {
+                            errorMessage = db.exerciseDao.validateName(name) ?: "".also {
+                                showRenameDialog = false
+                                db.exerciseDao.update(exerciseDescriptor.copy(name = name))
+                            }
+                        }) {
+                            Text("Confirm")
+                        }
+                    },
+                    errorMessage = errorMessage,
+                    isError = errorMessage.isNotBlank()
+                )
+            }
+
+            if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false }, text = """
+                Data associated with this exercise will not be lost. Even if you delete it, you can still perform the exercise if it appears in a program, and you can also rename it. However, you will not be able to include the exercise in new Programs.
+
+                Do you really want to remove '${exerciseDescriptor.name}'?
+            """.trimIndent(), onConfirm = { db.exerciseDao.delete(exerciseDescriptor); navController.navigateUp() })
         }
 
         composable<Destination.Settings> {

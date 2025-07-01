@@ -73,7 +73,7 @@ fun ProgramScreen(
                     }) {
                     OutlinedCard {
                         ListItem(headlineContent = { Text(text = day.name, maxLines = 1) },
-                            supportingContent = { Text(text = "${day.exercises.sumOf { it.sets.size }} sets", maxLines = 1) },
+                            supportingContent = { Text(text = "${day.entries.sumOf { it.sets.size }} sets", maxLines = 1) },
                             trailingContent = { DragButton(this@ReorderableColumn, view) })
                     }
 

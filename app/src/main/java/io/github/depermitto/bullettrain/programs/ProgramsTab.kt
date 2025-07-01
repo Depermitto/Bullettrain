@@ -64,8 +64,8 @@ fun ProgramsTab(
                         headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
                         supportingContent = {
                             Column {
-                                Text(text = "${program.days.size} day program")
-                                Text(text = "${program.days.sumOf { day -> day.exercises.sumOf { it.sets.size } }} total sets")
+                                Text(text = "${program.workouts.size} day program")
+                                Text(text = "${program.workouts.sumOf { day -> day.entries.sumOf { it.sets.size } }} total sets")
 //                                program.mostRecentWorkoutDate?.let { date ->
 //                                    val formatter = DateTimeFormatter.ofPattern("d MMM yyyy")
 //                                    Text(

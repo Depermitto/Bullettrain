@@ -29,7 +29,7 @@ data class Settings(val unitSystem: UnitSystem = UnitSystem.Metric) {
 data class HistoryRecord(
     @SerialName("historyRecordId") override val id: Int = 0,
     val relatedProgramId: Int,
-    val workout: Day,
+    val workout: Workout,
     val workoutPhase: WorkoutPhase,
     @Serializable(with = LocalDateSerializer::class) val date: LocalDate,
     @Serializable(with = InstantSerializer::class) val workoutStartTs: Instant,
@@ -43,7 +43,7 @@ data class Program(
     @SerialName("programId") override val id: Int = 0,
     val obsolete: Boolean = false,
     val name: String = "",
-    val days: List<Day> = listOf(Day()),
+    val workouts: List<Workout> = listOf(Workout()),
     val nextDayIndex: Int = 0,
     val followed: Boolean = false,
     val draft: Boolean = false,
@@ -63,7 +63,7 @@ data class Program(
      */
     infix fun correspondsNot(other: Program) = this.id != other.id
 
-    fun nextDay() = days[nextDayIndex]
+    fun nextDay() = workouts[nextDayIndex]
 
     companion object {
         val EmptyWorkout = Program(id = -1, name = "Impromptu Workout")
@@ -72,29 +72,37 @@ data class Program(
 
 @Immutable
 @Serializable
-data class Day(
+data class Workout(
     val name: String = "Day 1",
-    val exercises: List<Exercise> = listOf(),
+    val entries: List<WorkoutEntry> = listOf(),
 )
 
 @Immutable
 @Serializable
-data class Exercise(
+data class ExerciseDescriptor(
     @SerialName("exerciseId") override val id: Int = 0,
     val name: String,
+    val obsolete: Boolean = false,
+    val instructions: String = "",
+) : Entity {
+    override fun clone(id: Int) = copy(id = id)
+}
+
+@Immutable
+@Serializable
+data class WorkoutEntry(
+    @SerialName("exerciseDescriptor") val descriptorId: Int,
     @SerialName("performanceVariableCategory") val perfVarCategory: PerfVarCategory = PerfVarCategory.Reps,
     val intensity: Intensity? = null,
     val sets: List<ExerciseSet> = listOf(),
     val superset: List<Int>? = null,
     val alternatives: List<Int>? = null,
     val notes: String = "",
-) : Entity {
+) {
     val hasIntensity get() = intensity != null
 
     fun getPerformedSets(): List<ExerciseSet> = this.sets.filter { it.completed }
     fun lastPerformedSet() = this.sets.lastOrNull { it.completed }
-
-    override fun clone(id: Int) = copy(id = id)
 }
 
 @Immutable

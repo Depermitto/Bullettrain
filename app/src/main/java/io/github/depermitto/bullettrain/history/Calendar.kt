@@ -25,11 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.components.ListItem
-import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.HistoryRecord
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
+import io.github.depermitto.bullettrain.database.Workout
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import java.time.DayOfWeek
@@ -80,18 +80,17 @@ fun Calendar(
                             CalendarItem(text = "")
                         } else {
                             val day = LocalDate.of(currentDate.year, currentDate.month, dayOfMonth)
-                            CalendarItem(
-                                modifier = Modifier
-                                    .padding(4.dp)
-                                    .clip(shape = CircleShape)
-                                    .aspectRatio(1f)
-                                    .combinedClickable(onClick = { homeViewModel.selectedDate = day },
-                                        onLongClick = { showDropdown = true })
-                                    .background(
-                                        color = if (homeViewModel.selectedDate == day) MaterialTheme.colorScheme.tertiaryContainer
-                                        else if (currentHistoryRecords.any { it.date == day }) MaterialTheme.colorScheme.primaryContainer
-                                        else Color.Transparent
-                                    ), underline = day == today, text = dayOfMonth.toString()
+                            CalendarItem(modifier = Modifier
+                                .padding(4.dp)
+                                .clip(shape = CircleShape)
+                                .aspectRatio(1f)
+                                .combinedClickable(onClick = { homeViewModel.selectedDate = day },
+                                    onLongClick = { showDropdown = true })
+                                .background(
+                                    color = if (homeViewModel.selectedDate == day) MaterialTheme.colorScheme.tertiaryContainer
+                                    else if (currentHistoryRecords.any { it.date == day }) MaterialTheme.colorScheme.primaryContainer
+                                    else Color.Transparent
+                                ), underline = day == today, text = dayOfMonth.toString()
                             )
 
                             DropdownMenu(expanded = showDropdown, onDismissRequest = { showDropdown = false }) {
@@ -123,7 +122,7 @@ fun Calendar(
         onSelected = { program ->
             showProgramListDialog = false
             if (program corresponds Program.EmptyWorkout) {
-                trainViewModel.startWorkout(Day(), Program.EmptyWorkout.id, date = longClickedDate)
+                trainViewModel.startWorkout(Workout(), Program.EmptyWorkout.id, date = longClickedDate)
             } else {
                 selectedProgram = program
             }
@@ -135,7 +134,7 @@ fun Calendar(
         ListAlertDialog(title = "Which workout would you like to perform?",
             onDismissRequest = { selectedProgram = null },
             dismissButton = { TextButton(onClick = { selectedProgram = null }) { Text("Cancel") } },
-            list = program.days,
+            list = program.workouts,
             onSelected = { day ->
                 selectedProgram = null
                 trainViewModel.startWorkout(day, program.id, date = longClickedDate)
@@ -149,16 +148,14 @@ fun Calendar(
         dismissButton = { TextButton(onClick = { showWorkoutDiscardDialog = false }) { Text("Cancel") } },
         list = currentHistoryRecords.filter { it.date == longClickedDate },
         onSelected = { workout -> showWorkoutDiscardDialog = false; historyDao.delete(workout) }) { record ->
-        val relatedProgram by programDao.where(record.relatedProgramId).collectAsStateWithLifecycle(initialValue = null)
-        relatedProgram?.let { relatedProgram ->
-            var text = relatedProgram.name
-            if (relatedProgram correspondsNot Program.EmptyWorkout) text += ", " + record.workout.name
+        val relatedProgram = programDao.where(record.relatedProgramId)
+        var text = relatedProgram.name
+        if (relatedProgram correspondsNot Program.EmptyWorkout) text += ", " + record.workout.name
 
-            ListItem(headlineContent = { Text(text, maxLines = 2, overflow = TextOverflow.Ellipsis) }, supportingContent = {
-                val totalSets = record.workout.exercises.sumOf { it.sets.count { it.actualPerfVar != 0f } }
-                if (totalSets != 0) Text(text = "$totalSets performed sets")
-            })
-        }
+        ListItem(headlineContent = { Text(text, maxLines = 2, overflow = TextOverflow.Ellipsis) }, supportingContent = {
+            val totalSets = record.workout.entries.sumOf { it.sets.count { it.actualPerfVar != 0f } }
+            if (totalSets != 0) Text(text = "$totalSets performed sets")
+        })
     }
 }
 

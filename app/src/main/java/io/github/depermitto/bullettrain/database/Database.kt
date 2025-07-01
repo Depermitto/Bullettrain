@@ -1,7 +1,7 @@
 package io.github.depermitto.bullettrain.database
 
 import android.content.Context
-import androidx.compose.runtime.*
+import android.util.Log
 import io.github.depermitto.bullettrain.R
 import io.github.depermitto.bullettrain.train.WorkoutPhase
 import io.github.depermitto.bullettrain.util.BKTree
@@ -14,9 +14,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import java.io.File
 import java.io.FileOutputStream
@@ -52,15 +51,10 @@ class Database(private val databaseDirectory: File, private val context: Context
 
     private val backupFile = File(databaseDirectory, "bullet-train.bk.zip")
 
-    var settingsDao by mutableStateOf(SettingsDao(settingsFile))
-        private set
-    var historyDao by mutableStateOf(HistoryDao(historyFile))
-        private set
-    var programDao by mutableStateOf(ProgramDao(programsFile))
-        private set
-    var exerciseDao by mutableStateOf(ExerciseDao(exercisesFile))
-        private set
-
+    val settingsDao = SettingsDao(settingsFile)
+    val historyDao = HistoryDao(historyFile)
+    val programDao = ProgramDao(programsFile)
+    val exerciseDao = ExerciseDao(exercisesFile)
 
     /**
      * Launch file picker and export the zipped database to it. Returns name the file the database was exported to  if successful.
@@ -103,16 +97,15 @@ class Database(private val databaseDirectory: File, private val context: Context
 
         ZipFile(tmpFile).use { zipFile ->
             val entries = zipFile.entries().toList()
+            // we should probably check if file is not corrupt here
             if (!entries.zip(backupFiles).all { (entry, backup) -> entry.name == backup.file.name }) return null
 
             entries.forEachIndexed { i, entry ->
-                backupFiles[i].file.writeBytes(zipFile.getInputStream(entry).readBytes())
-
-                when (entry.name) {
-                    SETTINGS_FILENAME -> settingsDao = SettingsDao(settingsFile)
-                    HISTORY_FILENAME -> historyDao = HistoryDao(historyFile)
-                    PROGRAMS_FILENAME -> programDao = ProgramDao(programsFile)
-                    EXERCISES_FILENAME -> exerciseDao = ExerciseDao(exercisesFile)
+                when (val backupFile = backupFiles[i].apply { file.writeBytes(zipFile.getInputStream(entry).readBytes()) }) {
+                    is SettingsFile -> settingsDao.item.update { SettingsDao(backupFile).item.value }
+                    is HistoryFile -> historyDao.items.update { HistoryDao(backupFile).items.value }
+                    is ProgramsFile -> programDao.items.update { ProgramDao(backupFile).items.value }
+                    is ExerciseFile -> exerciseDao.items.update { ExerciseDao(backupFile).items.value }
                 }
             }
         }
@@ -125,13 +118,16 @@ class Database(private val databaseDirectory: File, private val context: Context
     }
 
     init {
-        BackgroundSlave.enqueue(Dispatchers.Main) { exercisesFile.read().ifEmpty { factoryReset() } }
+        BackgroundSlave.enqueue(Dispatchers.Main) {
+            // this could be any StorageFile really
+            if (exercisesFile.read().isEmpty() && factoryReset()) Log.i("db-global", "polluted database with default data")
+        }
     }
 }
 
 abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) {
-    private val items = MutableStateFlow(storageFile.read())
-    private var newId = items.value.maxOfOrNull { it.id } ?: 0
+    internal val items = MutableStateFlow(storageFile.read())
+    internal var newId = items.value.maxOfOrNull { it.id } ?: 0
 
     val getAll: StateFlow<List<T>> = items.asStateFlow()
 
@@ -170,11 +166,11 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
         BackgroundSlave.enqueue { storageFile.write(state, log = true) }
     }
 
-    open fun where(id: Int): Flow<T?> = items.map { it.filter { it.id == id }.firstOrNull() }
+    open fun where(id: Int): T = items.value.first { it.id == id }
 }
 
 class SettingsDao(private val file: SettingsFile) {
-    private val item = MutableStateFlow(file.read())
+    internal val item = MutableStateFlow(file.read())
     val getSettings = item.asStateFlow()
 
     fun update(function: (Settings) -> Settings) {
@@ -184,16 +180,15 @@ class SettingsDao(private val file: SettingsFile) {
 }
 
 class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
-    suspend fun getUnfinishedBusiness(): HistoryRecord? =
-        getAll.map { records -> records.filter { record -> record.workoutPhase != WorkoutPhase.Completed } }.firstOrNull()
-            ?.firstOrNull()
+    fun getUnfinishedBusiness(): HistoryRecord? =
+        items.value.firstOrNull { record -> record.workoutPhase != WorkoutPhase.Completed }
 
     fun where(month: Month, year: Int): Flow<List<HistoryRecord>> = getAll.map { records ->
         records.filter { record -> record.date.month == month && record.date.year == year }
     }
 
-    fun where(exercise: Exercise): Flow<List<Exercise>> = getAll.map { records ->
-        records.flatMap { record -> record.workout.exercises.filter { it.id == exercise.id } }
+    fun where(descriptor: ExerciseDescriptor): Flow<List<WorkoutEntry>> = getAll.map { records ->
+        records.flatMap { record -> record.workout.entries.filter { entry -> entry.descriptorId == descriptor.id } }
             .sortedByDescending { exercise -> exercise.lastPerformedSet()?.doneTs }
     }
 }
@@ -211,10 +206,10 @@ class ProgramDao(file: ProgramsFile) : Dao<Program>(file) {
     }
 }
 
-class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {
+class ExerciseDao(file: ExerciseFile) : Dao<ExerciseDescriptor>(file) {
     private val bkTree = BKTree("Press") // This is the most frequent word in our database, followed by "Dumbbell" and "Barbell"
 
-    val getSortedAlphabetically = getAll.map { it.sortedBy { it.name } }
+    val getSortedAlphabetically = getAll.map { it.filterNot { it.obsolete }.sortedBy { it.name } }
 
     /**
      * Filter out exercises by name. This function provides an autocorrect/typo correcting algorithm that is
@@ -231,25 +226,29 @@ class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {
     }
 
     init {
+        // fill BKTree with words from ExerciseDescriptors
         BackgroundSlave.enqueue {
-            getSortedAlphabetically.first().forEach { exercise ->
+            getAll.value.forEach { exercise ->
                 exercise.name.trim().split(' ').filter { word -> word.all { char -> char.isLetter() } }.forEach(bkTree::insert)
             }
         }
     }
 
-    override fun insert(item: Exercise): Int {
-        val item = item.copy(name = item.name.prep())
-        bkTree.insert(item.name)
-        return super.insert(item)
+    override fun insert(item: ExerciseDescriptor): Int {
+        // TODO the also block probably doesn't work since there is no state
+        return super.insert(item.copy(name = item.name.prep().also { preppedName -> bkTree.insert(preppedName) }))
     }
 
-    override fun update(item: Exercise): Boolean {
+    override fun update(item: ExerciseDescriptor): Boolean {
         return super.update(item.copy(name = item.name.prep()))
     }
 
-    override fun upsert(item: Exercise): Int {
+    override fun upsert(item: ExerciseDescriptor): Int {
         return super.upsert(item.copy(name = item.name.prep()))
+    }
+
+    override fun delete(item: ExerciseDescriptor) {
+        super.update(item.copy(obsolete = true))
     }
 
     /**
@@ -263,7 +262,7 @@ class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {
             return "Empty Exercise Name"
         }
 
-        if (getAll.value.any { it.name == name }) {
+        if (getAll.value.any { !it.obsolete && it.name == name }) {
             return "Duplicate Exercise Name"
         }
 

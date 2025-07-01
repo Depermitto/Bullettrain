@@ -26,9 +26,9 @@ class ProgramsFile(file: File) : StorageFile<List<Program>>(file) {
     override fun write(obj: List<Program>) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
 }
 
-class ExerciseFile(file: File) : StorageFile<List<Exercise>>(file) {
-    override fun read(): List<Exercise> = Json.decodeFromString(Compressor.uncompress(file.readText()))
-    override fun write(obj: List<Exercise>) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
+class ExerciseFile(file: File) : StorageFile<List<ExerciseDescriptor>>(file) {
+    override fun read(): List<ExerciseDescriptor> = Json.decodeFromString(Compressor.uncompress(file.readText()))
+    override fun write(obj: List<ExerciseDescriptor>) = file.writeText(Compressor.compress(Json.encodeToString(obj)))
 }
 
 fun <Object> StorageFile<Object>.write(obj: Object, log: Boolean) {
