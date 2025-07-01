@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.components.AnchoredFloatingActionButton
+import io.github.depermitto.data.Exercise
 import io.github.depermitto.data.ExerciseDao
-import io.github.depermitto.data.ExerciseSet
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (ExerciseSet) -> Unit) {
+fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) {
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val exercises by exerciseDao.getAllFlow().collectAsStateWithLifecycle(emptyList())
 

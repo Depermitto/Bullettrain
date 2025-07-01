@@ -46,7 +46,7 @@ fun ProgramsTab(modifier: Modifier = Modifier, programDao: ProgramDao, navContro
                         Text(text = program.name, style = MaterialTheme.typography.titleLarge)
                         Text(text = "${program.days.size} day program", style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            text = "${program.days.sumOf { day -> day.exerciseSets.sumOf { set -> set.size } }} total sets",
+                            text = "${program.days.sumOf { day -> day.exercises.sumOf { it.sets.size } }} total sets",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }

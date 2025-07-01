@@ -34,7 +34,7 @@ fun MainScreen(
     exerciseDao: ExerciseDao,
     navController: NavController,
 ) {
-    var activeBar by remember { mutableStateOf(MainScreen.Tabs.Programs) }
+    var activeBar by remember { mutableStateOf(MainScreen.Tabs.Train) }
 
     Scaffold(bottomBar = {
         NavigationBar(containerColor = filledContainerColor()) {
@@ -56,16 +56,14 @@ fun MainScreen(
         ) {
             when (activeBar) {
                 MainScreen.Tabs.Programs -> {
-                    RibbonScaffold(ribbon = { Ribbon(navController = navController, backButton = false) }) {
-                        ProgramsTab(programDao = programDao, navController = navController)
-                    }
+                    RibbonScaffold(ribbon = {
+                        Ribbon(navController = navController, title = "Programs", backButton = false)
+                    }) { ProgramsTab(programDao = programDao, navController = navController) }
                 }
 
                 MainScreen.Tabs.History -> HistoryTab()
                 MainScreen.Tabs.Train -> TrainTab(
-                    trainViewModel = trainViewModel,
-                    settingsViewModel = settingsViewModel,
-                    exerciseDao = exerciseDao
+                    trainViewModel = trainViewModel, settingsViewModel = settingsViewModel, exerciseDao = exerciseDao
                 )
             }
         }

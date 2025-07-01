@@ -12,10 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.components.Ribbon
 import io.github.depermitto.components.RibbonScaffold
-import io.github.depermitto.data.Day
-import io.github.depermitto.data.ExerciseSet
-import io.github.depermitto.data.GymDatabase
-import io.github.depermitto.data.Program
+import io.github.depermitto.data.*
 import io.github.depermitto.programs.Program
 import io.github.depermitto.programs.ProgramCreation
 import io.github.depermitto.programs.ProgramViewModel
@@ -34,9 +31,9 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray, settingsFile: F
     val programDao = db.getProgramDao()
 
     val premadeTrainingDay = Day(
-        "Arms", listOf(
-            listOf(ExerciseSet(name = "Bench"), ExerciseSet(name = "Bench")),
-            listOf(ExerciseSet(name = "Squat"), ExerciseSet(name = "Squat"), ExerciseSet(name = "Squat"))
+        name = "Arms", exercises = listOf(
+            Exercise(name = "Bench", sets = listOf(ExerciseSet(ExerciseTarget.of(ExerciseTargetCategory.Reps)))),
+            Exercise(name = "Squat")
         )
     )
 
@@ -72,9 +69,9 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray, settingsFile: F
             program?.let {
                 val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(it, programDao))
 
-                RibbonScaffold(ribbon = { Ribbon(navController = navController, title = programViewModel.name) }) {
+                RibbonScaffold(ribbon = { Ribbon(navController, title = programViewModel.programName) }) {
                     Program(programViewModel, exerciseDao = exerciseDao)
-                    if (programViewModel.getDays() != it.days) {
+                    if (programViewModel.days.toList() != it.days.toList()) {
                         AnchoredFloatingActionButton(text = { Text("Finish Edit") }, onClick = {
                             programViewModel.upsert()
                             navController.popBackStack(Screen.MainScreen.route, inclusive = false)
@@ -85,9 +82,9 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray, settingsFile: F
         }
 
         composable(Screen.SettingsScreen.route) {
-            RibbonScaffold(ribbon = {
-                Ribbon(navController = navController, settingsGear = false, title = "Settings")
-            }) { Settings(globalSettingsVM) }
+            RibbonScaffold(ribbon = { Ribbon(navController, settingsGear = false, title = "Settings") }) {
+                Settings(globalSettingsVM)
+            }
         }
     }
 }

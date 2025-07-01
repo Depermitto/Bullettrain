@@ -1,41 +1,51 @@
 package io.github.depermitto.data
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Contextual
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant
+
+operator fun <T> List<T>.set(index: Int, value: T): List<T> {
+    return slice(0 until index) + value + slice(index + 1 until size)
+}
 
 // ---------------------------------------Exercises---------------------------------------------------
 
 @Serializable
 @Entity(tableName = "exercises")
 data class Exercise(
-    @SerialName("exercise-id") @ColumnInfo(name = "exercise_id") @PrimaryKey(autoGenerate = true) val exerciseId: Long = 0,
-    var name: String,
+    @ColumnInfo(name = "exercise_id") @PrimaryKey(autoGenerate = true) val exerciseId: Long = 0,
+    val name: String,
     val targetCategory: ExerciseTargetCategory = ExerciseTargetCategory.Reps,
     val intensityCategory: IntensityCategory? = null,
-    @Contextual val sets: SnapshotStateList<ExerciseSet>,
-    @Contextual val superset: SnapshotStateList<Int>? = null,
-    @Contextual val alternatives: SnapshotStateList<Int>? = null,
+    val sets: List<ExerciseSet> = listOf(),
+    val superset: List<Int>? = null,
+    val alternatives: List<Int>? = null,
     val notes: String = "",
-)
+) {
+    val hasIntensity: Boolean
+        get() = intensityCategory != null
+}
 
 @Serializable
 data class ExerciseSet(
     val target: ExerciseTarget,
-    val intensity: Float? = null, // TODO make this an optional field
+    val intensity: Float? = null,
     val weight: Float = 0f,
     @Contextual val date: Instant? = null,
 )
 
+@Serializable
 enum class IntensityCategory { RPE, AMRAP, RIR }
 
-enum class ExerciseTargetCategory { Reps, Time, RepRange }
+@Serializable
+enum class ExerciseTargetCategory {
+    Reps, Time, RepRange;
+
+    val prettyName = name.split(regex = Regex("(?=[A-Z])")).joinToString(" ")
+}
 
 @Serializable
 sealed class ExerciseTarget(val category: ExerciseTargetCategory) {
@@ -47,8 +57,6 @@ sealed class ExerciseTarget(val category: ExerciseTargetCategory) {
 
     @Serializable
     data class RepRange(val min: Int = 0, val max: Int = 0) : ExerciseTarget(ExerciseTargetCategory.RepRange)
-
-    val name = this.category.name.split("(?=[A-Z])")
 
     companion object {
         fun of(category: ExerciseTargetCategory) = when (category) {
@@ -67,27 +75,27 @@ sealed class ExerciseTarget(val category: ExerciseTargetCategory) {
 
 // ---------------------------------------History----------------------------------------------------
 
+@Serializable
 @Entity(tableName = "history")
 data class HistoryEntry(
     @ColumnInfo(name = "history_entry_id") @PrimaryKey(autoGenerate = true) val historyEntryId: Long = 0,
-    val target: ExerciseTarget,
+    val target: Float,
     val intensity: Float?,
     val weight: Float,
-    val date: Instant,
+    @Contextual val date: Instant,
 )
 
 // ---------------------------------------Programs---------------------------------------------------
 
-@Serializable
 @Entity(tableName = "programs")
 data class Program(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "program_id") val programId: Long = 0,
     val name: String = "",
-    @Contextual val days: SnapshotStateList<Day> = mutableStateListOf(),
+    val days: List<Day> = listOf(),
 )
 
 @Serializable
 data class Day(
     val name: String = "Day 1",
-    @Contextual val exerciseSets: SnapshotStateList<Exercise> = mutableStateListOf(),
+    val exercises: List<Exercise> = listOf(),
 )

@@ -8,7 +8,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.time.Instant
 
-@Database(entities = [ExerciseSet::class, HistoryEntry::class, Program::class], version = 14, exportSchema = true)
+@Database(entities = [Exercise::class, HistoryEntry::class, Program::class], version = 17, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class GymDatabase : RoomDatabase() {
     abstract fun getGymDao(): GymDao
@@ -28,13 +28,13 @@ interface GymDao {
 @Dao
 interface ExerciseDao {
     @Upsert
-    suspend fun upsert(listing: ExerciseSet)
+    suspend fun upsert(exercise: Exercise)
 
     @Delete
-    suspend fun delete(listing: ExerciseSet)
+    suspend fun delete(exercise: Exercise)
 
     @Query("SELECT * FROM exercises")
-    fun getAllFlow(): Flow<List<ExerciseSet>>
+    fun getAllFlow(): Flow<List<Exercise>>
 }
 
 @Dao
@@ -71,6 +71,8 @@ class Converters {
     @TypeConverter
     fun dateToTimestamp(date: Instant): Long = date.toEpochMilli()
 
+// ---------------------------------------Categories---------------------------------------------------
+
     @TypeConverter
     fun exerciseTargetFromString(value: String?): ExerciseTarget? = value?.let(Json::decodeFromString)
 
@@ -78,8 +80,34 @@ class Converters {
     fun exerciseTargetToString(target: ExerciseTarget?): String? = target?.let(Json::encodeToString)
 
     @TypeConverter
-    fun targetCategoryFromString(value: String): ExerciseTargetCategory = ExerciseTargetCategory.valueOf(value)
+    fun exerciseTargetCategoryFromString(value: String): ExerciseTargetCategory = ExerciseTargetCategory.valueOf(value)
 
     @TypeConverter
-    fun targetCategoryToString(target: ExerciseTargetCategory): String = target.name
+    fun exerciseTargetCategoryToString(target: ExerciseTargetCategory): String = target.name
+
+    @TypeConverter
+    fun intensityCategoryFromString(value: String?): IntensityCategory? = value?.let(IntensityCategory::valueOf)
+
+    @TypeConverter
+    fun intensityCategoryToString(target: IntensityCategory?): String? = target?.name
+
+// ----------------------------------------Lists-------------------------------------------------------
+
+    @TypeConverter
+    fun listExerciseSetFromString(value: String): List<ExerciseSet> = Json.decodeFromString(value)
+
+    @TypeConverter
+    fun listExerciseSetToString(value: List<ExerciseSet>): String = Json.encodeToString(value)
+
+    @TypeConverter
+    fun listIntFromString(value: String): List<Int> = Json.decodeFromString(value)
+
+    @TypeConverter
+    fun listIntToString(value: List<Int>): String = Json.encodeToString(value)
+
+    @TypeConverter
+    fun listDayFromString(value: String): List<Day> = Json.decodeFromString(value)
+
+    @TypeConverter
+    fun listDayToString(value: List<Day>): String = Json.encodeToString(value)
 }

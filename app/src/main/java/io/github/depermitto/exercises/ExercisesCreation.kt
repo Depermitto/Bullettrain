@@ -7,12 +7,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.depermitto.data.Exercise
 import io.github.depermitto.data.ExerciseSet
 import io.github.depermitto.theme.ItemPadding
 
 @Composable
-fun ExercisesCreationScreen(newExercise: (ExerciseSet?) -> Unit) {
-    var exerciseSetState by remember { mutableStateOf(ExerciseSet(name = "")) }
+fun ExercisesCreationScreen(newExercise: (Exercise?) -> Unit) {
+    var exerciseSetState by remember { mutableStateOf(Exercise(name = "")) }
 
     OutlinedCard(modifier = Modifier.size(200.dp, 200.dp)) {
         Box(

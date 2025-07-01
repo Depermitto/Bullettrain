@@ -28,8 +28,8 @@ fun ProgramCreation(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = ItemPadding),
-            value = programViewModel.name,
-            onValueChange = { programViewModel.name = it },
+            value = programViewModel.programName,
+            onValueChange = { programViewModel.setName(it) },
             placeholder = { Text(text = "Workout Name") },
             shape = MaterialTheme.shapes.medium,
             colors = notUnderlinedTextFieldColors()
@@ -37,7 +37,7 @@ fun ProgramCreation(
         Box(modifier = Modifier.weight(1f)) {
             Program(programViewModel = programViewModel, exerciseDao = exerciseDao)
             AnchoredFloatingActionButton(text = { Text(text = "Complete Program") }, onClick = {
-                if (programViewModel.name.isBlank()) {
+                if (programViewModel.programName.isBlank()) {
                     Toast.makeText(context, "Blank Program Name", Toast.LENGTH_SHORT).show()
                     return@AnchoredFloatingActionButton
                 }

@@ -5,13 +5,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.data.ExerciseDao
 import io.github.depermitto.exercises.AddExerciseButton
-import io.github.depermitto.exercises.TrainExercise
 import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
@@ -60,7 +58,7 @@ fun TrainTab(
         modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
     ) {
         // TODO add colors for supersets here
-        itemsIndexed(trainViewModel.trainDay.exercises) { i, _ ->
+        itemsIndexed(trainViewModel.exercises) { i, _ ->
             TrainExercise(
                 settingsViewModel = settingsViewModel,
                 trainViewModel = trainViewModel,
@@ -69,10 +67,6 @@ fun TrainTab(
             )
         }
 
-        item {
-            AddExerciseButton(exerciseDao = exerciseDao, onChoose = {
-                trainViewModel.trainDay.exercises += mutableStateListOf(mutableStateListOf(it.copy(target = it.target.toTrainMode())))
-            })
-        }
+        item { AddExerciseButton(exerciseDao = exerciseDao, onChoose = { trainViewModel.exercises.add(it) }) }
     }
 }
