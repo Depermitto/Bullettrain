@@ -44,6 +44,7 @@ fun Calendar(
                     if (i == 0) CalendarItem(
                         modifier = Modifier.weight(1f),
                         text = DayOfWeek.of(j + 1).getDisplayName(TextStyle.SHORT_STANDALONE, Locale.getDefault()),
+                        textAlpha = 0.6f,
                     ) else {
                         val dayOfMonth: Int? = days.firstOrNull()?.takeUnless { it <= 0 }
                         if (dayOfMonth == null) {
@@ -73,11 +74,13 @@ fun Calendar(
 private fun CalendarItem(
     modifier: Modifier = Modifier,
     text: String,
+    textStyle: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyMedium,
+    textAlpha: Float = 1f,
     underline: Boolean = false,
 ) = Box(modifier = modifier) {
     Text(
         text = text,
-        style = MaterialTheme.typography.bodyMedium,
+        style = textStyle.copy(color = textStyle.color.copy(alpha = textAlpha)),
         modifier = Modifier
             .align(Alignment.Center)
             .padding(10.dp),

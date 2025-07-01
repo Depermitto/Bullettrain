@@ -14,9 +14,7 @@ import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.components.Ribbon
 import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.data.entities.Program
-import io.github.depermitto.main.MainScreen
-import io.github.depermitto.main.Screen
-import io.github.depermitto.main.Screen.MainScreen.Tabs
+import io.github.depermitto.Screen.MainScreen.Tabs
 import io.github.depermitto.programs.Program
 import io.github.depermitto.programs.ProgramCreation
 import io.github.depermitto.programs.ProgramViewModel
@@ -46,7 +44,7 @@ fun App(persistentData: PersistentData) = MaterialTheme {
     NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
         // HistoryTab, TrainTab and ProgramsTab
         composable(Screen.MainScreen.route) { navBackStackEntry ->
-            val activeTab = Tabs.valueOf(navBackStackEntry.arguments?.getString("tab") ?: Tabs.Train.name)
+            val activeTab = Tabs.valueOf(navBackStackEntry.arguments?.getString("tab") ?: Tabs.History.name)
 
             MainScreen(
                 trainViewModel = trainViewModel,

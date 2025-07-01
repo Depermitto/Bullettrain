@@ -16,6 +16,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.data.entities.Day
 import io.github.depermitto.data.entities.HistoryDao
 import io.github.depermitto.theme.ItemPadding
+import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
 import java.time.LocalDate
 import java.time.ZoneId
@@ -23,10 +24,11 @@ import java.time.ZoneId
 // TODO Actually make it worth being here, some stats, a finder per date, calendar and maybe some graphs would be good too
 @Composable
 fun HistoryTab(modifier: Modifier = Modifier, historyDao: HistoryDao) = Column(
-    modifier = Modifier
+    modifier = modifier
         .fillMaxSize()
         .padding(horizontal = ItemPadding),
     horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(ItemSpacing),
 ) {
     val historyRecords by historyDao.getAllFlow().collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedWorkout: Day? by remember { mutableStateOf(null) }
@@ -37,7 +39,7 @@ fun HistoryTab(modifier: Modifier = Modifier, historyDao: HistoryDao) = Column(
     }
 
     Calendar(
-        modifier = modifier.heightIn(0.dp, 300.dp),
+        modifier = Modifier.heightIn(0.dp, 300.dp),
         onItemClick = { selectedWorkout = findWorkout(it)?.day },
         ifHighlightItem = { findWorkout(it) != null },
     )

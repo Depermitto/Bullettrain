@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.data.entities.ProgramDao
-import io.github.depermitto.main.Screen
+import io.github.depermitto.Screen
 import io.github.depermitto.programs.ProgramInfo
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing

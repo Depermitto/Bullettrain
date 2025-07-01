@@ -1,6 +1,4 @@
-package io.github.depermitto.main
-
-import io.github.depermitto.R
+package io.github.depermitto
 
 sealed class Screen(val route: String) {
     data object MainScreen : Screen("main/{tab}") {
