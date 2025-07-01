@@ -3,6 +3,7 @@ package io.github.depermitto.bullettrain.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ListItemDefaults
@@ -27,12 +28,12 @@ import androidx.constraintlayout.compose.Dimension
 fun HeroTile(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
-    headlineContent: @Composable () -> Unit,
     supportingContent: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     headlineTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     supportingTextStyle: TextStyle = MaterialTheme.typography.bodyMedium,
-    contentPadding: PaddingValues = PaddingValues(vertical = 12.dp, horizontal = 16.dp)
+    contentPadding: PaddingValues = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
+    headlineContent: @Composable () -> Unit,
 ) = Box(if (onClick == null) modifier else modifier.clickable { onClick() }) {
     ConstraintLayout(
         Modifier
@@ -69,7 +70,7 @@ fun HeroTile(
         }
 
         if (trailingContent != null) {
-            Box(Modifier
+            Row(Modifier
                 .padding(start = 4.dp)
                 .constrainAs(trailing) {
                     end.linkTo(parent.end)

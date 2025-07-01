@@ -17,7 +17,7 @@ import io.github.depermitto.bullettrain.R
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.HeroTile
 import io.github.depermitto.bullettrain.components.ListAlertDialog
-import io.github.depermitto.bullettrain.components.WorkoutTable
+import io.github.depermitto.bullettrain.components.WorkoutInfo
 import io.github.depermitto.bullettrain.database.entities.ExerciseDao
 import io.github.depermitto.bullettrain.database.entities.Program
 import io.github.depermitto.bullettrain.database.entities.ProgramDao
@@ -51,7 +51,7 @@ fun TrainTab(
                 return@Card
             }
 
-            WorkoutTable(program = program,
+            WorkoutInfo(program = program,
                 workout = program.nextDay(),
                 headers = listOf("Exercise", "Sets"),
                 exstractor = { exercise -> exercise.sets.size.toString() },

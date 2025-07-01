@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import io.github.depermitto.bullettrain.components.WorkoutTable
+import io.github.depermitto.bullettrain.components.WorkoutInfo
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.home.HomeViewModel
@@ -95,7 +95,7 @@ fun HistoryTab(
         selectedHistoryRecords.forEach { record ->
             val relatedProgram = programDao.where(record.relatedProgramId)
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround(settings.theme))) {
-                WorkoutTable(
+                WorkoutInfo(
                     modifier = Modifier.fillMaxWidth(),
                     workout = record.workout,
                     program = relatedProgram,

@@ -26,8 +26,8 @@ import io.github.depermitto.bullettrain.database.entities.*
 fun <T> BasicTable(
     modifier: Modifier = Modifier,
     headlineContent: @Composable () -> Unit,
-    headlineSupportingContent: @Composable (() -> Unit)? = null,
-    headlineTrailingContent: @Composable (() -> Unit)? = null,
+    headlineSupportingContent: (@Composable () -> Unit)? = null,
+    headlineTrailingContent: (@Composable () -> Unit)? = null,
     overlayingContent: @Composable (() -> Unit)? = null,
     emptyMessage: String = "No Information To Present",
     headers: List<String>,
@@ -71,7 +71,7 @@ fun <T> BasicTable(
 }
 
 @Composable
-fun WorkoutTable(
+fun WorkoutInfo(
     modifier: Modifier = Modifier,
     workout: Workout,
     program: Program,
