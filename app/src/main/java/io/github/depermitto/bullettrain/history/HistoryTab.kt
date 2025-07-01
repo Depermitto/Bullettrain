@@ -31,7 +31,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.depermitto.bullettrain.components.WorkoutInfo
+import io.github.depermitto.bullettrain.components.Ratio
+import io.github.depermitto.bullettrain.components.WorkoutBasicTable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.ProgramDao
@@ -109,7 +110,7 @@ fun HistoryTab(
                 Card(
                     modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = filledContainerColor())
                 ) {
-                    WorkoutInfo(modifier = Modifier.fillMaxWidth(),
+                    WorkoutBasicTable(modifier = Modifier.fillMaxWidth(),
                         workout = record.workout,
                         program = record.relatedProgram,
                         exstractor = { exercise ->
@@ -122,7 +123,8 @@ fun HistoryTab(
                             IconButton(onClick = { trainViewModel.editWorkout(record) }) {
                                 Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit Workout")
                             }
-                        })
+                        }, ratio = Ratio.Strict(0.5f)
+                    )
                 }
             }
         }

@@ -196,6 +196,10 @@ class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
     fun where(month: Month, year: Int): Flow<List<HistoryRecord>> = getAll.map { records ->
         records.filter { record -> record.date.month == month && record.date.year == year }
     }
+
+    fun where(exercise: Exercise): Flow<List<Exercise>> = getAll.map { records ->
+        records.flatMap { record -> record.workout.exercises.filter { it.id == exercise.id } }
+    }
 }
 
 class ProgramDao(file: ProgramsFile) : Dao<Program>(file) {
@@ -203,7 +207,7 @@ class ProgramDao(file: ProgramsFile) : Dao<Program>(file) {
 }
 
 class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {
-    private val bkTree = BKTree()
+    private val bkTree = BKTree("Press") // This is the most frequent word in our database, followed by "Dumbbell" and "Barbell"
 
     val getSortedAlphabetically = getAll.map { it.sortedBy { it.name } }
 

@@ -13,10 +13,12 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
-import io.github.depermitto.bullettrain.Destinations
+import io.github.depermitto.bullettrain.Destination.Home.Tab
+import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.database.SettingsDao
+import io.github.depermitto.bullettrain.exercises.ExerciseTab
 import io.github.depermitto.bullettrain.history.HistoryTab
 import io.github.depermitto.bullettrain.programs.ProgramViewModel
 import io.github.depermitto.bullettrain.programs.ProgramsTab
@@ -30,36 +32,24 @@ fun HomeScreen(
     homeViewModel: HomeViewModel,
     trainViewModel: TrainViewModel,
     programViewModel: ProgramViewModel,
-    settingsDao: SettingsDao,
+    exerciseDao: ExerciseDao,
     programDao: ProgramDao,
     historyDao: HistoryDao,
+    settingsDao: SettingsDao,
     navController: NavController,
 ) {
     var dragDirection by remember { mutableFloatStateOf(0f) }
     Scaffold(modifier = Modifier.pointerInput(Unit) {
         detectDragGestures(onDragEnd = {
             when {
-                dragDirection > 0 -> homeViewModel.switchTab(
-                    tab = when (homeViewModel.activeBar) {
-                        Destinations.Home.Tabs.History -> Destinations.Home.Tabs.History
-                        Destinations.Home.Tabs.Train -> Destinations.Home.Tabs.History
-                        Destinations.Home.Tabs.Programs -> Destinations.Home.Tabs.Train
-                    }
-                )
-
-                dragDirection < 0 -> homeViewModel.switchTab(
-                    tab = when (homeViewModel.activeBar) {
-                        Destinations.Home.Tabs.History -> Destinations.Home.Tabs.Train
-                        Destinations.Home.Tabs.Train -> Destinations.Home.Tabs.Programs
-                        Destinations.Home.Tabs.Programs -> Destinations.Home.Tabs.Programs
-                    }
-                )
+                dragDirection > 0 -> homeViewModel.switchTab(tab = homeViewModel.activeTab.prev())
+                dragDirection < 0 -> homeViewModel.switchTab(tab = homeViewModel.activeTab.next())
             }
         }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
     }, bottomBar = {
         NavigationBar(containerColor = filledContainerColor()) {
-            Destinations.Home.Tabs.entries.forEach { tab ->
-                NavigationBarItem(selected = homeViewModel.activeBar == tab, onClick = { homeViewModel.switchTab(tab) }, icon = {
+            Tab.entries.forEach { tab ->
+                NavigationBarItem(selected = homeViewModel.activeTab == tab, onClick = { homeViewModel.switchTab(tab) }, icon = {
                     Image(
                         painterResource(id = tab.icon),
                         contentDescription = tab.name,
@@ -69,15 +59,12 @@ fun HomeScreen(
             }
         }
     }) { paddingValues ->
-        when (homeViewModel.activeBar) {
-            Destinations.Home.Tabs.Programs -> ProgramsTab(
-                modifier = Modifier.padding(paddingValues),
-                programViewModel = programViewModel,
-                programDao = programDao,
-                navController = navController,
+        when (homeViewModel.activeTab) {
+            Tab.Exercises -> ExerciseTab(
+                modifier = Modifier.padding(paddingValues), exerciseDao = exerciseDao, navController = navController
             )
 
-            Destinations.Home.Tabs.History -> HistoryTab(
+            Tab.History -> HistoryTab(
                 modifier = Modifier.padding(paddingValues),
                 homeViewModel = homeViewModel,
                 trainViewModel = trainViewModel,
@@ -86,8 +73,15 @@ fun HomeScreen(
                 programDao = programDao
             )
 
-            Destinations.Home.Tabs.Train -> TrainTab(
+            Tab.Train -> TrainTab(
                 modifier = Modifier.padding(paddingValues), trainViewModel = trainViewModel, programDao = programDao
+            )
+
+            Tab.Programs -> ProgramsTab(
+                modifier = Modifier.padding(paddingValues),
+                programViewModel = programViewModel,
+                programDao = programDao,
+                navController = navController,
             )
         }
     }

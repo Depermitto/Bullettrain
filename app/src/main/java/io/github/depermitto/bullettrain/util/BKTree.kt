@@ -4,13 +4,13 @@ import org.apache.commons.text.similarity.LevenshteinDistance
 import java.util.Stack
 import kotlin.math.abs
 
-class BKTree {
+class BKTree(root: String) {
     data class Node(
         val word: String,
         val children: MutableMap<Int, Node> = mutableMapOf(),
     )
-
-    private lateinit var root: Node
+    
+    private var root = Node(root)
 
     /**
      * Insert [key] in to the [BKTree].
@@ -18,11 +18,6 @@ class BKTree {
      * @return false if inserted, true if the [key] already existed in the tree.
      */
     fun insert(key: String): Boolean {
-        if (!::root.isInitialized) {
-            root = Node(key)
-            return false
-        }
-
         var node: Node? = root
         while (node != null) {
             val distance = LevenshteinDistance().apply(node.word, key)

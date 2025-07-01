@@ -38,11 +38,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import io.github.depermitto.bullettrain.Destination.Home.Tab
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.HeaderWithBackButton
 import io.github.depermitto.bullettrain.components.HeaderWithSettingsButton
@@ -50,6 +50,7 @@ import io.github.depermitto.bullettrain.components.Scaffold
 import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Database
 import io.github.depermitto.bullettrain.database.Program
+import io.github.depermitto.bullettrain.exercises.ExerciseScreen
 import io.github.depermitto.bullettrain.home.HomeScreen
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.programs.DayExercisesScreen
@@ -66,9 +67,6 @@ import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.train.TrainingScreen
 import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlin.reflect.typeOf
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,37 +112,38 @@ fun App(db: Database) = MaterialTheme {
         NavHost(modifier = Modifier.padding(paddingValues),
             navController = navController,
             startDestination = if (runBlocking { trainViewModel.restoreWorkout() }) {
-                Destinations.Training
+                Destination.Training
             } else {
-                Destinations.Home(Destinations.Home.Tabs.Train)
+                Destination.Home(Tab.Exercises)
             },
             enterTransition = { scaleIntoContainer() },
             exitTransition = { scaleOutOfContainer(direction = ScaleTransitionDirection.INWARDS) },
             popEnterTransition = { scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS) },
             popExitTransition = { scaleOutOfContainer() }) {
-            composable<Destinations.Home> { navBackStackEntry ->
+            composable<Destination.Home> { navBackStackEntry ->
                 val homeViewModel = viewModel<HomeViewModel>(
-                    factory = HomeViewModel.Factory(tab = navBackStackEntry.toRoute<Destinations.Home>().tab)
+                    factory = HomeViewModel.Factory(tab = navBackStackEntry.toRoute<Destination.Home>().tab)
                 )
 
                 Scaffold(ribbon = {
-                    if (homeViewModel.activeBar != Destinations.Home.Tabs.History) {
-                        HeaderWithSettingsButton(navController = navController, title = "Home")
-                    }
+                    if (homeViewModel.activeTab == Tab.Train) HeaderWithSettingsButton(
+                        navController = navController, title = "Home"
+                    )
                 }) {
                     HomeScreen(
                         homeViewModel = homeViewModel,
                         trainViewModel = trainViewModel,
                         programViewModel = programViewModel,
-                        settingsDao = db.settingsDao,
+                        exerciseDao = db.exerciseDao,
                         programDao = db.programDao,
                         historyDao = db.historyDao,
+                        settingsDao = db.settingsDao,
                         navController = navController
                     )
                 }
             }
 
-            composable<Destinations.Training> {
+            composable<Destination.Training> {
                 if (!trainViewModel.isWorkoutRunning()) return@composable
 
                 Scaffold(ribbon = {
@@ -208,7 +207,7 @@ fun App(db: Database) = MaterialTheme {
                     })
             }
 
-            composable<Destinations.ProgramCreation> {
+            composable<Destination.ProgramCreation> {
                 Scaffold(ribbon = {
                     HeaderWithBackButton(
                         navController = navController,
@@ -250,8 +249,22 @@ fun App(db: Database) = MaterialTheme {
                 BackHandler(enabled = programViewModel.hasContent(ignoreDay1 = false)) { showDiscardDialog = true }
             }
 
-            composable<Destinations.Program>(typeMap = mapOf(typeOf<Program>() to serializableType<Program>())) { navBackStackEntry ->
-                val program by db.programDao.where(navBackStackEntry.toRoute<Destinations.Program>().programId)
+            composable<Destination.Day> { navBackStackEntry ->
+                val dayIndex = navBackStackEntry.toRoute<Destination.Day>().dayIndex
+                val day = programViewModel.getDay(dayIndex)
+
+                Scaffold(ribbon = { HeaderWithBackButton(navController = navController, title = day.name) }) {
+                    DayExercisesScreen(
+                        programViewModel = programViewModel,
+                        exerciseDao = db.exerciseDao,
+                        dayIndex = dayIndex,
+                        snackbarHostState = snackbarHostState
+                    )
+                }
+            }
+
+            composable<Destination.Program> { navBackStackEntry ->
+                val program by db.programDao.where(navBackStackEntry.toRoute<Destination.Program>().programId)
                     .collectAsStateWithLifecycle(null)
                 program?.let { program ->
                     programViewModel = viewModel(factory = ProgramViewModel.Factory(program))
@@ -286,40 +299,26 @@ fun App(db: Database) = MaterialTheme {
                 }
             }
 
-            composable<Destinations.Day> { navBackStackEntry ->
-                val dayIndex = navBackStackEntry.toRoute<Destinations.Day>().dayIndex
-                val day = programViewModel.getDay(dayIndex)
-
-                Scaffold(ribbon = { HeaderWithBackButton(navController, title = day.name) }) {
-                    DayExercisesScreen(
-                        programViewModel = programViewModel,
-                        exerciseDao = db.exerciseDao,
-                        dayIndex = dayIndex,
-                        snackbarHostState = snackbarHostState
-                    )
+            composable<Destination.Exercise> { navBackStackEntry ->
+                val exercise by db.exerciseDao.where(navBackStackEntry.toRoute<Destination.Exercise>().exerciseId)
+                    .collectAsStateWithLifecycle(null)
+                exercise?.let { exercise ->
+                    Scaffold(ribbon = { HeaderWithBackButton(navController = navController, title = exercise.name) }) {
+                        ExerciseScreen(
+                            exerciseDao = db.exerciseDao,
+                            historyDao = db.historyDao,
+                            settingsDao = db.settingsDao,
+                            exercise = exercise
+                        )
+                    }
                 }
             }
 
-            composable<Destinations.Settings> {
+            composable<Destination.Settings> {
                 Scaffold(ribbon = { HeaderWithBackButton(navController = navController, title = "Settings") }) {
                     SettingsScreen(db = db, snackbarHostState = snackbarHostState)
                 }
             }
         }
-    }
-}
-
-inline fun <reified T : Any> serializableType(
-    isNullableAllowed: Boolean = false,
-    json: Json = Json,
-) = object : NavType<T>(isNullableAllowed = isNullableAllowed) {
-    override fun get(bundle: Bundle, key: String) = bundle.getString(key)?.let<String, T>(json::decodeFromString)
-
-    override fun parseValue(value: String): T = json.decodeFromString(value)
-
-    override fun serializeAsValue(value: T): String = json.encodeToString(value)
-
-    override fun put(bundle: Bundle, key: String, value: T) {
-        bundle.putString(key, json.encodeToString(value))
     }
 }

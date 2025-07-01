@@ -144,7 +144,7 @@ fun Calendar(
             confirmButton = {
                 TextButton(onClick = {
                     selectedProgram = null
-                    trainViewModel.startWorkout(program.days[program.nextDay], program, date = longClickedDate)
+                    trainViewModel.startWorkout(program.nextDay(), program, date = longClickedDate)
                 }) {
                     Text("Confirm")
                 }

@@ -9,7 +9,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import io.github.depermitto.bullettrain.components.WorkoutInfo
+import io.github.depermitto.bullettrain.components.Ratio
+import io.github.depermitto.bullettrain.components.WorkoutBasicTable
 import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
@@ -60,24 +61,24 @@ fun TrainTab(
             )
 
             programs.getOrNull(selectedProgramIndex)?.let { program ->
-                WorkoutInfo(
+                WorkoutBasicTable(
                     modifier = Modifier
                         .fillMaxWidth()
                         .align(Alignment.TopCenter),
-                    workout = program.days[program.nextDay],
                     program = program,
+                    workout = program.nextDay(),
                     exstractor = { exercise -> exercise.sets.size.toString() },
-                    exercisesToSetsRatio = 0.9f
+                    ratio = Ratio.Unlimited
                 )
                 ElevatedButton(
                     modifier = Modifier.align(Alignment.BottomCenter),
-                    onClick = { trainViewModel.startWorkout(program.days[program.nextDay], program) },
+                    onClick = { trainViewModel.startWorkout(program.nextDay(), program) },
                     colors = ButtonDefaults.elevatedButtonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 ) {
-                    Text(text = "Start ${program.days[program.nextDay].name}")
+                    Text(text = "Start ${program.nextDay().name}")
                 }
             }
         }
@@ -98,9 +99,7 @@ fun TrainTab(
         }
     }
 
-    OutlinedButton(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = { trainViewModel.startWorkout(Day(), Program.EmptyWorkout) }) {
+    OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { trainViewModel.startWorkout(Day(), Program.EmptyWorkout) }) {
         Text(text = "Start Empty Workout")
     }
 }

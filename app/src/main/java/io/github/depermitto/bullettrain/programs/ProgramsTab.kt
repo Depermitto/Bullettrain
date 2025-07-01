@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import io.github.depermitto.bullettrain.Destinations
+import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
@@ -32,7 +32,6 @@ import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.filledContainerColor
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun ProgramsTab(
@@ -50,7 +49,7 @@ fun ProgramsTab(
         items(programs) { program ->
             var showRenameDialog by rememberSaveable { mutableStateOf(false) }
             var showProgramDeleteDialog by rememberSaveable { mutableStateOf(false) }
-            HoldToShowOptionsBox(onClick = { navController.navigate(Destinations.Program(program.id)) },
+            HoldToShowOptionsBox(onClick = { navController.navigate(Destination.Program(program.id)) },
                 holdOptions = { closeDropdown ->
                     DropdownMenuItem(text = { Text(text = "Rename") },
                         leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
@@ -76,13 +75,13 @@ fun ProgramsTab(
                                     text = "${program.days.sumOf { day -> day.exercises.sumOf { it.sets.size } }} total sets",
                                     style = MaterialTheme.typography.bodyMedium
                                 )
-                                program.mostRecentWorkoutDate?.let { date ->
-                                    val formatter = DateTimeFormatter.ofPattern("d MMM yyyy")
-                                    Text(
-                                        text = "Most recent workout: ${formatter.format(date)}",
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                }
+//                                program.mostRecentWorkoutDate?.let { date ->
+//                                    val formatter = DateTimeFormatter.ofPattern("d MMM yyyy")
+//                                    Text(
+//                                        text = "Most recent workout: ${formatter.format(date)}",
+//                                        style = MaterialTheme.typography.bodyMedium
+//                                    )
+//                                }
                             }
                         })
                 }
@@ -110,6 +109,6 @@ fun ProgramsTab(
     AnchoredFloatingActionButton(
         icon = { Icon(Icons.Filled.Add, contentDescription = "Create Program") },
         text = { Text(text = "Create") },
-        onClick = { programViewModel.clear(); navController.navigate(Destinations.ProgramCreation) },
+        onClick = { programViewModel.clear(); navController.navigate(Destination.ProgramCreation) },
     )
 }

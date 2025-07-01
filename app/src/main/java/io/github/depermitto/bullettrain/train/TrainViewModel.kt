@@ -5,7 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
-import io.github.depermitto.bullettrain.Destinations
+import io.github.depermitto.bullettrain.Destination
+import io.github.depermitto.bullettrain.Destination.Home.Tab
 import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Exercise
@@ -70,8 +71,8 @@ class TrainViewModel(
         )
         createState(record)
 
-        navController.navigate(Destinations.Training) {
-            popUpTo(Destinations.Home(Destinations.Home.Tabs.Train)) { inclusive = true }
+        navController.navigate(Destination.Training) {
+            popUpTo(Destination.Home(Tab.Train)) { inclusive = true }
             launchSingleTop = true
         }
     }
@@ -81,8 +82,8 @@ class TrainViewModel(
 
         createState(record.copy(workoutPhase = WorkoutPhase.Editing))
 
-        navController.navigate(Destinations.Training) {
-            popUpTo(Destinations.Home(Destinations.Home.Tabs.Train)) { inclusive = true }
+        navController.navigate(Destination.Training) {
+            popUpTo(Destination.Home(Tab.History)) { inclusive = true }
             launchSingleTop = true
         }
     }
@@ -100,13 +101,12 @@ class TrainViewModel(
         val record = state.historyRecord.copy(
             workoutPhase = WorkoutPhase.Completed, workout = state.historyRecord.workout.copy(exercises = exercises.toList())
         )
-        val nextDay = (record.relatedProgram.nextDay + 1) % record.relatedProgram.days.size
+        val nextDay = (record.relatedProgram.nextDayIndex + 1) % record.relatedProgram.days.size
 
         historyDao.upsert(record)
         programDao.upsert(
             record.relatedProgram.copy(
-                nextDay = nextDay,
-                weekStreak = record.relatedProgram.weekStreak + if (nextDay == 0) 1 else 0,
+                nextDayIndex = nextDay,
                 mostRecentWorkoutDate = LocalDate.now()
             )
         )
@@ -114,14 +114,14 @@ class TrainViewModel(
 
     fun cancelWorkout() {
         if (workoutState?.historyRecord?.workoutPhase == WorkoutPhase.Editing) {
-            endWorkout(Destinations.Home(Destinations.Home.Tabs.History), deinit = {})
+            endWorkout(Destination.Home(Tab.History), deinit = {})
         } else {
             endWorkout { historyDao.delete(it.historyRecord) }
         }
     }
 
     private fun endWorkout(
-        destination: Destinations = Destinations.Home(Destinations.Home.Tabs.Train), deinit: (WorkoutState) -> Unit
+        destination: Destination = Destination.Home(Tab.Train), deinit: (WorkoutState) -> Unit
     ) = workoutState?.let { state ->
         state.timer.cancel()
 
@@ -132,7 +132,7 @@ class TrainViewModel(
 
         if (!navController.popBackStack(destination, false)) {
             navController.navigate(route = destination) {
-                popUpTo(Destinations.Training) { inclusive = true }
+                popUpTo(Destination.Training) { inclusive = true }
                 launchSingleTop = true
             }
         }

@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import io.github.depermitto.bullettrain.Destinations
+import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DragButton
@@ -59,7 +59,7 @@ fun ProgramDaysScreen(
             Surface(shadowElevation = elevation, shape = MaterialTheme.shapes.medium) {
                 var showRenameDialog by rememberSaveable { mutableStateOf(false) }
                 var showDayDeleteDialog by rememberSaveable { mutableStateOf(false) }
-                HoldToShowOptionsBox(onClick = { navController.navigate(Destinations.Day(dayIndex)) },
+                HoldToShowOptionsBox(onClick = { navController.navigate(Destination.Day(dayIndex)) },
                     holdOptions = { closeDropdown ->
                         DropdownMenuItem(text = { Text(text = "Rename") },
                             leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },

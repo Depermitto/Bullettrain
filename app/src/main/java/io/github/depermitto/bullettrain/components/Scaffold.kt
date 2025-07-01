@@ -9,12 +9,10 @@ import androidx.compose.material3.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import io.github.depermitto.bullettrain.Destinations
+import io.github.depermitto.bullettrain.Destination
 
 @Composable
 fun Scaffold(
@@ -38,48 +36,45 @@ fun Scaffold(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HeaderWithSettingsButton(
     navController: NavController,
     title: String,
-) = Row(verticalAlignment = Alignment.CenterVertically) {
+) = TopAppBar(title = {
     Text(
-        modifier = Modifier
-            .padding(start = 16.dp)
-            .widthIn(max = 300.dp),
         text = title,
         style = MaterialTheme.typography.titleLarge,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
     )
-    Spacer(Modifier.weight(1f))
-    IconButton(
-        onClick = { navController.navigate(Destinations.Settings) }) {
+}, actions = {
+    IconButton(onClick = { navController.navigate(Destination.Settings) }) {
         Icon(Icons.Filled.Settings, contentDescription = "Settings")
     }
-}
+})
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HeaderWithBackButton(
+    modifier: Modifier = Modifier,
     navController: NavController,
     topEndContent: (@Composable () -> Unit)? = null,
-    title: String? = null,
-) = Row(verticalAlignment = Alignment.CenterVertically) {
-    val onBackPressedDispatcherOwner = LocalOnBackPressedDispatcherOwner.current
-    IconButton(
-        onClick = { onBackPressedDispatcherOwner?.onBackPressedDispatcher?.onBackPressed() ?: navController.navigateUp() }) {
-        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back Button")
-    }
-    if (title != null) Text(
-        modifier = Modifier.widthIn(max = 300.dp),
-        text = title,
-        style = MaterialTheme.typography.titleLarge,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-    )
-    if (topEndContent != null) {
-        Spacer(Modifier.weight(1f))
-        topEndContent()
-    }
+    title: String,
+) {
+    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    TopAppBar(modifier = modifier, title = {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }, navigationIcon = {
+        IconButton(onClick = { onBackPressedDispatcher?.onBackPressed() ?: navController.navigateUp() }) {
+            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back Button")
+        }
+    }, actions = {
+        topEndContent?.invoke()
+    })
 }

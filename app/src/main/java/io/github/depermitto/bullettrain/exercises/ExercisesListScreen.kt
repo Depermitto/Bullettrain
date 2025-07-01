@@ -25,9 +25,9 @@ import io.github.depermitto.bullettrain.theme.filledContainerColor
 import io.github.depermitto.bullettrain.theme.notUnderlinedTextFieldColors
 
 @Composable
-fun ExercisesScreen(
-    modifier: Modifier = Modifier,
+fun ExercisesListScreen(
     exerciseDao: ExerciseDao,
+    modifier: Modifier = Modifier,
     onSelection: (Exercise) -> Unit,
 ) = Box(modifier = modifier.fillMaxSize()) {
     var searchText by remember { mutableStateOf("") }
@@ -52,11 +52,9 @@ fun ExercisesScreen(
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Exercises") },
         )
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(ItemSpacing), contentPadding = PaddingValues(bottom = ItemPadding)
-        ) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(ItemSpacing), contentPadding = PaddingValues(bottom = 100.dp)) {
             items(exercises) { exercise ->
-                OutlinedCard(colors = CardDefaults.cardColors(containerColor = filledContainerColor()),
+                Card(colors = CardDefaults.cardColors(containerColor = filledContainerColor()),
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { onSelection(exercise) }) {
                     Text(text = exercise.name, modifier = Modifier.padding(10.dp))
@@ -74,8 +72,7 @@ fun ExercisesScreen(
 
     if (showDialog) {
         var isError by rememberSaveable { mutableStateOf(false) }
-        TextFieldAlertDialog(
-            onDismissRequest = { showDialog = false },
+        TextFieldAlertDialog(onDismissRequest = { showDialog = false },
             dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } },
             confirmButton = { name ->
                 TextButton(onClick = {
