@@ -19,6 +19,7 @@ import io.github.depermitto.components.Ribbon
 import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.data.ExerciseDao
 import io.github.depermitto.data.ProgramDao
+import io.github.depermitto.presentation.SettingsViewModel
 import io.github.depermitto.presentation.TrainViewModel
 import io.github.depermitto.screens.Screen.MainScreen
 import io.github.depermitto.screens.programs.ProgramsScreen
@@ -30,6 +31,7 @@ import io.github.depermitto.theme.filledContainerColor
 @Composable
 fun MainScreen(
     trainViewModel: TrainViewModel,
+    settingsViewModel: SettingsViewModel,
     programDao: ProgramDao,
     exerciseDao: ExerciseDao,
     navController: NavController,
@@ -62,7 +64,11 @@ fun MainScreen(
                 }
 
                 MainScreen.Tabs.History -> HistoryScreen()
-                MainScreen.Tabs.Train -> TrainScreen(trainViewModel = trainViewModel, exerciseDao = exerciseDao)
+                MainScreen.Tabs.Train -> TrainScreen(
+                    trainViewModel = trainViewModel,
+                    settingsViewModel = settingsViewModel,
+                    exerciseDao = exerciseDao
+                )
             }
         }
     }

@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.data.ExerciseDao
+import io.github.depermitto.presentation.SettingsViewModel
 import io.github.depermitto.presentation.TrainViewModel
 import io.github.depermitto.presentation.WorkoutState
 import io.github.depermitto.screens.exercises.AddExerciseButton
@@ -20,7 +21,9 @@ import io.github.depermitto.theme.ItemSpacing
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TrainScreen(trainViewModel: TrainViewModel, exerciseDao: ExerciseDao) = RibbonScaffold(ribbon = {
+fun TrainScreen(
+    trainViewModel: TrainViewModel, settingsViewModel: SettingsViewModel, exerciseDao: ExerciseDao,
+) = RibbonScaffold(ribbon = {
     OutlinedCard(modifier = Modifier.padding(start = ItemPadding, end = ItemPadding, bottom = ItemPadding)) {
         when (trainViewModel.workoutState) {
             WorkoutState.NotStartedYet -> {
@@ -58,10 +61,16 @@ fun TrainScreen(trainViewModel: TrainViewModel, exerciseDao: ExerciseDao) = Ribb
     }
 }) {
     LazyColumn(
-        modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
+        modifier = Modifier.padding(horizontal = ItemPadding),
+        verticalArrangement = Arrangement.spacedBy(ItemSpacing)
     ) {
         items(trainViewModel.exercises) { sets ->
-            Exercise(trainViewModel = trainViewModel, sets = sets, exerciseDao = exerciseDao)
+            Exercise(
+                trainViewModel = trainViewModel,
+                settingsViewModel = settingsViewModel,
+                sets = sets,
+                exerciseDao = exerciseDao
+            )
         }
 
         item {

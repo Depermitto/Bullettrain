@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import io.github.depermitto.components.DropdownButton
@@ -17,19 +18,24 @@ import io.github.depermitto.components.NumberField
 import io.github.depermitto.data.ExerciseDao
 import io.github.depermitto.data.ExerciseSet
 import io.github.depermitto.data.SwapIcon
+import io.github.depermitto.presentation.SettingsViewModel
 import io.github.depermitto.presentation.TrainViewModel
 import io.github.depermitto.presentation.WorkoutState
 import io.github.depermitto.screens.exercises.exerciseChooser
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
-import java.time.Instant
 import kotlin.math.min
 
 // TODO don't depend on TrainViewModel
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Exercise(trainViewModel: TrainViewModel, sets: SnapshotStateList<ExerciseSet>, exerciseDao: ExerciseDao) = Card(
+fun Exercise(
+    trainViewModel: TrainViewModel,
+    settingsViewModel: SettingsViewModel,
+    sets: SnapshotStateList<ExerciseSet>,
+    exerciseDao: ExerciseDao,
+) = Card(
     colors = CardDefaults.cardColors(containerColor = filledContainerColor())
 ) {
     val setsIndex = trainViewModel.exercises.indexOf(sets)
@@ -39,6 +45,7 @@ fun Exercise(trainViewModel: TrainViewModel, sets: SnapshotStateList<ExerciseSet
     })
 
     Column(modifier = Modifier.padding(ItemPadding), verticalArrangement = Arrangement.spacedBy(2 * ItemSpacing)) {
+        // Title + Dropdown
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 modifier = Modifier.weight(1f),
@@ -68,36 +75,80 @@ fun Exercise(trainViewModel: TrainViewModel, sets: SnapshotStateList<ExerciseSet
             }
         }
 
-        sets.forEachIndexed { j, set ->
-            Column {
-                Text(text = "Set ${j + 1}\t", style = MaterialTheme.typography.titleSmall)
+        // Set/Reps/Weight/RPE content
+        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2 * ItemSpacing)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(y = 2 * ItemSpacing),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    modifier = Modifier.weight(0.3f),
+                    text = "Set",
+                    style = MaterialTheme.typography.titleSmall,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = "Reps",
+                    style = MaterialTheme.typography.titleSmall,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = "Weight",
+                    style = MaterialTheme.typography.titleSmall,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = "RPE",
+                    style = MaterialTheme.typography.titleSmall,
+                    textAlign = TextAlign.Center
+                )
+            }
+            HorizontalDivider()
+
+            sets.forEachIndexed { j, set ->
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(ItemSpacing)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Text(modifier = Modifier.weight(0.3f), text = (j + 1).toString(), textAlign = TextAlign.Center)
+
                     NumberField(
-                        modifier = Modifier.weight(0.4f), value = set.reps, onValueChange = {
-                            sets[j] = set.copy(reps = it)
-                        }, label = "Reps"
+                        Modifier
+                            .weight(1f)
+                            .padding(horizontal = 2 * ItemSpacing),
+                        value = set.reps,
+                        onValueChange = { sets[j] = set.copy(reps = it) })
+                    NumberField(
+                        Modifier
+                            .weight(1f)
+                            .padding(horizontal = 2 * ItemSpacing),
+                        value = set.weight,
+                        onValueChange = { sets[j] = set.copy(weight = it) },
+                        trailingText = settingsViewModel.settings.unitSystem.weightUnit()
                     )
                     NumberField(
-                        modifier = Modifier.weight(0.4f),
+                        Modifier
+                            .weight(1f)
+                            .padding(horizontal = 2 * ItemSpacing),
                         value = set.rpe,
-                        onValueChange = { sets[j] = set.copy(rpe = min(10f, it)) },
-                        label = "RPE"
-                    )
-                    Checkbox(modifier = Modifier.weight(0.1f),
-                        checked = sets[j].date != null,
-                        onCheckedChange = { sets[j] = set.copy(date = if (it) Instant.now() else null) })
+                        onValueChange = { sets[j] = set.copy(rpe = min(10f, it)) })
                 }
             }
         }
 
-        OutlinedButton(
-            modifier = Modifier.fillMaxWidth(),
+        OutlinedButton(modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors()
                 .copy(contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
-            onClick = { sets += sets.first().copy(rpe = 0f, reps = 0f, date = null) },
-        ) { Text(text = "Add Set") }
+            onClick = { sets += ExerciseSet(exerciseId = sets.first().exerciseId, name = sets.first().name) }) {
+            Text(
+                text = "Add Set"
+            )
+        }
     }
 }

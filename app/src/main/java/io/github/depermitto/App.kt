@@ -18,6 +18,7 @@ import io.github.depermitto.data.Day
 import io.github.depermitto.data.GymDatabase
 import io.github.depermitto.data.Program
 import io.github.depermitto.presentation.ProgramViewModel
+import io.github.depermitto.presentation.SettingsViewModel
 import io.github.depermitto.presentation.TrainViewModel
 import io.github.depermitto.screens.MainScreen
 import io.github.depermitto.screens.Screen
@@ -26,11 +27,9 @@ import io.github.depermitto.screens.programs.ProgramCreationScreen
 import io.github.depermitto.screens.programs.ProgramScreen
 import java.io.File
 
-const val DB_FILENAME = "firetent.sqlite"
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme {
+fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray, settingsFile: File) = MaterialTheme {
     val navController = rememberNavController()
 
     val exerciseDao = db.getExerciseDao()
@@ -38,11 +37,13 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
 
     val globalProgramVM = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program(), programDao))
     val globalTrainVM = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(Day()))
+    val globalSettingsVM = viewModel<SettingsViewModel>(factory = SettingsViewModel.Factory(db, dbFile, fallbackBytes, settingsFile))
 
     NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
         composable(Screen.MainScreen.route) {
             MainScreen(
                 trainViewModel = globalTrainVM,
+                settingsViewModel = globalSettingsVM,
                 programDao = programDao,
                 exerciseDao = exerciseDao,
                 navController = navController
@@ -80,7 +81,7 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
         composable(Screen.SettingsScreen.route) {
             RibbonScaffold(ribbon = {
                 Ribbon(navController = navController, settingsGear = false, title = "Settings")
-            }) { SettingsScreen(db = db, dbFile = dbFile, fallbackBytes = fallbackBytes) }
+            }) { SettingsScreen(globalSettingsVM) }
         }
     }
 }

@@ -32,16 +32,16 @@ fun SetScreen(set: List<ExerciseSet>, onSetChange: (List<ExerciseSet>?) -> Unit)
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(ItemSpacing)
             ) {
-                NumberField(value = i + 1f, onValueChange = { }, label = "Set", readOnly = true)
+                NumberField(value = i + 1f, onValueChange = { }, label = { Text("Set") }, readOnly = true)
                 NumberField(
                     value = exercise.reps,
                     onValueChange = { onSetChange(set.replaceAt(i, exercise.copy(reps = it))) },
-                    label = "Reps"
+                    label = { Text("Reps") }
                 )
                 NumberField(
                     value = exercise.rpe,
                     onValueChange = { onSetChange(set.replaceAt(i, exercise.copy(rpe = it))) },
-                    label = "RPE"
+                    label = { Text("RPE") }
                 )
             }
         }
