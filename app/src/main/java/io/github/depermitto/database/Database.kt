@@ -1,12 +1,14 @@
 package io.github.depermitto.database
 
 import androidx.compose.runtime.*
+import io.github.depermitto.settings.UnitSystem
+import io.github.depermitto.settings.UnitSystem.Imperial
+import io.github.depermitto.settings.UnitSystem.Metric
 import io.github.depermitto.util.set
 import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerType
 import io.github.vinceglb.filekit.core.pickFile
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.encodeToString
@@ -33,6 +35,12 @@ class Database(private val databaseDirectory: File) {
 
     val backupFiles = listOf(settingsFile, historyFile, programsFile, exercisesFile)
 
+    var settingsDao by mutableStateOf(SettingsDao(settingsFile))
+        private set
+    var historyDao by mutableStateOf(HistoryDao(historyFile))
+        private set
+    var programDao by mutableStateOf(ProgramDao(programsFile))
+        private set
     var exerciseDao by mutableStateOf(ExerciseDao(exercisesFile))
         private set
 
@@ -87,9 +95,9 @@ class Database(private val databaseDirectory: File) {
                 backupFiles[i].writeBytes(zipFile.getInputStream(entry).readBytes())
 
                 when (entry.name) {
-                    SETTINGS_FILENAME -> {}
-                    HISTORY_FILENAME -> {}
-                    PROGRAMS_FILENAME -> {}
+                    SETTINGS_FILENAME -> settingsDao = SettingsDao(settingsFile)
+                    HISTORY_FILENAME -> historyDao = HistoryDao(historyFile)
+                    PROGRAMS_FILENAME -> programDao = ProgramDao(programsFile)
                     EXERCISES_FILENAME -> exerciseDao = ExerciseDao(exercisesFile)
                 }
             }
@@ -98,52 +106,70 @@ class Database(private val databaseDirectory: File) {
     }
 }
 
-interface Dao<T> {
-    val getAll: StateFlow<List<T>>
+abstract class Dao<T : Entity>(protected val daoFile: File, startingItems: List<T>) {
+    private val items = MutableStateFlow(startingItems)
+    private var newId = items.value.maxOfOrNull { it.id } ?: 0
 
-    /**
-     * return index of the updated item. -1 if not in database.
-     */
-    fun update(item: T): Int
+    val getAll = items.asStateFlow()
 
-    /**
-     * return index of the newly inserted item.
-     */
-    fun insert(item: T): Int
-    fun delete(item: T)
-}
-
-class ExerciseDao(private val exerciseFile: File) : Dao<Exercise> {
-    private val exercises = MutableStateFlow(Json.decodeFromString<List<Exercise>>(exerciseFile.readText()))
-    private var id = exercises.value.maxOfOrNull { it.exerciseId } ?: 0
-
-    override val getAll = exercises.asStateFlow()
-
-    override fun update(item: Exercise): Int {
-        var id = item.exerciseId
-        write { state ->
-            val existingIndex = state.indexOfFirst { it.exerciseId == item.exerciseId }
+    fun update(item: T): Int {
+        var id = item.id
+        items.update { state ->
+            val existingIndex = state.indexOfFirst { it.id == item.id }
             if (existingIndex == -1) {
                 id = -1
                 state
             } else state.set(existingIndex, item)
         }
+        write(items.value)
         return id
     }
 
-    override fun insert(item: Exercise): Int {
-        write { state ->
-            id += 1
-            state + item.copy(exerciseId = id)
+    fun insert(item: T): Int {
+        items.update { state ->
+            newId += 1
+            state + item.clone(id = newId) as T
         }
-        return id
+        return newId
     }
 
+    fun delete(item: T) {
+        items.update { state -> state - item }
+        write(items.value)
+    }
 
-    override fun delete(item: Exercise) = write { state -> state - item }
+    abstract fun write(state: List<T>)
+}
 
-    private fun write(operation: (List<Exercise>) -> List<Exercise>) {
-        exercises.update { state -> operation(state) }
-        exerciseFile.writeText(Json.encodeToString(exercises.value))
+class SettingsDao(private val settingsFile: File) {
+    private var settings by mutableStateOf(Json.decodeFromString<Settings>(settingsFile.readText()))
+
+    var unitSystem: UnitSystem = settings.unitSystem
+        set(value) {
+            settings = settings.copy(unitSystem = value)
+            settingsFile.writeBytes(Json.encodeToString<Settings>(settings).encodeToByteArray())
+        }
+
+    fun weightUnit() = when (settings.unitSystem) {
+        Metric -> "kg"
+        Imperial -> "lbs"
+    }
+}
+
+class HistoryDao(historyFile: File) : Dao<HistoryRecord>(historyFile, Json.decodeFromString(historyFile.readText())) {
+    override fun write(state: List<HistoryRecord>) {
+        daoFile.writeText(Json.encodeToString(state))
+    }
+}
+
+class ProgramDao(programsFile: File) : Dao<Program>(programsFile, Json.decodeFromString(programsFile.readText())) {
+    override fun write(state: List<Program>) {
+        daoFile.writeText(Json.encodeToString(state))
+    }
+}
+
+class ExerciseDao(exerciseFile: File) : Dao<Exercise>(exerciseFile, Json.decodeFromString(exerciseFile.readText())) {
+    override fun write(state: List<Exercise>) {
+        daoFile.writeText(Json.encodeToString(state))
     }
 }

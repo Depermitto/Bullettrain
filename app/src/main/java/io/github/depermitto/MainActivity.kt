@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
 
             LazyColumn {
                 items(exercises) { exercise ->
-                    Text((exercise.exerciseId to exercise.name).toString())
+                    Text((exercise.id to exercise.name).toString())
                 }
 
                 item {

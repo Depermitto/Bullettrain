@@ -6,32 +6,42 @@ import io.github.depermitto.data.InstantSerializer
 import io.github.depermitto.settings.UnitSystem
 import io.github.depermitto.settings.UnitSystem.Metric
 import io.github.depermitto.train.WorkoutPhase
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant
+
+interface Entity {
+    val id: Int
+    fun clone(id: Int): Entity
+}
 
 @Serializable
 data class Settings(val unitSystem: UnitSystem = Metric)
 
 @Serializable
 data class HistoryRecord(
-    @PrimaryKey(autoGenerate = true) val historyEntryId: Int = 0,
+    @SerialName("historyRecordId") @ColumnInfo(name = "historyRecordId") @PrimaryKey(autoGenerate = true) override val id: Int = 0,
     val relatedProgram: Program,
     val workout: Day,
     val workoutPhase: WorkoutPhase,
     @Serializable(with = InstantSerializer::class) val date: Instant,
     @Serializable(with = InstantSerializer::class) val workoutStartTime: Instant,
-)
+) : Entity {
+    override fun clone(id: Int) = copy(id = id)
+}
 
 @Serializable
 data class Program(
-    @PrimaryKey(autoGenerate = true) val programId: Int = 0,
+    @SerialName("programId") @ColumnInfo(name = "programId") @PrimaryKey(autoGenerate = true) override val id: Int = 0,
     val name: String = "",
     val days: List<Day> = listOf(Day()),
     val followed: Boolean = false,
     val nextDay: Int = 0,
     val weekStreak: Int = 1,
     @Serializable(with = InstantSerializer::class) val mostRecentWorkoutDate: Instant? = null,
-)
+) : Entity {
+    override fun clone(id: Int) = copy(id = id)
+}
 
 @Serializable
 data class Day(
@@ -42,7 +52,7 @@ data class Day(
 // TODO TimeRange, Intensity variations?
 @Serializable
 data class Exercise(
-    @PrimaryKey(autoGenerate = true) val exerciseId: Int = 0,
+    @SerialName("exerciseId") @ColumnInfo(name = "exerciseId") @PrimaryKey(autoGenerate = true) override val id: Int = 0,
     val name: String,
     val perfVarCategory: PerfVarCategory = PerfVarCategory.Reps,
     val intensityCategory: IntensityCategory? = null,
@@ -50,11 +60,14 @@ data class Exercise(
     val superset: List<Int>? = null,
     val alternatives: List<Int>? = null,
     val notes: String = "",
-) {
+) : Entity {
     val hasIntensity: Boolean
         get() = intensityCategory != null
 
-    fun lastPerformedSet(): ExerciseSet? = sets.lastOrNull { it.date != null }
+    val lastPerformedSet: ExerciseSet?
+        get() = sets.lastOrNull { it.date != null }
+
+    override fun clone(id: Int) = copy(id = id)
 }
 
 @Serializable
@@ -75,7 +88,7 @@ enum class PerfVarCategory {
     Reps, RepRange, Time;
 
     val prettyName = name.split(regex = Regex("(?=[A-Z])")).joinToString(" ")
-    fun trainName() = if (this == RepRange) "Reps" else name
+    val trainName get() = if (this == RepRange) "Reps" else name
 }
 
 @Serializable
@@ -97,7 +110,7 @@ sealed class PerfVar() {
         }
     }
 
-    fun toText(): String = when (this) {
+    fun encodeToStringOutput(): String = when (this) {
         is RepRange -> "${min.encodeToStringOutput()}-${max.encodeToStringOutput()}"
         is Reps -> reps.encodeToStringOutput()
         is Time -> time.encodeToStringOutput() + " min"
