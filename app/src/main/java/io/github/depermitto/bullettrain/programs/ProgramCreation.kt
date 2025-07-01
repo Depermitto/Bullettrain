@@ -10,9 +10,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
-import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.home.Screen
+import io.github.depermitto.bullettrain.Screen
 import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.notUnderlinedTextFieldColors
 import kotlinx.coroutines.launch
@@ -21,7 +20,6 @@ import kotlinx.coroutines.launch
 fun ProgramCreation(
     programViewModel: ProgramViewModel,
     programDao: ProgramDao,
-    exerciseDao: ExerciseDao,
     snackbarHostState: SnackbarHostState,
     navController: NavController,
 ) = Column(modifier = Modifier.fillMaxSize()) {
@@ -40,7 +38,7 @@ fun ProgramCreation(
         colors = notUnderlinedTextFieldColors()
     )
     Box(modifier = Modifier.weight(1f)) {
-        ProgramScreen(programViewModel = programViewModel, exerciseDao = exerciseDao)
+        ProgramScreen(programViewModel = programViewModel, navController = navController)
         AnchoredFloatingActionButton(text = { Text(text = "Complete Program") }, onClick = {
             if (programViewModel.programName.isBlank()) {
                 scope.launch { snackbarHostState.showSnackbar("Blank Program Name") }

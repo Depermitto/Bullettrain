@@ -4,8 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,7 +28,7 @@ fun Calendar(
     modifier: Modifier = Modifier,
     onItemClick: (LocalDate) -> Unit,
     ifHighlightItem: (LocalDate) -> Boolean,
-) = OutlinedCard(modifier = modifier) {
+) = Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
     val today = LocalDate.now()
     val firstDayOfMonth = LocalDate.of(date.year, date.month, 1)
     var days = generateSequence(-firstDayOfMonth.dayOfWeek.value + 2) {

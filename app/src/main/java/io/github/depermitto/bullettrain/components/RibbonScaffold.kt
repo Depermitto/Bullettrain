@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
-import io.github.depermitto.bullettrain.home.Screen
+import io.github.depermitto.bullettrain.Screen
 
 @Composable
 fun RibbonScaffold(

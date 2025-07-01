@@ -20,11 +20,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import io.github.depermitto.bullettrain.Screen
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.TextFieldDialogTemplate
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.home.Screen
 import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.ItemSpacing
 import io.github.depermitto.bullettrain.theme.filledContainerColor
@@ -48,7 +48,7 @@ fun ProgramsTab(
             Box(
                 modifier = Modifier
                     .clip(shape = MaterialTheme.shapes.medium)
-                    .combinedClickable(onClick = { navController.navigate(Screen.ProgramScreen.passId(program.id)) },
+                    .combinedClickable(onClick = { navController.navigate(program) },
                         onLongClick = { showDropdown = true })
             ) {
                 Card(

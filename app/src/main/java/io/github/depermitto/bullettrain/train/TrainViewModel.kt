@@ -13,7 +13,7 @@ import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.HistoryRecord
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.home.Screen
+import io.github.depermitto.bullettrain.Screen
 import io.github.depermitto.bullettrain.util.smallListSet
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking

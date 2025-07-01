@@ -46,7 +46,7 @@ fun HistoryTab(
 ) = Box(modifier = modifier.fillMaxSize()) {
     val historyRecords by historyDao.where(homeViewModel.date.month, homeViewModel.date.year)
         .collectAsStateWithLifecycle(initialValue = emptyList())
-    LaunchedEffect(historyRecords) { homeViewModel.selectedRecord = historyRecords.firstOrNull() }
+    LaunchedEffect(historyRecords) { homeViewModel.selectedRecord = historyRecords.lastOrNull() }
 
     fun findWorkout(calendarDay: LocalDate) = historyRecords.find { record ->
         val recordDate = record.date.atZone(ZoneId.systemDefault())
@@ -82,8 +82,7 @@ fun HistoryTab(
 
             homeViewModel.selectedRecord?.let { record ->
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = filledContainerColor())
+                    modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = filledContainerColor())
                 ) {
                     if (record.workout.exercises.isEmpty()) {
                         Text(
@@ -103,9 +102,11 @@ fun HistoryTab(
                             val scroll = rememberScrollState(0)
                             Text(
                                 modifier = Modifier.horizontalScroll(scroll),
-                                text = exercise.sets.groupBy { it.weight }.map { (weight, sets) ->
-                                    "${sets.size} x ${weight.encodeToStringOutput().ifBlank { 0 }}"
-                                }.joinToString(", ") + " " + settingsDao.weightUnit(),
+                                text = exercise.sets
+                                    .groupBy { it.weight }
+                                    .filter { (weight, _) -> weight != 0f }
+                                    .map { (weight, sets) -> "${sets.size}x${weight.encodeToStringOutput()}" }
+                                    .joinToString(", ") + " " + settingsDao.weightUnit(),
                                 maxLines = 1,
                             )
                         })

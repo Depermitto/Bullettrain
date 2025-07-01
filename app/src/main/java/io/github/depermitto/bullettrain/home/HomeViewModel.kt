@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import io.github.depermitto.bullettrain.Screen
 import io.github.depermitto.bullettrain.database.HistoryRecord
 import java.time.LocalDate
 

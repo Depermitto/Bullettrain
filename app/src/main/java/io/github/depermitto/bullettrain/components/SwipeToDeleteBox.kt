@@ -19,8 +19,10 @@ import io.github.depermitto.bullettrain.theme.ItemPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SwipeToDeleteBox(modifier: Modifier = Modifier, onDelete: () -> Unit, content: @Composable RowScope.() -> Unit) {
-    val swipeState = rememberSwipeToDismissBoxState(positionalThreshold = { it * .5f })
+fun SwipeToDeleteBox(
+    modifier: Modifier = Modifier, threshold: Float = 0.5f, onDelete: () -> Unit, content: @Composable RowScope.() -> Unit
+) {
+    val swipeState = rememberSwipeToDismissBoxState(positionalThreshold = { it * threshold })
 
     if (swipeState.currentValue == SwipeToDismissBoxValue.EndToStart) {
         LaunchedEffect(swipeState) {

@@ -12,9 +12,10 @@ import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.util.smallListSet
+import kotlinx.serialization.Serializable
 
 class ProgramViewModel(program: Program) : ViewModel() {
-    private val programId = program.id
+    val programId = program.id
     var programName by mutableStateOf(program.name)
     var days = mutableStateListOf<Day>().apply { addAll(program.days) }
         private set
