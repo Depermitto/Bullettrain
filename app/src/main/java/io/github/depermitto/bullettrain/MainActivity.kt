@@ -67,7 +67,7 @@ import io.github.depermitto.bullettrain.components.ConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DropdownButton
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.components.TopBarWithBackButton
-import io.github.depermitto.bullettrain.components.TopBarWithSettingsButton
+import io.github.depermitto.bullettrain.components.HomeScreenTopBar
 import io.github.depermitto.bullettrain.db.Db
 import io.github.depermitto.bullettrain.exercises.ExercisesSetsListings
 import io.github.depermitto.bullettrain.home.HomeScreen
@@ -163,7 +163,7 @@ fun App(db: Db) = MaterialTheme {
   ) {
     composable<Destination.Home> {
       Scaffold(
-        topBar = { TopBarWithSettingsButton(navController = navController, title = "Home") },
+        topBar = { HomeScreenTopBar(navController = navController, title = "Home") },
         bottomBar = {
           NavigationBar(tonalElevation = 8.dp) {
             Tab.entries.forEachIndexed { tabIndex, tab ->
@@ -289,7 +289,7 @@ fun App(db: Db) = MaterialTheme {
           TopBarWithBackButton(
             navController = navController,
             title = programViewModel.programName.ifBlank { "New Program" },
-            topEndContent = {
+            endContent = {
               TextButton(
                 onClick = {
                   val program = programViewModel.getProgram()
@@ -373,7 +373,7 @@ fun App(db: Db) = MaterialTheme {
           TopBarWithBackButton(
             navController = navController,
             title = programViewModel.programName,
-            topEndContent = {
+            endContent = {
               if (hasChanged)
                 TextButton(
                   onClick = {
@@ -424,7 +424,7 @@ fun App(db: Db) = MaterialTheme {
               exerciseDescriptor.name.run {
                 if (exerciseDescriptor.obsolete) "$this [Archived]" else this
               },
-            topEndContent = {
+            endContent = {
               DropdownButton(showDropdown, { showDropdown = it }) {
                 DropdownMenuItem(
                   text = { Text("Rename") },
@@ -543,7 +543,7 @@ fun App(db: Db) = MaterialTheme {
           TopBarWithBackButton(
             navController = navController,
             title = record.workout.name,
-            topEndContent = {
+            endContent = {
               if (hasChanged)
                 TextButton(
                   onClick = {
