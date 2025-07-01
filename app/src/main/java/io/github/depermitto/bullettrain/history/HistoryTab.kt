@@ -26,7 +26,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -90,22 +89,22 @@ fun HistoryTab(
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.spacedBy(Dp.Small),
     ) {
-      Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(
-          onClick = { homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1) }
-        ) {
-          Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
-        }
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Spacer(Modifier.width(Dp.Medium))
         Text(
           modifier = Modifier.weight(1F),
           text = homeViewModel.calendarDate.format(DateFormatters.MMMM_yyyy),
           maxLines = 1,
-          textAlign = TextAlign.Center,
         )
+        IconButton(
+          onClick = { homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1) }
+        ) {
+          Icon(Icons.AutoMirrored.Filled.ArrowBack, "Previous Month")
+        }
         IconButton(
           onClick = { homeViewModel.calendarDate = homeViewModel.calendarDate.plusMonths(1) }
         ) {
-          Icon(Icons.AutoMirrored.Filled.ArrowForward, null)
+          Icon(Icons.AutoMirrored.Filled.ArrowForward, "Next Month")
         }
       }
 

@@ -40,7 +40,6 @@ import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.*
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Calendar(
   currentDate: LocalDate,
@@ -60,58 +59,44 @@ fun Calendar(
     var longClickedDate by rememberSaveable { mutableStateOf(today) }
     var showProgramListDialog by rememberSaveable { mutableStateOf(false) }
     Column {
-      repeat(if (days.count() < 36) 6 else 7) { i ->
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceEvenly,
-          verticalAlignment = Alignment.CenterVertically,
-        ) {
-          repeat(7) { j ->
-            var showDropdown by remember { mutableStateOf(false) }
+      for (row in 0..<if (days.count() < 36) 6 else 7) {
+        Row {
+          for (col in 0..<7) {
             Box(modifier = Modifier.weight(1F)) {
-              if (i == 0) {
+              if (row == 0) {
                 CalendarItem(
                   textAlpha = 0.6F,
-                  text =
-                    DayOfWeek.of(j + 1)
-                      .getDisplayName(TextStyle.SHORT_STANDALONE, Locale.getDefault()),
+                  text = DayOfWeek.of(col + 1).getDisplayName(TextStyle.NARROW, Locale.getDefault()),
                 )
                 return@Box
               }
 
-              val dayOfMonth: Int? = days.firstOrNull()?.takeUnless { it <= 0 }
-              if (dayOfMonth == null) {
-                CalendarItem(text = "")
-              } else {
-                val day = LocalDate.of(currentDate.year, currentDate.month, dayOfMonth)
-                CalendarItem(
-                  modifier =
-                    Modifier.padding(4.dp)
-                      .clip(shape = CircleShape)
-                      .aspectRatio(1F)
-                      .combinedClickable(
-                        onClick = { homeViewModel.selectedDate = day },
-                        onLongClick = {
-                          longClickedDate = day
-                          showDropdown = false
-                          showProgramListDialog = true
-                        },
-                      ),
-                  backgroundColor =
-                    when {
-                      homeViewModel.selectedDate == day ->
-                        MaterialTheme.colorScheme.tertiaryContainer
-
-                      currentRecords.any { it.getDate() == day } ->
-                        MaterialTheme.colorScheme.primaryContainer
-
-                      else -> Color.Transparent
-                    },
-                  underline = day == today,
-                  text = dayOfMonth.toString(),
-                )
-              }
+              val dayOfMonth = days.firstOrNull()
               days = days.drop(1)
+              if (dayOfMonth == null || dayOfMonth <= 0) {
+                CalendarItem(text = "")
+                return@Box
+              }
+
+              val day = LocalDate.of(currentDate.year, currentDate.month, dayOfMonth)
+              CalendarItem(
+                onClick = { homeViewModel.selectedDate = day },
+                onLongClick = {
+                  longClickedDate = day
+                  showProgramListDialog = true
+                },
+                backgroundColor =
+                  when {
+                    homeViewModel.selectedDate == day -> MaterialTheme.colorScheme.tertiaryContainer
+
+                    currentRecords.any { it.getDate() == day } ->
+                      MaterialTheme.colorScheme.primaryContainer
+
+                    else -> Color.Transparent
+                  },
+                underline = day == today,
+                text = dayOfMonth.toString(),
+              )
             }
           }
         }
@@ -124,7 +109,7 @@ fun Calendar(
       rememberSaveable(
         saver =
           Saver(
-            save = { original -> original.value?.toByteString() },
+            save = { original -> original.value?.toByteArray() },
             restore = { saveable -> mutableStateOf(Program.parseFrom(saveable)) },
           ),
         init = { mutableStateOf(null) },
@@ -175,15 +160,29 @@ fun Calendar(
   }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CalendarItem(
   modifier: Modifier = Modifier,
   text: String,
+  onClick: (() -> Unit)? = null,
+  onLongClick: (() -> Unit)? = null,
   textAlpha: Float = 1F,
   underline: Boolean = false,
   backgroundColor: Color = Color.Unspecified,
 ) {
-  Box(modifier = modifier.background(backgroundColor)) {
+  Box(
+    modifier =
+      modifier
+        .padding(4.dp)
+        .clip(shape = CircleShape)
+        .aspectRatio(1F)
+        .background(backgroundColor)
+        .let {
+          if (onClick != null) it.combinedClickable(onClick = onClick, onLongClick = onLongClick)
+          else it
+        }
+  ) {
     Text(
       text = text,
       color =
