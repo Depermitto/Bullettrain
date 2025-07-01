@@ -52,7 +52,7 @@ import io.github.depermitto.bullettrain.exercises.ExerciseChooser
 import io.github.depermitto.bullettrain.protos.ExercisesProto.*
 import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.*
-import io.github.depermitto.bullettrain.util.getLastCompletedSet
+import io.github.depermitto.bullettrain.util.lastCompletedSet
 import io.github.depermitto.bullettrain.util.weightUnit
 import kotlin.collections.all
 import sh.calvin.reorderable.ReorderableColumn
@@ -91,7 +91,7 @@ fun TrainingScreen(
     ) { exerciseIndex, exercise, isDragging ->
       key(exercise.descriptorId) {
         val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
-        val lastPerformedSet = exercise.getLastCompletedSet()
+        val lastPerformedSet = exercise.lastCompletedSet
 
         val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
         var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }

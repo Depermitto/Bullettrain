@@ -3,25 +3,21 @@ package io.github.depermitto.bullettrain.db
 import io.github.depermitto.bullettrain.protos.ProgramsProto.*
 import io.github.depermitto.bullettrain.util.smallListSet
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
 class ProgramDao(programs: List<Program>) {
   internal val items = MutableStateFlow(programs)
-  var idTrack = items.value.maxOfOrNull { it.id } ?: 0
-    private set
+  private var idTrack = items.value.maxOfOrNull { it.id } ?: 0
 
-  private val getAll: StateFlow<List<Program>> = items.asStateFlow()
   val getUserPrograms =
-    getAll.map { programs ->
+    items.map { programs ->
       programs
         .filterNot { it.id == -1 || it.obsolete }
         .sortedByDescending { it.lastWorkoutTs.seconds }
     }
   val getPerformable =
-    getAll.map { programs ->
+    items.map { programs ->
       programs.filterNot { it.obsolete }.sortedByDescending { it.lastWorkoutTs.seconds }
     }
 

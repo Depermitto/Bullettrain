@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -24,6 +26,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -33,6 +36,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -61,6 +65,7 @@ import androidx.navigation.toRoute
 import io.github.depermitto.bullettrain.Destination.Home.Tab
 import io.github.depermitto.bullettrain.components.ConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DropdownButton
+import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.HomeScreenTopBar
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.components.TopBarWithBackButton
@@ -81,8 +86,8 @@ import io.github.depermitto.bullettrain.theme.scaleOutOfContainer
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.train.TrainingScreen
 import io.github.depermitto.bullettrain.util.DateFormatters
-import io.github.depermitto.bullettrain.util.getDate
-import io.github.depermitto.bullettrain.util.getLastCompletedSet
+import io.github.depermitto.bullettrain.util.date
+import io.github.depermitto.bullettrain.util.lastCompletedSet
 import io.github.depermitto.bullettrain.util.toLocalDate
 import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.launch
@@ -450,14 +455,20 @@ fun App(db: Db) = MaterialTheme {
       ) { paddingValues ->
         val exercises by
           db.historyDao
-            .where(exerciseDescriptor)
+            .where { records ->
+              records
+                .flatMap { record ->
+                  record.workout.exercisesList.filter { it.descriptorId == exerciseDescriptor.id }
+                }
+                .sortedByDescending { exercise -> exercise.lastCompletedSet?.doneTs?.seconds }
+            }
             .collectAsStateWithLifecycle(initialValue = emptyList())
 
         ExercisesSetsListings(
           modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
           exercises = exercises,
           exerciseHeadline = { exercise ->
-            val doneDate = exercise.getLastCompletedSet()!!.doneTs.toLocalDate()
+            val doneDate = exercise.lastCompletedSet!!.doneTs.toLocalDate()
             Text(doneDate.format(DateFormatters.EEEE_MMM_dd_yyyy))
           },
           settings = settings,
@@ -517,15 +528,36 @@ fun App(db: Db) = MaterialTheme {
       val record = db.historyDao.where(navBackStackEntry.toRoute<Destination.Workout>().recordId)
       Scaffold(
         topBar = {
-          TopBarWithBackButton(
-            navController = navController,
-            title =
+          val onBackPressedDispatcher =
+            LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+          TopAppBar(
+            title = {
               if (record.hasRelatedProgramId()) {
                 val relatedProgram = db.programDao.where(record.relatedProgramId)
-                "${relatedProgram.name}, ${record.workout.name}"
-              } else {
-                DateFormatters.MMM_dd.format(record.getDate()) + " Workout"
-              },
+                ExtendedListItem(
+                  headlineContent = {
+                    Text(text = relatedProgram.name, style = MaterialTheme.typography.titleLarge)
+                  },
+                  headlineTextStyle = MaterialTheme.typography.titleLarge,
+                  supportingContent = { Text(text = record.workout.name) },
+                )
+              } else
+                Text(
+                  text = DateFormatters.MMM_dd.format(record.date) + " Workout",
+                  style = MaterialTheme.typography.titleLarge,
+                )
+            },
+            navigationIcon = {
+              IconButton(
+                onClick = { onBackPressedDispatcher?.onBackPressed() ?: navController.navigateUp() }
+              ) {
+                Icon(
+                  imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                  contentDescription = "Back Button",
+                )
+              }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
           )
         }
       ) { paddingValues ->

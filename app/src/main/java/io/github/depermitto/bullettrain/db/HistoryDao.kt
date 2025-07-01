@@ -1,27 +1,22 @@
 package io.github.depermitto.bullettrain.db
 
-import io.github.depermitto.bullettrain.protos.ExercisesProto.*
 import io.github.depermitto.bullettrain.protos.HistoryProto.HistoryRecord
 import io.github.depermitto.bullettrain.protos.ProgramsProto.Workout
 import io.github.depermitto.bullettrain.util.bigListSet
-import io.github.depermitto.bullettrain.util.getDate
-import io.github.depermitto.bullettrain.util.getLastCompletedSet
-import java.time.Month
+import io.github.depermitto.bullettrain.util.date
+import io.github.depermitto.bullettrain.util.yearMonth
+import java.time.YearMonth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
 class HistoryDao(historyRecords: List<HistoryRecord>) {
   internal val items = MutableStateFlow(historyRecords)
-  var idTrack = items.value.lastOrNull()?.id ?: 0
-    private set
+  private var idTrack = items.value.lastOrNull()?.id ?: 0
 
-  private val getAll: StateFlow<List<HistoryRecord>> = items.asStateFlow()
   val getSortedByFrequency: Flow<Map<Int, Int>> =
-    getAll.map { records ->
+    items.map { records ->
       records
         .flatMap { record ->
           record.workout.exercisesList.filter { entry ->
@@ -31,6 +26,10 @@ class HistoryDao(historyRecords: List<HistoryRecord>) {
         .groupingBy { entry -> entry.descriptorId }
         .eachCount()
     }
+
+  fun mostRecent() = items.value.lastOrNull()
+
+  fun mostRecent(yearMonth: YearMonth) = items.value.lastOrNull { it.yearMonth == yearMonth }?.date
 
   /** @return Boolean indicating if the operation was successful. */
   fun update(record: HistoryRecord): Boolean {
@@ -68,20 +67,6 @@ class HistoryDao(historyRecords: List<HistoryRecord>) {
     return items.value[index]
   }
 
-  fun where(month: Month, year: Int): Flow<List<HistoryRecord>> =
-    getAll.map { records ->
-      records.filter { record ->
-        val date = record.getDate()
-        date.month == month && date.year == year
-      }
-    }
-
-  fun where(descriptor: Exercise.Descriptor): Flow<List<Exercise>> =
-    getAll.map { records ->
-      records
-        .flatMap { record ->
-          record.workout.exercisesList.filter { exercise -> exercise.descriptorId == descriptor.id }
-        }
-        .sortedByDescending { exercise -> exercise.getLastCompletedSet()?.doneTs?.seconds ?: 0 }
-    }
+  fun <T> where(mapper: (records: List<HistoryRecord>) -> T): Flow<T> =
+    items.map { historyRecords -> mapper(historyRecords) }
 }

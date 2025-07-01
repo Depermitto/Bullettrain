@@ -43,16 +43,18 @@ import io.github.depermitto.bullettrain.db.ProgramDao
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.protos.ExercisesProto.*
 import io.github.depermitto.bullettrain.protos.SettingsProto.*
-import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Large
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.util.DateFormatters
-import io.github.depermitto.bullettrain.util.getDate
+import io.github.depermitto.bullettrain.util.date
 import io.github.depermitto.bullettrain.util.weightUnit
-import java.time.LocalDate
+import io.github.depermitto.bullettrain.util.yearMonth
+import java.time.YearMonth
+import java.time.temporal.ChronoUnit
+import kotlin.math.absoluteValue
 
 @Composable
 fun HistoryTab(
@@ -65,27 +67,26 @@ fun HistoryTab(
   settings: Settings,
   navController: NavController,
 ) {
+  LaunchedEffect(Unit) { if (homeViewModel.selectedDate == null) homeViewModel.resetDate() }
   Box(modifier = modifier.fillMaxSize()) {
     val historyRecords by
       historyDao
-        .where(homeViewModel.calendarDate.month, homeViewModel.calendarDate.year)
+        .where { records ->
+          records
+            .filter {
+              ChronoUnit.MONTHS.between(it.yearMonth, homeViewModel.calendarPage).absoluteValue <= 1
+            }
+            .sortedByDescending { record -> record.workoutStartTs.seconds }
+        }
         .collectAsStateWithLifecycle(initialValue = emptyList())
-    val selectedHistoryRecords =
-      historyRecords.filter { record -> record.getDate() == homeViewModel.selectedDate }
-    LaunchedEffect(historyRecords) {
-      if (homeViewModel.selectedDate == null)
-        homeViewModel.selectedDate = historyRecords.lastOrNull()?.getDate()
-    }
-    val today = LocalDate.now()
-    val resetDateButtonVisible =
-      homeViewModel.calendarDate.month != today.month ||
-        homeViewModel.calendarDate.year != today.year
+    val selectedHistoryRecords = historyRecords.filter { it.date == homeViewModel.selectedDate }
+    val notCurrentYearMonth = homeViewModel.calendarPage != YearMonth.now()
 
     Column(
       modifier =
         Modifier.padding(horizontal = Dp.Medium)
           .verticalScroll(rememberScrollState())
-          .padding(bottom = if (resetDateButtonVisible) Dp.EmptyScrollSpace / 4 else Dp.Medium),
+          .padding(bottom = Dp.Medium),
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.spacedBy(Dp.Small),
     ) {
@@ -93,16 +94,16 @@ fun HistoryTab(
         Spacer(Modifier.width(Dp.Medium))
         Text(
           modifier = Modifier.weight(1F),
-          text = homeViewModel.calendarDate.format(DateFormatters.MMMM_yyyy),
+          text = homeViewModel.calendarPage.format(DateFormatters.MMMM_yyyy),
           maxLines = 1,
         )
         IconButton(
-          onClick = { homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1) }
+          onClick = { homeViewModel.calendarPage = homeViewModel.calendarPage.minusMonths(1) }
         ) {
           Icon(Icons.AutoMirrored.Filled.ArrowBack, "Previous Month")
         }
         IconButton(
-          onClick = { homeViewModel.calendarDate = homeViewModel.calendarDate.plusMonths(1) }
+          onClick = { homeViewModel.calendarPage = homeViewModel.calendarPage.plusMonths(1) }
         ) {
           Icon(Icons.AutoMirrored.Filled.ArrowForward, "Next Month")
         }
@@ -111,8 +112,8 @@ fun HistoryTab(
       Calendar(
         homeViewModel = homeViewModel,
         trainViewModel = trainViewModel,
-        currentRecords = historyRecords,
-        currentDate = homeViewModel.calendarDate,
+        recordsSorted = historyRecords,
+        date = homeViewModel.calendarPage,
         programDao = programDao,
         modifier = Modifier.heightIn(0.dp, 400.dp),
       )
@@ -126,7 +127,7 @@ fun HistoryTab(
           plannedExercises =
             relatedProgram.workoutsList.first { it.name == record.workout.name }.exercisesList
         } else {
-          workoutName = DateFormatters.MMM_dd.format(record.getDate()) + " Workout"
+          workoutName = DateFormatters.MMM_dd.format(record.date) + " Workout"
           plannedExercises = record.workout.exercisesList
         }
 
@@ -167,7 +168,7 @@ fun HistoryTab(
                 }
 
                 if (showRecordDeleteDialog) {
-                  val date = record.getDate().format(DateFormatters.MMMM_d_yyyy)
+                  val date = record.date.format(DateFormatters.MMMM_d_yyyy)
                   val text =
                     if (record.hasRelatedProgramId()) {
                       "Do you definitely want to delete the ${record.workout.name} workout from $workoutName on $date?"
@@ -228,7 +229,7 @@ fun HistoryTab(
     }
 
     AnimatedVisibility(
-      visible = resetDateButtonVisible,
+      visible = notCurrentYearMonth,
       modifier = Modifier.align(Alignment.BottomCenter),
       enter =
         slideInVertically(animationSpec = tween(durationMillis = 600), initialOffsetY = { it }),

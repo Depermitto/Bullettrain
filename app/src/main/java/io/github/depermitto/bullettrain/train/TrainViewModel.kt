@@ -15,8 +15,8 @@ import io.github.depermitto.bullettrain.protos.ProgramsProto.*
 import io.github.depermitto.bullettrain.protos.ProgramsProto.Workout.Phase
 import io.github.depermitto.bullettrain.util.DateFormatters
 import io.github.depermitto.bullettrain.util.atTimeNow
-import io.github.depermitto.bullettrain.util.getDate
-import io.github.depermitto.bullettrain.util.getLastCompletedSet
+import io.github.depermitto.bullettrain.util.date
+import io.github.depermitto.bullettrain.util.lastCompletedSet
 import io.github.depermitto.bullettrain.util.toTimestamp
 import java.time.Instant
 import java.time.LocalDate
@@ -118,7 +118,7 @@ class TrainViewModel(
 
     if (isWorkoutRunning())
       timer = timer(initialDelay = 1000L, period = 1000L) { clock = date.atTimeNow().epochSecond }
-    date = record.getDate()
+    date = record.date
 
     workoutName = record.workout.name
     exercises = record.workout.exercisesList.toMutableStateList()
@@ -137,7 +137,7 @@ class TrainViewModel(
   }
 
   fun toggleCompletion(checked: Boolean, exerciseIndex: Int, setIndex: Int) {
-    val lastPerformedSet = getExercise(exerciseIndex).getLastCompletedSet()
+    val lastPerformedSet = getExercise(exerciseIndex).lastCompletedSet
     val set = getExercise(exerciseIndex).getSets(setIndex)
     val builder =
       if (checked) {

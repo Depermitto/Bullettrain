@@ -33,17 +33,19 @@ import io.github.depermitto.bullettrain.protos.ProgramsProto.*
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.util.DateFormatters
 import io.github.depermitto.bullettrain.util.atTimeNow
-import io.github.depermitto.bullettrain.util.getDate
+import io.github.depermitto.bullettrain.util.date
 import io.github.depermitto.bullettrain.util.toTimestamp
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.TextStyle
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Composable
 fun Calendar(
-  currentDate: LocalDate,
-  currentRecords: List<HistoryRecord>,
+  date: YearMonth,
+  recordsSorted: List<HistoryRecord>,
   modifier: Modifier = Modifier,
   homeViewModel: HomeViewModel,
   trainViewModel: TrainViewModel,
@@ -51,35 +53,39 @@ fun Calendar(
 ) {
   Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
     val today = LocalDate.now()
-    var days =
-      generateSequence(-currentDate.withDayOfMonth(1).dayOfWeek.value + 2) {
-        if (it < currentDate.month.length(currentDate.isLeapYear)) it + 1 else null
-      }
+    var dayOfMonth = -date.atDay(1).dayOfWeek.value + 2
 
     var longClickedDate by rememberSaveable { mutableStateOf(today) }
     var showProgramListDialog by rememberSaveable { mutableStateOf(false) }
     Column {
-      for (row in 0..<if (days.count() < 36) 6 else 7) {
+      for (row in 0..<7) {
         Row {
           for (col in 0..<7) {
             Box(modifier = Modifier.weight(1F)) {
               if (row == 0) {
                 CalendarItem(
-                  textAlpha = 0.6F,
+                  alpha = 0.6F,
                   text = DayOfWeek.of(col + 1).getDisplayName(TextStyle.NARROW, Locale.getDefault()),
                 )
                 return@Box
               }
 
-              val dayOfMonth = days.firstOrNull()
-              days = days.drop(1)
-              if (dayOfMonth == null || dayOfMonth <= 0) {
-                CalendarItem(text = "")
-                return@Box
-              }
+              val day =
+                when {
+                  dayOfMonth <= 0 -> {
+                    val month = date.month - 1
+                    LocalDate.of(date.year, month, month.length(date.isLeapYear) + dayOfMonth)
+                  }
+                  dayOfMonth > date.month.length(date.isLeapYear) -> {
+                    val month = date.month + 1
+                    LocalDate.of(date.year, month, dayOfMonth - date.month.length(date.isLeapYear))
+                  }
+                  else -> LocalDate.of(date.year, date.month, dayOfMonth)
+                }
+              dayOfMonth++
 
-              val day = LocalDate.of(currentDate.year, currentDate.month, dayOfMonth)
               CalendarItem(
+                text = day.dayOfMonth.toString(),
                 onClick = { homeViewModel.selectedDate = day },
                 onLongClick = {
                   longClickedDate = day
@@ -89,17 +95,18 @@ fun Calendar(
                   when {
                     homeViewModel.selectedDate == day -> MaterialTheme.colorScheme.tertiaryContainer
 
-                    currentRecords.any { it.getDate() == day } ->
-                      MaterialTheme.colorScheme.primaryContainer
+                    recordsSorted.binarySearch { ChronoUnit.DAYS.between(it.date, day).toInt() } >=
+                      0 -> MaterialTheme.colorScheme.primaryContainer
 
                     else -> Color.Transparent
                   },
                 underline = day == today,
-                text = dayOfMonth.toString(),
+                alpha = if (day.month == date.month) 1F else 0.3F,
               )
             }
           }
         }
+        if (dayOfMonth > date.month.length(date.isLeapYear)) break
       }
     }
 
@@ -167,7 +174,7 @@ private fun CalendarItem(
   text: String,
   onClick: (() -> Unit)? = null,
   onLongClick: (() -> Unit)? = null,
-  textAlpha: Float = 1F,
+  alpha: Float = 1F,
   underline: Boolean = false,
   backgroundColor: Color = Color.Unspecified,
 ) {
@@ -177,7 +184,7 @@ private fun CalendarItem(
         .padding(4.dp)
         .clip(shape = CircleShape)
         .aspectRatio(1F)
-        .background(backgroundColor)
+        .background(backgroundColor.copy(alpha = alpha))
         .let {
           if (onClick != null) it.combinedClickable(onClick = onClick, onLongClick = onLongClick)
           else it
@@ -189,7 +196,7 @@ private fun CalendarItem(
         MaterialTheme.colorScheme
           .contentColorFor(backgroundColor)
           .takeOrElse { MaterialTheme.colorScheme.onBackground }
-          .copy(alpha = textAlpha),
+          .copy(alpha = alpha),
       modifier = Modifier.align(Alignment.Center).padding(10.dp),
       textAlign = TextAlign.Center,
       textDecoration = if (underline) TextDecoration.Underline else null,

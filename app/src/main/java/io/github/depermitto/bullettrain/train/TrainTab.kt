@@ -189,7 +189,7 @@ fun TrainTab(
         ElevatedButton(
           modifier = Modifier.weight(1F),
           onClick = {
-            homeViewModel.resetDate()
+            homeViewModel.mostRecentWorkout()
             scope.launch { homeViewModel.screenPager.animateScrollToPage(History.ordinal) }
           },
           shape = RoundedCornerShape(4.dp, 4.dp, 4.dp, 16.dp),

@@ -11,9 +11,12 @@ import io.github.depermitto.bullettrain.protos.SettingsProto.UnitSystem
 import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetTime
+import java.time.YearMonth
 import java.time.ZoneId
 
-fun Exercise.getLastCompletedSet(): Exercise.Set? = setsList.lastOrNull { set -> set.hasDoneTs() }
+/** Compute last set which has [Exercise.Set.doneTs_] initialized and return it if exists. */
+val Exercise.lastCompletedSet: Exercise.Set?
+  get() = setsList.lastOrNull { set -> set.hasDoneTs() }
 
 fun UnitSystem.weightUnit() = if (this == UnitSystem.Metric) "kg" else "lbs"
 
@@ -21,14 +24,23 @@ fun UnitSystem.weightUnit() = if (this == UnitSystem.Metric) "kg" else "lbs"
 fun Theme.isDarkMode(): Boolean =
   (this == Theme.Dark) || (this == Theme.FollowSystem && isSystemInDarkTheme())
 
-fun HistoryRecord.getDate(): LocalDate = this.workoutStartTs.toLocalDate()
+/** Extract [LocalDate] from [HistoryRecord.workoutStartTs_]. */
+val HistoryRecord.date: LocalDate
+  get() = this.workoutStartTs.toLocalDate()
 
+/** Extract [YearMonth] from [HistoryRecord.workoutStartTs_]. */
+val HistoryRecord.yearMonth: YearMonth
+  get() = YearMonth.from(this.workoutStartTs.toLocalDate())
+
+/** Convert [com.google.protobuf.Timestamp] to [java.time.LocalDate]. */
 fun Timestamp.toLocalDate(): LocalDate =
   Instant.ofEpochSecond(this.seconds, this.nanos.toLong())
     .atZone(ZoneId.systemDefault())
     .toLocalDate()
 
+/** Convert [java.time.Instant] to [com.google.protobuf.Timestamp]. */
 fun Instant.toTimestamp(): Timestamp =
   Timestamp.newBuilder().setSeconds(this.epochSecond).setNanos(this.nano).build()
 
+/** Convert this [LocalDate] to [Instant] at the same time as right now. */
 fun LocalDate.atTimeNow(): Instant = this.atTime(OffsetTime.now()).toInstant()

@@ -9,24 +9,30 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.depermitto.bullettrain.Destination.Home.Tab
 import io.github.depermitto.bullettrain.db.HistoryDao
-import io.github.depermitto.bullettrain.util.getDate
+import io.github.depermitto.bullettrain.util.date
+import io.github.depermitto.bullettrain.util.yearMonth
 import java.time.LocalDate
+import java.time.YearMonth
 
 class HomeViewModel(initialPage: Tab, private val historyDao: HistoryDao) : ViewModel() {
   val screenPager = PagerState(initialPage.ordinal) { Tab.entries.size }
 
-  var calendarDate: LocalDate by mutableStateOf(LocalDate.now())
+  var calendarPage: YearMonth by mutableStateOf(YearMonth.now())
   var selectedDate by mutableStateOf<LocalDate?>(null)
 
   fun resetDate() {
-    if (historyDao.idTrack == 0) {
-      calendarDate = LocalDate.now()
-      selectedDate = null
-    } else {
-      val mostRecentDate = historyDao.where(historyDao.idTrack).getDate()
-      calendarDate = mostRecentDate
-      selectedDate = mostRecentDate
+    calendarPage = YearMonth.now()
+    selectedDate = historyDao.mostRecent(calendarPage)
+  }
+
+  fun mostRecentWorkout() {
+    val record = historyDao.mostRecent()
+    if (record == null) {
+      resetDate()
+      return
     }
+    calendarPage = record.yearMonth
+    selectedDate = record.date
   }
 
   companion object {
