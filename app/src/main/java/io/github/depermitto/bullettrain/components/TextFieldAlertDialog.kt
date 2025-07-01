@@ -29,11 +29,11 @@ fun TextFieldAlertDialog(
     startingText: String = "",
     modifier: Modifier = Modifier.size(200.dp, 200.dp),
     onDismissRequest: () -> Unit,
+    dismissButton: @Composable () -> Unit,
+    confirmButton: @Composable (String) -> Unit,
     label: @Composable (() -> Unit)? = null,
     isError: Boolean = false,
     errorMessage: String = "",
-    cancelButton: @Composable () -> Unit,
-    confirmButton: @Composable (String) -> Unit,
 ) = BasicAlertDialog(modifier = Modifier, onDismissRequest = onDismissRequest) {
     var name by remember { mutableStateOf(startingText) }
     OutlinedCard(modifier = modifier) {
@@ -61,7 +61,7 @@ fun TextFieldAlertDialog(
             )
 
             Row(modifier = Modifier.align(Alignment.BottomEnd)) {
-                cancelButton()
+                dismissButton()
                 confirmButton(name)
             }
         }

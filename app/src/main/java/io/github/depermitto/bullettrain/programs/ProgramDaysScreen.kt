@@ -60,7 +60,7 @@ fun ProgramDaysScreen(
                 TextFieldAlertDialog(
                     label = { Text("Day Name") },
                     onDismissRequest = { showRenameDialog = false },
-                    cancelButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
+                    dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
                     confirmButton = {
                         TextButton(onClick = {
                             programViewModel.setDay(dayIndex, day.copy(name = it))

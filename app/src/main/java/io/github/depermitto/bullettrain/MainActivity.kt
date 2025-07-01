@@ -2,6 +2,7 @@ package io.github.depermitto.bullettrain
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -10,9 +11,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -22,6 +25,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -30,7 +34,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
+import io.github.depermitto.bullettrain.components.DiscardAlertDialog
 import io.github.depermitto.bullettrain.components.Ribbon
 import io.github.depermitto.bullettrain.components.RibbonScaffold
 import io.github.depermitto.bullettrain.database.BackgroundSlave
@@ -40,7 +44,7 @@ import io.github.depermitto.bullettrain.home.HomeScreen
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.programs.DayExercisesScreen
 import io.github.depermitto.bullettrain.programs.ProgramCreationScreen
-import io.github.depermitto.bullettrain.programs.ProgramDaysScreen
+import io.github.depermitto.bullettrain.programs.ProgramScreen
 import io.github.depermitto.bullettrain.programs.ProgramViewModel
 import io.github.depermitto.bullettrain.settings.SettingsScreen
 import io.github.depermitto.bullettrain.theme.GymAppTheme
@@ -89,6 +93,7 @@ fun App(db: Database) = MaterialTheme {
 
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { paddingValues ->
+        var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
         NavHost(
             modifier = Modifier.padding(paddingValues),
             navController = navController,
@@ -98,7 +103,6 @@ fun App(db: Database) = MaterialTheme {
                 Destinations.Home(Destinations.Home.Tabs.Programs)
             }
         ) {
-
             composable<Destinations.Home> { navBackStackEntry ->
                 val homeViewModel = viewModel<HomeViewModel>(
                     factory = HomeViewModel.Factory(tab = navBackStackEntry.toRoute<Destinations.Home>().tab)
@@ -165,12 +169,14 @@ fun App(db: Database) = MaterialTheme {
             }
 
             composable<Destinations.ProgramCreation> {
+                programViewModel.clear()
+               
                 RibbonScaffold(ribbon = {
-                    Ribbon(
-                        navController = navController,
-                        title = programViewModel.programName.ifBlank { "New Program" },
-                        settingsGear = false
-                    )
+                    Ribbon(title = programViewModel.programName.ifBlank { "New Program" }, leftButton = {
+                        IconButton(onClick = { showConfirmDialog = true }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                        }
+                    })
                 }) {
                     ProgramCreationScreen(
                         programViewModel = programViewModel,
@@ -179,20 +185,31 @@ fun App(db: Database) = MaterialTheme {
                         navController = navController
                     )
                 }
+
+                if (showConfirmDialog) DiscardAlertDialog(
+                    text = "Do you want to discard ${programViewModel.programName.ifBlank { "new program" }}?",
+                    onDismissRequest = { showConfirmDialog = false },
+                    onDiscardClick = { navController.popBackStack() }
+                )
+
+                BackHandler { showConfirmDialog = true }
             }
 
             composable<Destinations.Program>(typeMap = mapOf(typeOf<Program>() to serializableType<Program>())) { navBackStackEntry ->
                 val program = navBackStackEntry.toRoute<Destinations.Program>().program
-                programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(program))
+                programViewModel = viewModel(factory = ProgramViewModel.Factory(program))
 
-                RibbonScaffold(ribbon = { Ribbon(navController, title = programViewModel.programName, settingsGear = false) }) {
-                    ProgramDaysScreen(programViewModel, navController)
-                    if (programViewModel.getDays().toList() != program.days.toList()) {
-                        AnchoredFloatingActionButton(text = { Text("Finish Edit") }, onClick = {
-                            db.programDao.update(programViewModel.constructProgram())
-                            navController.popBackStack()
-                        })
-                    }
+                RibbonScaffold(ribbon = {
+                    Ribbon(
+                        navController, title = programViewModel.programName, settingsGear = false
+                    )
+                }) {
+                    ProgramScreen(
+                        programViewModel = programViewModel,
+                        programDao = db.programDao,
+                        program = program,
+                        navController = navController
+                    )
                 }
             }
 
@@ -211,7 +228,11 @@ fun App(db: Database) = MaterialTheme {
             }
 
             composable<Destinations.Settings> {
-                RibbonScaffold(ribbon = { Ribbon(navController = navController, title = "Settings", settingsGear = false) }) {
+                RibbonScaffold(ribbon = {
+                    Ribbon(
+                        navController = navController, title = "Settings", settingsGear = false
+                    )
+                }) {
                     SettingsScreen(db = db, snackbarHostState = snackbarHostState)
                 }
             }

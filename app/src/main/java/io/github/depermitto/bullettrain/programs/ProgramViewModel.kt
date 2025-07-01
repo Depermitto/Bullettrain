@@ -30,6 +30,11 @@ class ProgramViewModel(program: Program) : ViewModel() {
     )
 
     fun constructProgram(): Program = Program(id = programId, name = programName, days = days.toList(), followed = followed)
+    fun clear() {
+        programName = ""
+        days.clear()
+        followed = false
+    }
 
     companion object {
         fun Factory(program: Program) = viewModelFactory { initializer { ProgramViewModel(program) } }

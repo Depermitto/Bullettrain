@@ -89,7 +89,7 @@ fun ProgramsTab(
                 AnimatedVisibility(visible = showRenameDialog, enter = scaleIn(), exit = scaleOut()) {
                     TextFieldAlertDialog(label = { Text("Program Name") },
                         onDismissRequest = { showRenameDialog = false },
-                        cancelButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
+                        dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
                         confirmButton = { name ->
                             TextButton(onClick = {
                                 programDao.update(program.copy(name = name))

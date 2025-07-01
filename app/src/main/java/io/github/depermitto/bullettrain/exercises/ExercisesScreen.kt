@@ -64,7 +64,7 @@ fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) =
     AnimatedVisibility(visible = showDialog, enter = scaleIn(), exit = scaleOut()) {
         var isError by remember { mutableStateOf(false) }
         TextFieldAlertDialog(onDismissRequest = { showDialog = false },
-            cancelButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } },
             confirmButton = { name ->
                 TextButton(onClick = {
                     if (exercises.any { it.name == name }) {
