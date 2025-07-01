@@ -51,10 +51,7 @@ import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.util.DateFormatters
 import io.github.depermitto.bullettrain.util.date
 import io.github.depermitto.bullettrain.util.weightUnit
-import io.github.depermitto.bullettrain.util.yearMonth
 import java.time.YearMonth
-import java.time.temporal.ChronoUnit
-import kotlin.math.absoluteValue
 
 @Composable
 fun HistoryTab(
@@ -67,21 +64,18 @@ fun HistoryTab(
   settings: Settings,
   navController: NavController,
 ) {
+  val days = generateDays(homeViewModel.calendarPage)
+  val historyRecords by
+    historyDao
+      .where { records ->
+        records
+          .filter { days.first() <= it.date && it.date <= days.last() }
+          .sortedByDescending { it.workoutStartTs.seconds }
+      }
+      .collectAsStateWithLifecycle(initialValue = emptyList())
+
   LaunchedEffect(Unit) { if (homeViewModel.selectedDate == null) homeViewModel.resetDate() }
   Box(modifier = modifier.fillMaxSize()) {
-    val historyRecords by
-      historyDao
-        .where { records ->
-          records
-            .filter {
-              ChronoUnit.MONTHS.between(it.yearMonth, homeViewModel.calendarPage).absoluteValue <= 1
-            }
-            .sortedByDescending { record -> record.workoutStartTs.seconds }
-        }
-        .collectAsStateWithLifecycle(initialValue = emptyList())
-    val selectedHistoryRecords = historyRecords.filter { it.date == homeViewModel.selectedDate }
-    val notCurrentYearMonth = homeViewModel.calendarPage != YearMonth.now()
-
     Column(
       modifier =
         Modifier.padding(horizontal = Dp.Medium)
@@ -110,16 +104,16 @@ fun HistoryTab(
       }
 
       Calendar(
+        date = homeViewModel.calendarPage,
+        records = historyRecords,
         homeViewModel = homeViewModel,
         trainViewModel = trainViewModel,
-        recordsSorted = historyRecords,
-        date = homeViewModel.calendarPage,
         programDao = programDao,
         modifier = Modifier.heightIn(0.dp, 400.dp),
       )
 
-      for (record in selectedHistoryRecords) {
-        if (record.yearMonth != homeViewModel.calendarPage) continue
+      for (record in historyRecords) {
+        if (record.date != homeViewModel.selectedDate) continue
 
         val workoutName: String
         val plannedExercises: List<Exercise>
@@ -230,6 +224,7 @@ fun HistoryTab(
       }
     }
 
+    val notCurrentYearMonth = homeViewModel.calendarPage != YearMonth.now()
     AnimatedVisibility(
       visible = notCurrentYearMonth,
       modifier = Modifier.align(Alignment.BottomCenter),

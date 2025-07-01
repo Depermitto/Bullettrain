@@ -44,7 +44,7 @@ import java.util.*
 @Composable
 fun Calendar(
   date: YearMonth,
-  recordsSorted: List<HistoryRecord>,
+  records: List<HistoryRecord>,
   modifier: Modifier = Modifier,
   homeViewModel: HomeViewModel,
   trainViewModel: TrainViewModel,
@@ -52,11 +52,10 @@ fun Calendar(
 ) {
   Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
     val today = LocalDate.now()
-    var dayOfMonth = -date.atDay(1).dayOfWeek.value + 2
-
     var longClickedDate by rememberSaveable { mutableStateOf(today) }
     var showProgramListDialog by rememberSaveable { mutableStateOf(false) }
     Column {
+      val days = generateDays(date).iterator()
       for (row in 0..<7) {
         Row {
           for (col in 0..<7) {
@@ -69,20 +68,7 @@ fun Calendar(
               continue
             }
 
-            val day =
-              when {
-                dayOfMonth <= 0 -> {
-                  val ym = date.minusMonths(1)
-                  LocalDate.of(ym.year, ym.month, ym.month.length(date.isLeapYear) + dayOfMonth)
-                }
-                dayOfMonth > date.month.length(date.isLeapYear) -> {
-                  val ym = date.plusMonths(1)
-                  LocalDate.of(ym.year, ym.month, dayOfMonth - date.month.length(date.isLeapYear))
-                }
-                else -> LocalDate.of(date.year, date.month, dayOfMonth)
-              }
-            dayOfMonth++
-
+            val day = days.next()
             val alpha = if (day.month == date.month) 1F else 0.3F
             CalendarItem(
               text = day.dayOfMonth.toString(),
@@ -96,8 +82,8 @@ fun Calendar(
                   homeViewModel.selectedDate == day ->
                     MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = alpha)
 
-                  recordsSorted.binarySearch { ChronoUnit.DAYS.between(it.date, day).toInt() } >=
-                    0 -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = alpha)
+                  records.binarySearch { ChronoUnit.DAYS.between(it.date, day).toInt() } >= 0 ->
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = alpha)
 
                   else -> Color.Transparent
                 },
@@ -107,7 +93,7 @@ fun Calendar(
             )
           }
         }
-        if (dayOfMonth > date.month.length(date.isLeapYear)) break
+        if (!days.hasNext()) break
       }
     }
 
@@ -203,4 +189,33 @@ private fun CalendarItem(
       maxLines = 1,
     )
   }
+}
+
+/**
+ * Generate 35-42 days for the given [YearMonth]. Includes days from the previous and next month.
+ */
+fun generateDays(date: YearMonth): List<LocalDate> {
+  val dates = mutableListOf<LocalDate>()
+  var dayOfMonth = -date.atDay(1).dayOfWeek.value + 2
+  while (dayOfMonth <= date.month.length(date.isLeapYear)) {
+    for (j in 0..<7) {
+      val day =
+        when {
+          dayOfMonth <= 0 -> {
+            val ym = date.minusMonths(1)
+            LocalDate.of(ym.year, ym.month, ym.month.length(date.isLeapYear) + dayOfMonth)
+          }
+
+          dayOfMonth > date.month.length(date.isLeapYear) -> {
+            val ym = date.plusMonths(1)
+            LocalDate.of(ym.year, ym.month, dayOfMonth - date.month.length(date.isLeapYear))
+          }
+
+          else -> LocalDate.of(date.year, date.month, dayOfMonth)
+        }
+      dates.add(day)
+      dayOfMonth++
+    }
+  }
+  return dates
 }

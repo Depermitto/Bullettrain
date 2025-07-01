@@ -79,7 +79,7 @@ fun ProgramScreen(
                 },
               )
               DropdownMenuItem(
-                text = { Text(text = "Duplicate Day") },
+                text = { Text(text = "Duplicate") },
                 leadingIcon = { DuplicateIcon() },
                 onClick = {
                   closeDropdown()
