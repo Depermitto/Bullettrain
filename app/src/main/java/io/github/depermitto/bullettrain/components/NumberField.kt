@@ -22,70 +22,72 @@ import kotlin.math.roundToInt
 
 @Composable
 fun NumberField(
-    modifier: Modifier = Modifier,
-    value: Float,
-    onValueChange: (Float) -> Unit,
-    label: @Composable (() -> Unit)? = null,
-    placeholder: @Composable (() -> Unit)? = null,
-    singleLine: Boolean = true,
-    readOnly: Boolean = false,
-    enabled: Boolean = true,
-    textStyle: TextStyle = TextStyle.numeric(),
-    colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
-    focusedBorderThickness: Dp = OutlinedTextFieldDefaults.FocusedBorderThickness,
-    unfocusedBorderThickness: Dp = OutlinedTextFieldDefaults.UnfocusedBorderThickness,
-    contentPadding: PaddingValues = PaddingValues(3.dp),
+  modifier: Modifier = Modifier,
+  value: Float,
+  onValueChange: (Float) -> Unit,
+  label: @Composable (() -> Unit)? = null,
+  placeholder: @Composable (() -> Unit)? = null,
+  singleLine: Boolean = true,
+  readOnly: Boolean = false,
+  enabled: Boolean = true,
+  textStyle: TextStyle = TextStyle.numeric(),
+  colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
+  focusedBorderThickness: Dp = OutlinedTextFieldDefaults.FocusedBorderThickness,
+  unfocusedBorderThickness: Dp = OutlinedTextFieldDefaults.UnfocusedBorderThickness,
+  contentPadding: PaddingValues = PaddingValues(3.dp),
 ) {
-    val textValue = if (value == 0f) "" else value.toString().removeSuffix(".0")
+  val textValue = if (value == 0f) "" else value.toString().removeSuffix(".0")
 
-    var textFieldValue by remember { mutableStateOf(TextFieldValue(textValue)) }
-    if (textFieldValue.text != "-" && value != textFieldValue.text.toFloatOrNull()) {
-        textFieldValue = textFieldValue.copy(text = textValue)
-    }
+  var textFieldValue by remember { mutableStateOf(TextFieldValue(textValue)) }
+  if (textFieldValue.text != "-" && value != textFieldValue.text.toFloatOrNull()) {
+    textFieldValue = textFieldValue.copy(text = textValue)
+  }
 
-    val interactionSource = remember { MutableInteractionSource() }
-    val isFocused by interactionSource.collectIsFocusedAsState()
+  val interactionSource = remember { MutableInteractionSource() }
+  val isFocused by interactionSource.collectIsFocusedAsState()
 
-    LaunchedEffect(isFocused) {
-        if (isFocused) textFieldValue = textFieldValue.copy(selection = TextRange(0, textFieldValue.text.length))
-    }
-    if (!enabled) textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
+  LaunchedEffect(isFocused) {
+    if (isFocused)
+      textFieldValue = textFieldValue.copy(selection = TextRange(0, textFieldValue.text.length))
+  }
+  if (!enabled)
+    textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
 
-    val focusManager = LocalFocusManager.current
-    OutlinedTextField(
-        modifier = modifier,
-        value = textFieldValue,
-        onValueChange = { it ->
-            if (it.text.contains(" ")) return@OutlinedTextField
+  val focusManager = LocalFocusManager.current
+  OutlinedTextField(
+    modifier = modifier,
+    value = textFieldValue,
+    onValueChange = { it ->
+      if (it.text.contains(" ")) return@OutlinedTextField
 
-            textFieldValue = if (it.text == ".") textFieldValue.copy(text = "0.", selection = TextRange(2))
-            else it
+      textFieldValue =
+        if (it.text == ".") textFieldValue.copy(text = "0.", selection = TextRange(2)) else it
 
-            if (it.text.isBlank()) onValueChange(0f)
-            else it.text.toFloatOrNull()?.let { value -> onValueChange(value) }
-        },
-        textStyle = textStyle,
-        label = label,
-        placeholder = placeholder,
-        singleLine = singleLine,
-        readOnly = readOnly || !enabled,
-        enabled = enabled,
-        colors = colors,
-        contentPadding = contentPadding,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        keyboardActions = KeyboardActions(
-            onDone = { focusManager.moveFocus(FocusDirection.Next) },
-            onNext = { focusManager.moveFocus(FocusDirection.Next) },
-            onPrevious = { focusManager.moveFocus(FocusDirection.Previous) },
-        ),
-        interactionSource = interactionSource,
-        focusedBorderThickness = focusedBorderThickness,
-        unfocusedBorderThickness = unfocusedBorderThickness,
-    )
+      if (it.text.isBlank()) onValueChange(0f)
+      else it.text.toFloatOrNull()?.let { value -> onValueChange(value) }
+    },
+    textStyle = textStyle,
+    label = label,
+    placeholder = placeholder,
+    singleLine = singleLine,
+    readOnly = readOnly || !enabled,
+    enabled = enabled,
+    colors = colors,
+    contentPadding = contentPadding,
+    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+    keyboardActions =
+      KeyboardActions(
+        onDone = { focusManager.moveFocus(FocusDirection.Next) },
+        onNext = { focusManager.moveFocus(FocusDirection.Next) },
+        onPrevious = { focusManager.moveFocus(FocusDirection.Previous) },
+      ),
+    interactionSource = interactionSource,
+    focusedBorderThickness = focusedBorderThickness,
+    unfocusedBorderThickness = unfocusedBorderThickness,
+  )
 }
 
-
 fun Float.encodeToStringOutput(): String {
-    if (this == 0f) return ""
-    return takeIf { it == it.roundToInt().toFloat() }?.roundToInt()?.toString() ?: this.toString()
+  if (this == 0f) return ""
+  return takeIf { it == it.roundToInt().toFloat() }?.roundToInt()?.toString() ?: this.toString()
 }

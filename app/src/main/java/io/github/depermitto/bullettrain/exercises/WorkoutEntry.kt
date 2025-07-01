@@ -28,47 +28,54 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun WorkoutEntry(
-    workoutEntry: WorkoutEntry,
-    onWorkoutEntryChange: (WorkoutEntry) -> Unit,
-    modifier: Modifier = Modifier,
-    headline: @Composable () -> Unit,
-    headerContent: @Composable RowScope.() -> Unit,
-    settings: Settings,
-    exerciseDescriptor: ExerciseDescriptor,
-    scope: CoroutineScope = rememberCoroutineScope(),
-    snackbarHostState: SnackbarHostState,
-    content: @Composable RowScope.(Int, ExerciseSet) -> Unit,
-) = DataPanel<ExerciseSet>(
+  workoutEntry: WorkoutEntry,
+  onWorkoutEntryChange: (WorkoutEntry) -> Unit,
+  modifier: Modifier = Modifier,
+  headline: @Composable () -> Unit,
+  headerContent: @Composable RowScope.() -> Unit,
+  settings: Settings,
+  exerciseDescriptor: ExerciseDescriptor,
+  scope: CoroutineScope = rememberCoroutineScope(),
+  snackbarHostState: SnackbarHostState,
+  content: @Composable RowScope.(Int, ExerciseSet) -> Unit,
+) =
+  DataPanel<ExerciseSet>(
     items = workoutEntry.sets,
     modifier = modifier,
     backgroundColor = MaterialTheme.colorScheme.focalGround(settings.theme),
     headerPadding = PaddingValues(horizontal = Dp.Medium),
     headline = headline,
     headerContent = headerContent,
-) { setIndex, set ->
-    SwipeToDeleteBox(onDelete = {
+  ) { setIndex, set ->
+    SwipeToDeleteBox(
+      onDelete = {
         val deletedExercise = workoutEntry
-        onWorkoutEntryChange(workoutEntry.copy(sets = workoutEntry.sets.filterIndexed { i, _ -> i != setIndex }))
-        if (set.weight != 0f || set.actualPerfVar != 0f) scope.launch {
-            val snackBarResult = snackbarHostState.showSnackbar(
+        onWorkoutEntryChange(
+          workoutEntry.copy(sets = workoutEntry.sets.filterIndexed { i, _ -> i != setIndex })
+        )
+        if (set.weight != 0f || set.actualPerfVar != 0f)
+          scope.launch {
+            val snackBarResult =
+              snackbarHostState.showSnackbar(
                 message = "Set ${setIndex + 1} of ${exerciseDescriptor.name} removed",
                 actionLabel = "Undo",
                 withDismissAction = true,
-            )
+              )
             if (snackBarResult == SnackbarResult.ActionPerformed) {
-                onWorkoutEntryChange(deletedExercise)
+              onWorkoutEntryChange(deletedExercise)
             }
-        }
-    }) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(color = MaterialTheme.colorScheme.focalGround(settings.theme))
-                .padding(Dp.Medium),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            content.invoke(this, setIndex, set)
-        }
+          }
+      }
+    ) {
+      Row(
+        modifier =
+          Modifier.fillMaxWidth()
+            .background(color = MaterialTheme.colorScheme.focalGround(settings.theme))
+            .padding(Dp.Medium),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        content.invoke(this, setIndex, set)
+      }
     }
-}
+  }

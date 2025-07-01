@@ -26,38 +26,42 @@ import io.github.depermitto.bullettrain.theme.Medium
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SwipeToDeleteBox(
-    modifier: Modifier = Modifier,
-    threshold: Float = 0.5f,
-    onDelete: () -> Unit,
-    shadowElevation: Dp = 0.dp,
-    shape: Shape = RectangleShape,
-    content: @Composable RowScope.() -> Unit
+  modifier: Modifier = Modifier,
+  threshold: Float = 0.5f,
+  onDelete: () -> Unit,
+  shadowElevation: Dp = 0.dp,
+  shape: Shape = RectangleShape,
+  content: @Composable RowScope.() -> Unit,
 ) {
-    val swipeState = rememberSwipeToDismissBoxState(positionalThreshold = { it * threshold })
+  val swipeState = rememberSwipeToDismissBoxState(positionalThreshold = { it * threshold })
 
-    if (swipeState.currentValue == SwipeToDismissBoxValue.EndToStart) {
-        LaunchedEffect(swipeState) {
-            onDelete()
-            swipeState.snapTo(SwipeToDismissBoxValue.Settled)
-        }
-        return
+  if (swipeState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+    LaunchedEffect(swipeState) {
+      onDelete()
+      swipeState.snapTo(SwipeToDismissBoxValue.Settled)
     }
+    return
+  }
 
-    Surface(shadowElevation = shadowElevation, shape = shape) {
-        SwipeToDismissBox(
-            modifier = modifier.clip(shape), state = swipeState, enableDismissFromStartToEnd = false, backgroundContent = {
-                Box(contentAlignment = Alignment.CenterEnd,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.errorContainer),
-                    content = {
-                        Text(
-                            modifier = Modifier.padding(horizontal = Dp.Medium),
-                            text = "Delete",
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                    })
-            }, content = content
+  Surface(shadowElevation = shadowElevation, shape = shape) {
+    SwipeToDismissBox(
+      modifier = modifier.clip(shape),
+      state = swipeState,
+      enableDismissFromStartToEnd = false,
+      backgroundContent = {
+        Box(
+          contentAlignment = Alignment.CenterEnd,
+          modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.errorContainer),
+          content = {
+            Text(
+              modifier = Modifier.padding(horizontal = Dp.Medium),
+              text = "Delete",
+              color = MaterialTheme.colorScheme.onErrorContainer,
+            )
+          },
         )
-    }
+      },
+      content = content,
+    )
+  }
 }

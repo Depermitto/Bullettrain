@@ -10,9 +10,12 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
 object ColorSerializer : KSerializer<Color> {
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("androidx.compose.ui.graphics.Color", PrimitiveKind.STRING)
+  override val descriptor: SerialDescriptor =
+    PrimitiveSerialDescriptor("androidx.compose.ui.graphics.Color", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: Color) = encoder.encodeSerializableValue(ULong.serializer(), value.value)
-    override fun deserialize(decoder: Decoder): Color = Color(decoder.decodeSerializableValue(ULong.serializer()))
+  override fun serialize(encoder: Encoder, value: Color) =
+    encoder.encodeSerializableValue(ULong.serializer(), value.value)
+
+  override fun deserialize(decoder: Decoder): Color =
+    Color(decoder.decodeSerializableValue(ULong.serializer()))
 }

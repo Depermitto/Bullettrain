@@ -76,9 +76,11 @@ private val surfaceContainerDark = Color(0xFF1D2024)
 private val surfaceContainerHighDark = Color(0xFF272A2F)
 private val surfaceContainerHighestDark = Color(0xFF32353A)
 
-val RhinoButtercupPalette = Palette(
+val RhinoButtercupPalette =
+  Palette(
     name = "Rhino Buttercup",
-    lightScheme = lightColorScheme(
+    lightScheme =
+      lightColorScheme(
         primary = primaryLight,
         onPrimary = onPrimaryLight,
         primaryContainer = primaryContainerLight,
@@ -114,7 +116,9 @@ val RhinoButtercupPalette = Palette(
         surfaceContainer = surfaceContainerLight,
         surfaceContainerHigh = surfaceContainerHighLight,
         surfaceContainerHighest = surfaceContainerHighestLight,
-    ), darkScheme = darkColorScheme(
+      ),
+    darkScheme =
+      darkColorScheme(
         primary = primaryDark,
         onPrimary = onPrimaryDark,
         primaryContainer = primaryContainerDark,
@@ -150,5 +154,5 @@ val RhinoButtercupPalette = Palette(
         surfaceContainer = surfaceContainerDark,
         surfaceContainerHigh = surfaceContainerHighDark,
         surfaceContainerHighest = surfaceContainerHighestDark,
-    )
-)
+      ),
+  )

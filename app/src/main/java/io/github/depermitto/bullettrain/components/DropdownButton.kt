@@ -11,17 +11,15 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun DropdownButton(
-    show: Boolean,
-    onShowChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    dropdownItems: @Composable () -> Unit,
+  show: Boolean,
+  onShowChange: (Boolean) -> Unit,
+  modifier: Modifier = Modifier,
+  dropdownItems: @Composable () -> Unit,
 ) {
-    Box(modifier = Modifier) {
-        IconButton(modifier = modifier, onClick = { onShowChange(true) }) {
-            Icon(Icons.Filled.MoreVert, contentDescription = null)
-        }
-        DropdownMenu(expanded = show, onDismissRequest = { onShowChange(false) }) {
-            dropdownItems()
-        }
+  Box(modifier = Modifier) {
+    IconButton(modifier = modifier, onClick = { onShowChange(true) }) {
+      Icon(Icons.Filled.MoreVert, contentDescription = null)
     }
+    DropdownMenu(expanded = show, onDismissRequest = { onShowChange(false) }) { dropdownItems() }
+  }
 }

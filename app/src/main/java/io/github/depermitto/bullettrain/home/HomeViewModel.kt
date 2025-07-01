@@ -9,10 +9,10 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import java.time.LocalDate
 
 class HomeViewModel() : ViewModel() {
-    var calendarDate by mutableStateOf(LocalDate.now())
-    var selectedDate by mutableStateOf<LocalDate?>(null)
+  var calendarDate by mutableStateOf(LocalDate.now())
+  var selectedDate by mutableStateOf<LocalDate?>(null)
 
-    companion object {
-        fun Factory() = viewModelFactory { initializer { HomeViewModel() } }
-    }
+  companion object {
+    fun Factory() = viewModelFactory { initializer { HomeViewModel() } }
+  }
 }

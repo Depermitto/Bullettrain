@@ -84,338 +84,423 @@ import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
-        super.onCreate(savedInstanceState)
-        FileKit.init(this)
+  override fun onCreate(savedInstanceState: Bundle?) {
+    enableEdgeToEdge()
+    super.onCreate(savedInstanceState)
+    FileKit.init(this)
 
-        val db = Database(application.filesDir, applicationContext)
-        setContent {
-            val settings by db.settingsDao.getSettings.collectAsStateWithLifecycle()
-            BullettrainTheme(settings) {
-                // this is for color flashing during navigating
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    App(db)
-                }
-            }
+    val db = Database(application.filesDir, applicationContext)
+    setContent {
+      val settings by db.settingsDao.getSettings.collectAsStateWithLifecycle()
+      BullettrainTheme(settings) {
+        // this is for color flashing during navigating
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+          App(db)
         }
+      }
     }
+  }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(db: Database) = MaterialTheme {
-    // global for every screen
-    val navController = rememberNavController()
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
+  // global for every screen
+  val navController = rememberNavController()
+  val scope = rememberCoroutineScope()
+  val snackbarHostState = remember { SnackbarHostState() }
 
-    val homeViewModel = viewModel<HomeViewModel>(factory = HomeViewModel.Factory())
-    val homeScreenPager = rememberPagerState(initialPage = Tab.Train.ordinal) { Tab.entries.size }
+  val homeViewModel = viewModel<HomeViewModel>(factory = HomeViewModel.Factory())
+  val homeScreenPager = rememberPagerState(initialPage = Tab.Train.ordinal) { Tab.entries.size }
 
-    val trainViewModel = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController))
-    var programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program()))
+  val trainViewModel =
+    viewModel<TrainViewModel>(
+      factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController)
+    )
+  var programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program()))
 
-    val settings by db.settingsDao.getSettings.collectAsStateWithLifecycle()
+  val settings by db.settingsDao.getSettings.collectAsStateWithLifecycle()
 
-    // used across every NavHost.composable
-    var showDiscardDialog by rememberSaveable { mutableStateOf(false) }
-    var showFinishDialog by rememberSaveable { mutableStateOf(false) }
+  // used across every NavHost.composable
+  var showDiscardDialog by rememberSaveable { mutableStateOf(false) }
+  var showFinishDialog by rememberSaveable { mutableStateOf(false) }
 
-    val focusManager = LocalFocusManager.current
-    NavHost(navController = navController,
-        startDestination = if (trainViewModel.restoreWorkout()) Destination.Training else Destination.Home,
-        modifier = Modifier.pointerInput(Unit) {
-            detectTapGestures(onTap = {
-                focusManager.clearFocus()
-            })
+  val focusManager = LocalFocusManager.current
+  NavHost(
+    navController = navController,
+    startDestination =
+      if (trainViewModel.restoreWorkout()) Destination.Training else Destination.Home,
+    modifier =
+      Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
+    enterTransition = { scaleIntoContainer() },
+    exitTransition = { scaleOutOfContainer(direction = ScaleTransitionDirection.INWARDS) },
+    popEnterTransition = { scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS) },
+    popExitTransition = { scaleOutOfContainer() },
+  ) {
+    composable<Destination.Home> {
+      Scaffold(
+        topBar = { TopBarWithSettingsButton(navController = navController, title = "Home") },
+        bottomBar = {
+          NavigationBar(tonalElevation = 8.dp) {
+            Tab.entries.forEachIndexed { tabIndex, tab ->
+              val isSelected = homeScreenPager.currentPage == tabIndex
+              NavigationBarItem(
+                selected = isSelected,
+                onClick = {
+                  if (!isSelected) {
+                    scope.launch { homeScreenPager.animateScrollToPage(tabIndex) }
+                  }
+                },
+                icon = {
+                  Icon(painter = painterResource(id = tab.icon), contentDescription = tab.name)
+                },
+                label = { Text(text = tab.name) },
+                alwaysShowLabel = false,
+              )
+            }
+          }
         },
-        enterTransition = { scaleIntoContainer() },
-        exitTransition = { scaleOutOfContainer(direction = ScaleTransitionDirection.INWARDS) },
-        popEnterTransition = { scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS) },
-        popExitTransition = { scaleOutOfContainer() }) {
-        composable<Destination.Home> {
-            Scaffold(topBar = { TopBarWithSettingsButton(navController = navController, title = "Home") }, bottomBar = {
-                NavigationBar(tonalElevation = 8.dp) {
-                    Tab.entries.forEachIndexed { tabIndex, tab ->
-                        val isSelected = homeScreenPager.currentPage == tabIndex
-                        NavigationBarItem(selected = isSelected, onClick = {
-                            if (!isSelected) {
-                                scope.launch {
-                                    homeScreenPager.animateScrollToPage(tabIndex)
-                                }
-                            }
-                        }, icon = {
-                            Icon(painter = painterResource(id = tab.icon), contentDescription = tab.name)
-                        }, label = {
-                            Text(text = tab.name)
-                        }, alwaysShowLabel = false)
-                    }
-                }
-            }) { paddingValues ->
-                HomeScreen(
-                    modifier = Modifier
-                        .consumeWindowInsets(paddingValues)
-                        .padding(paddingValues),
-                    homeViewModel = homeViewModel,
-                    trainViewModel = trainViewModel,
-                    programViewModel = programViewModel,
-                    exerciseDao = db.exerciseDao,
-                    programDao = db.programDao,
-                    historyDao = db.historyDao,
-                    settings = settings,
-                    pagerState = homeScreenPager,
-                    navController = navController
+      ) { paddingValues ->
+        HomeScreen(
+          modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
+          homeViewModel = homeViewModel,
+          trainViewModel = trainViewModel,
+          programViewModel = programViewModel,
+          exerciseDao = db.exerciseDao,
+          programDao = db.programDao,
+          historyDao = db.historyDao,
+          settings = settings,
+          pagerState = homeScreenPager,
+          navController = navController,
+        )
+      }
+    }
+
+    composable<Destination.Training> {
+      if (!trainViewModel.isWorkoutRunning()) return@composable
+
+      Scaffold(
+        topBar = {
+          OutlinedCard(
+            modifier =
+              Modifier.windowInsetsPadding(TopAppBarDefaults.windowInsets)
+                .padding(start = Dp.Medium, end = Dp.Medium, bottom = Dp.Medium)
+          ) {
+            Box(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp, horizontal = 4.dp)) {
+              TextButton(
+                modifier = Modifier.align(Alignment.CenterStart),
+                onClick = { showDiscardDialog = true },
+                colors =
+                  ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+              ) {
+                Icon(Icons.Filled.Close, "Cancel Workout", Modifier.size(ButtonDefaults.IconSize))
+                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                Text("Discard")
+              }
+              if (!trainViewModel.isWorkoutEditing())
+                Text(
+                  modifier = Modifier.align(Alignment.Center),
+                  text = trainViewModel.elapsedSince(),
+                  style = MaterialTheme.typography.titleMedium,
                 )
+              TextButton(
+                modifier = Modifier.align(Alignment.CenterEnd),
+                onClick = {
+                  if (trainViewModel.isWorkoutEditing()) {
+                    trainViewModel.completeWorkout()
+                  } else {
+                    showFinishDialog = true
+                  }
+                },
+                colors =
+                  ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.secondary
+                  ),
+              ) {
+                Text("Finish")
+              }
             }
-        }
+          }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+      ) { paddingValues ->
+        TrainingScreen(
+          modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
+          trainViewModel = trainViewModel,
+          exerciseDao = db.exerciseDao,
+          historyDao = db.historyDao,
+          settings = settings,
+          navController = navController,
+          snackbarHostState = snackbarHostState,
+        )
+      }
 
-        composable<Destination.Training> {
-            if (!trainViewModel.isWorkoutRunning()) return@composable
+      if (showDiscardDialog)
+        DiscardConfirmationAlertDialog(
+          onDismissRequest = { showDiscardDialog = false },
+          text =
+            if (trainViewModel.isWorkoutEditing()) {
+              "Do you definitely want to discard changes made during editing?"
+            } else {
+              "All sets will be lost forever. Do you definitely want to discard the workout?"
+            },
+          onConfirm = {
+            trainViewModel.cancelWorkout()
+            showDiscardDialog = false
+          },
+        )
 
-            Scaffold(topBar = {
-                OutlinedCard(
-                    modifier = Modifier
-                        .windowInsetsPadding(TopAppBarDefaults.windowInsets)
-                        .padding(start = Dp.Medium, end = Dp.Medium, bottom = Dp.Medium)
+      if (showFinishDialog)
+        AlertDialog(
+          text = { Text("Do you truly want to conclude the workout?") },
+          onDismissRequest = { showFinishDialog = false },
+          dismissButton = {
+            TextButton(onClick = { showFinishDialog = false }) {
+              Text("No, One More Set \uD83D\uDCAA")
+            }
+          },
+          confirmButton = {
+            TextButton(
+              onClick = {
+                trainViewModel.completeWorkout()
+                showFinishDialog = false
+              }
+            ) {
+              Text("Conclude")
+            }
+          },
+        )
+    }
+
+    composable<Destination.ProgramCreation> {
+      Scaffold(
+        topBar = {
+          TopBarWithBackButton(
+            navController = navController,
+            title =
+              if (programViewModel.programName.isBlank()) "New Program"
+              else programViewModel.programName,
+            topEndContent = {
+              TextButton(
+                onClick = {
+                  val program = programViewModel.getProgram()
+                  if (program.name.isBlank()) {
+                    scope.launch {
+                      snackbarHostState.showSnackbar("Blank Program Name", withDismissAction = true)
+                    }
+                    return@TextButton
+                  }
+
+                  navController.navigateUp()
+                  db.programDao.insert(program)
+                  programViewModel.revertToDefault()
+                }
+              ) {
+                Icon(
+                  modifier = Modifier.size(ButtonDefaults.IconSize),
+                  imageVector = Icons.Filled.Check,
+                  contentDescription = "Complete Program Creation",
+                )
+                Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+                Text("Complete")
+              }
+            },
+          )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+      ) { paddingValues ->
+        ProgramCreationScreen(
+          modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
+          programViewModel = programViewModel,
+          navController = navController,
+        )
+      }
+
+      if (showDiscardDialog)
+        DiscardConfirmationAlertDialog(
+          onDismissRequest = { showDiscardDialog = false },
+          text =
+            "Do you want to discard ${programViewModel.programName.ifBlank { "your new creation" }}?",
+          onConfirm = {
+            navController.navigateUp()
+            programViewModel.revertToDefault()
+          },
+        )
+
+      BackHandler(enabled = programViewModel.hasContent(ignoreDay1 = false)) {
+        showDiscardDialog = true
+      }
+    }
+
+    composable<Destination.Day> { navBackStackEntry ->
+      val dayIndex = navBackStackEntry.toRoute<Destination.Day>().dayIndex
+      val day = programViewModel.getDay(dayIndex)
+
+      Scaffold(
+        topBar = { TopBarWithBackButton(navController = navController, title = day.name) },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+      ) { paddingValues ->
+        DayScreen(
+          modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
+          programViewModel = programViewModel,
+          exerciseDao = db.exerciseDao,
+          historyDao = db.historyDao,
+          dayIndex = dayIndex,
+          navController = navController,
+          snackbarHostState = snackbarHostState,
+          settings = settings,
+        )
+      }
+    }
+
+    composable<Destination.Program> { navBackStackEntry ->
+      val program = db.programDao.where(navBackStackEntry.toRoute<Destination.Program>().programId)
+      programViewModel = viewModel(factory = ProgramViewModel.Factory(program))
+
+      Scaffold(
+        topBar = {
+          TopBarWithBackButton(
+            navController = navController,
+            title = programViewModel.programName,
+            topEndContent = {
+              if (programViewModel.hasChanged)
+                TextButton(
+                  onClick = {
+                    db.programDao.update(programViewModel.getProgram())
+                    navController.popBackStack()
+                  }
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 2.dp, horizontal = 4.dp)
-                    ) {
-                        TextButton(
-                            modifier = Modifier.align(Alignment.CenterStart),
-                            onClick = { showDiscardDialog = true },
-                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                        ) {
-                            Icon(Icons.Filled.Close, "Cancel Workout", Modifier.size(ButtonDefaults.IconSize))
-                            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                            Text("Discard")
-                        }
-                        if (!trainViewModel.isWorkoutEditing()) Text(
-                            modifier = Modifier.align(Alignment.Center),
-                            text = trainViewModel.elapsedSince(),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        TextButton(
-                            modifier = Modifier.align(Alignment.CenterEnd), onClick = {
-                                if (trainViewModel.isWorkoutEditing()) {
-                                    trainViewModel.completeWorkout()
-                                } else {
-                                    showFinishDialog = true
-                                }
-                            }, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
-                        ) {
-                            Text("Finish")
-                        }
-                    }
+                  Icon(
+                    modifier = Modifier.size(ButtonDefaults.IconSize),
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = "Complete Program Edit",
+                  )
+                  Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+                  Text("Finish Edit")
                 }
-            }, snackbarHost = { SnackbarHost(snackbarHostState) }) { paddingValues ->
-                TrainingScreen(
-                    modifier = Modifier
-                        .consumeWindowInsets(paddingValues)
-                        .padding(paddingValues),
-                    trainViewModel = trainViewModel,
-                    exerciseDao = db.exerciseDao,
-                    historyDao = db.historyDao,
-                    settings = settings,
-                    navController = navController,
-                    snackbarHostState = snackbarHostState
-                )
-            }
-
-            if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
-                text = if (trainViewModel.isWorkoutEditing()) {
-                    "Do you definitely want to discard changes made during editing?"
-                } else {
-                    "All sets will be lost forever. Do you definitely want to discard the workout?"
-                },
-                onConfirm = { trainViewModel.cancelWorkout(); showDiscardDialog = false })
-
-            if (showFinishDialog) AlertDialog(text = { Text("Do you truly want to conclude the workout?") },
-                onDismissRequest = { showFinishDialog = false },
-                dismissButton = {
-                    TextButton(onClick = { showFinishDialog = false }) { Text("No, One More Set \uD83D\uDCAA") }
-                },
-                confirmButton = {
-                    TextButton(onClick = { trainViewModel.completeWorkout(); showFinishDialog = false }) { Text("Conclude") }
-                })
+            },
+          )
         }
+      ) { paddingValues ->
+        ProgramScreen(
+          modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
+          programViewModel = programViewModel,
+          navController = navController,
+        )
+      }
 
-        composable<Destination.ProgramCreation> {
-            Scaffold(topBar = {
-                TopBarWithBackButton(
-                    navController = navController,
-                    title = if (programViewModel.programName.isBlank()) "New Program" else programViewModel.programName,
-                    topEndContent = {
-                        TextButton(onClick = {
-                            val program = programViewModel.getProgram()
-                            if (program.name.isBlank()) {
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("Blank Program Name", withDismissAction = true)
-                                }
-                                return@TextButton
-                            }
+      if (showDiscardDialog)
+        DiscardConfirmationAlertDialog(
+          onDismissRequest = { showDiscardDialog = false },
+          text = "Do you want to discard changes made to ${programViewModel.programName}?",
+          onConfirm = { navController.navigateUp() },
+        )
 
-                            navController.navigateUp()
-                            db.programDao.insert(program)
-                            programViewModel.revertToDefault()
-                        }) {
-                            Icon(
-                                modifier = Modifier.size(ButtonDefaults.IconSize),
-                                imageVector = Icons.Filled.Check,
-                                contentDescription = "Complete Program Creation"
-                            )
-                            Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                            Text("Complete")
-                        }
+      BackHandler(enabled = programViewModel.hasChanged) { showDiscardDialog = true }
+    }
+
+    composable<Destination.Exercise> { navBackStackEntry ->
+      val exerciseDescriptor =
+        db.exerciseDao.where(navBackStackEntry.toRoute<Destination.Exercise>().exerciseId)
+      var showDropdown by remember { mutableStateOf(false) }
+      var showRenameDialog by rememberSaveable { mutableStateOf(false) }
+      Scaffold(
+        topBar = {
+          TopBarWithBackButton(
+            navController = navController,
+            title =
+              exerciseDescriptor.name.run {
+                if (exerciseDescriptor.obsolete) "$this [Archived]" else this
+              },
+            topEndContent = {
+              DropdownButton(showDropdown, { showDropdown = it }) {
+                DropdownMenuItem(
+                  text = { Text("Rename") },
+                  leadingIcon = { Icon(Icons.Filled.Edit, "Rename Exercise") },
+                  onClick = {
+                    showDropdown = false
+                    showRenameDialog = true
+                  },
+                )
+                if (!exerciseDescriptor.obsolete)
+                  DropdownMenuItem(
+                    text = { Text("Delete") },
+                    leadingIcon = { Icon(Icons.Filled.Delete, "Delete Exercise") },
+                    onClick = {
+                      showDropdown = false
+                      showDiscardDialog = true
                     },
-                )
-            }, snackbarHost = { SnackbarHost(snackbarHostState) }) { paddingValues ->
-                ProgramCreationScreen(
-                    modifier = Modifier
-                        .consumeWindowInsets(paddingValues)
-                        .padding(paddingValues),
-                    programViewModel = programViewModel,
-                    navController = navController
-                )
-            }
-
-            if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
-                text = "Do you want to discard ${programViewModel.programName.ifBlank { "your new creation" }}?",
-                onConfirm = { navController.navigateUp(); programViewModel.revertToDefault() })
-
-            BackHandler(enabled = programViewModel.hasContent(ignoreDay1 = false)) { showDiscardDialog = true }
+                  )
+              }
+            },
+          )
         }
+      ) { paddingValues ->
+        ExerciseScreen(
+          modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
+          historyDao = db.historyDao,
+          settingsDao = db.settingsDao,
+          exerciseDescriptor = exerciseDescriptor,
+        )
+      }
 
-        composable<Destination.Day> { navBackStackEntry ->
-            val dayIndex = navBackStackEntry.toRoute<Destination.Day>().dayIndex
-            val day = programViewModel.getDay(dayIndex)
-
-            Scaffold(topBar = { TopBarWithBackButton(navController = navController, title = day.name) },
-                snackbarHost = { SnackbarHost(snackbarHostState) }) { paddingValues ->
-                DayScreen(
-                    modifier = Modifier
-                        .consumeWindowInsets(paddingValues)
-                        .padding(paddingValues),
-                    programViewModel = programViewModel,
-                    exerciseDao = db.exerciseDao,
-                    historyDao = db.historyDao,
-                    dayIndex = dayIndex,
-                    navController = navController,
-                    snackbarHostState = snackbarHostState,
-                    settings = settings
-                )
+      // This is a essentially copy from ExercisesListScreen.kt
+      if (showRenameDialog) {
+        var errorMessage by rememberSaveable { mutableStateOf("") }
+        TextFieldAlertDialog(
+          onDismissRequest = { showRenameDialog = false },
+          startingText = exerciseDescriptor.name,
+          label = { Text("Exercise Name") },
+          dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
+          confirmButton = { name ->
+            TextButton(
+              onClick = {
+                errorMessage =
+                  db.exerciseDao.validateName(name)
+                    ?: ""
+                      .also {
+                        showRenameDialog = false
+                        db.exerciseDao.update(exerciseDescriptor.copy(name = name))
+                      }
+              }
+            ) {
+              Text("Confirm")
             }
-        }
+          },
+          errorMessage = errorMessage,
+          isError = errorMessage.isNotBlank(),
+        )
+      }
 
-        composable<Destination.Program> { navBackStackEntry ->
-            val program = db.programDao.where(navBackStackEntry.toRoute<Destination.Program>().programId)
-            programViewModel = viewModel(factory = ProgramViewModel.Factory(program))
-
-            Scaffold(topBar = {
-                TopBarWithBackButton(navController = navController, title = programViewModel.programName, topEndContent = {
-                    if (programViewModel.hasChanged) TextButton(onClick = {
-                        db.programDao.update(programViewModel.getProgram())
-                        navController.popBackStack()
-                    }) {
-                        Icon(
-                            modifier = Modifier.size(ButtonDefaults.IconSize),
-                            imageVector = Icons.Filled.Check,
-                            contentDescription = "Complete Program Edit"
-                        )
-                        Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                        Text("Finish Edit")
-                    }
-                })
-            }) { paddingValues ->
-                ProgramScreen(
-                    modifier = Modifier
-                        .consumeWindowInsets(paddingValues)
-                        .padding(paddingValues),
-                    programViewModel = programViewModel,
-                    navController = navController
-                )
-            }
-
-            if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
-                text = "Do you want to discard changes made to ${programViewModel.programName}?",
-                onConfirm = { navController.navigateUp() })
-
-            BackHandler(enabled = programViewModel.hasChanged) { showDiscardDialog = true }
-        }
-
-        composable<Destination.Exercise> { navBackStackEntry ->
-            val exerciseDescriptor = db.exerciseDao.where(navBackStackEntry.toRoute<Destination.Exercise>().exerciseId)
-            var showDropdown by remember { mutableStateOf(false) }
-            var showRenameDialog by rememberSaveable { mutableStateOf(false) }
-            Scaffold(topBar = {
-                TopBarWithBackButton(navController = navController,
-                    title = exerciseDescriptor.name.run { if (exerciseDescriptor.obsolete) "$this [Archived]" else this },
-                    topEndContent = {
-                        DropdownButton(showDropdown, { showDropdown = it }) {
-                            DropdownMenuItem(text = { Text("Rename") },
-                                leadingIcon = { Icon(Icons.Filled.Edit, "Rename Exercise") },
-                                onClick = { showDropdown = false; showRenameDialog = true })
-                            if (!exerciseDescriptor.obsolete) DropdownMenuItem(text = { Text("Delete") },
-                                leadingIcon = { Icon(Icons.Filled.Delete, "Delete Exercise") },
-                                onClick = { showDropdown = false; showDiscardDialog = true })
-                        }
-                    })
-            }) { paddingValues ->
-                ExerciseScreen(
-                    modifier = Modifier
-                        .consumeWindowInsets(paddingValues)
-                        .padding(paddingValues),
-                    historyDao = db.historyDao,
-                    settingsDao = db.settingsDao,
-                    exerciseDescriptor = exerciseDescriptor
-                )
-            }
-
-            // This is a essentially copy from ExercisesListScreen.kt
-            if (showRenameDialog) {
-                var errorMessage by rememberSaveable { mutableStateOf("") }
-                TextFieldAlertDialog(
-                    onDismissRequest = { showRenameDialog = false },
-                    startingText = exerciseDescriptor.name,
-                    label = { Text("Exercise Name") },
-                    dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
-                    confirmButton = { name ->
-                        TextButton(onClick = {
-                            errorMessage = db.exerciseDao.validateName(name) ?: "".also {
-                                showRenameDialog = false
-                                db.exerciseDao.update(exerciseDescriptor.copy(name = name))
-                            }
-                        }) {
-                            Text("Confirm")
-                        }
-                    },
-                    errorMessage = errorMessage,
-                    isError = errorMessage.isNotBlank()
-                )
-            }
-
-            if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false }, text = """
+      if (showDiscardDialog)
+        DiscardConfirmationAlertDialog(
+          onDismissRequest = { showDiscardDialog = false },
+          text =
+            """
                 Data associated with this exercise will not be lost. Even if you delete it, you can still perform the exercise if it appears in a program, and you can also rename it. However, you will not be able to include the exercise in new Programs.
 
                 Do you really want to remove '${exerciseDescriptor.name}'?
-            """.trimIndent(), onConfirm = { db.exerciseDao.delete(exerciseDescriptor); navController.navigateUp() })
-        }
-
-        composable<Destination.Settings> {
-            Scaffold(topBar = { TopBarWithBackButton(navController = navController, title = "Settings") },
-                snackbarHost = { SnackbarHost(snackbarHostState) }) { paddingValues ->
-                SettingsScreen(
-                    modifier = Modifier
-                        .consumeWindowInsets(paddingValues)
-                        .padding(paddingValues),
-                    db = db,
-                    scope = scope,
-                    snackbarHostState = snackbarHostState
-                )
-            }
-        }
+            """
+              .trimIndent(),
+          onConfirm = {
+            db.exerciseDao.delete(exerciseDescriptor)
+            navController.navigateUp()
+          },
+        )
     }
+
+    composable<Destination.Settings> {
+      Scaffold(
+        topBar = { TopBarWithBackButton(navController = navController, title = "Settings") },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+      ) { paddingValues ->
+        SettingsScreen(
+          modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
+          db = db,
+          scope = scope,
+          snackbarHostState = snackbarHostState,
+        )
+      }
+    }
+  }
 }

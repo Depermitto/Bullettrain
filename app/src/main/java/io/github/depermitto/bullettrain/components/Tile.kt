@@ -21,110 +21,125 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 
 /**
- * Similar to [androidx.compose.material3.ListItem] but with rectangular shape, customizable padding and no leading content.
+ * Similar to [androidx.compose.material3.ListItem] but with rectangular shape, customizable padding
+ * and no leading content.
+ *
  * @see [RadioTile]
  */
 @Composable
 fun Tile(
-    modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null,
-    supportingContent: (@Composable () -> Unit)? = null,
-    trailingContent: (@Composable () -> Unit)? = null,
-    headlineContent: @Composable () -> Unit,
-    headlineTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
-    supportingTextStyle: TextStyle = MaterialTheme.typography.bodyMedium,
-    contentPadding: PaddingValues = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
-) = Box(if (onClick == null) modifier else modifier.clickable { onClick() }) {
-    ConstraintLayout(
-        Modifier
-            .fillMaxWidth()
-            .padding(contentPadding)
-    ) {
-        val (headline, supporting, trailing) = createRefs()
-        createHorizontalChain(headline, trailing, chainStyle = ChainStyle.SpreadInside)
+  modifier: Modifier = Modifier,
+  onClick: (() -> Unit)? = null,
+  supportingContent: (@Composable () -> Unit)? = null,
+  trailingContent: (@Composable () -> Unit)? = null,
+  headlineContent: @Composable () -> Unit,
+  headlineTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
+  supportingTextStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+  contentPadding: PaddingValues = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
+) =
+  Box(if (onClick == null) modifier else modifier.clickable { onClick() }) {
+    ConstraintLayout(Modifier.fillMaxWidth().padding(contentPadding)) {
+      val (headline, supporting, trailing) = createRefs()
+      createHorizontalChain(headline, trailing, chainStyle = ChainStyle.SpreadInside)
 
-        CompositionLocalProvider(
-            LocalContentColor provides ListItemDefaults.colors().headlineColor,
-            LocalTextStyle provides LocalTextStyle.current.merge(headlineTextStyle)
+      CompositionLocalProvider(
+        LocalContentColor provides ListItemDefaults.colors().headlineColor,
+        LocalTextStyle provides LocalTextStyle.current.merge(headlineTextStyle),
+      ) {
+        Box(
+          Modifier.constrainAs(headline) {
+            top.linkTo(parent.top)
+            width = Dimension.preferredWrapContent
+          }
         ) {
-            Box(Modifier.constrainAs(headline) {
-                top.linkTo(parent.top)
-                width = Dimension.preferredWrapContent
-            }) {
-                headlineContent()
-            }
+          headlineContent()
         }
+      }
 
-        if (supportingContent != null) {
-            CompositionLocalProvider(
-                LocalContentColor provides ListItemDefaults.colors().supportingTextColor,
-                LocalTextStyle provides LocalTextStyle.current.merge(supportingTextStyle)
-            ) {
-                Box(Modifier.constrainAs(supporting) {
-                    start.linkTo(parent.start)
-                    top.linkTo(headline.bottom)
-                }) {
-                    supportingContent()
-                }
+      if (supportingContent != null) {
+        CompositionLocalProvider(
+          LocalContentColor provides ListItemDefaults.colors().supportingTextColor,
+          LocalTextStyle provides LocalTextStyle.current.merge(supportingTextStyle),
+        ) {
+          Box(
+            Modifier.constrainAs(supporting) {
+              start.linkTo(parent.start)
+              top.linkTo(headline.bottom)
             }
+          ) {
+            supportingContent()
+          }
         }
+      }
 
-        if (trailingContent != null) {
-            Row(Modifier
-                .padding(start = 4.dp)
-                .constrainAs(trailing) {
-                    end.linkTo(parent.end)
-                    centerVerticallyTo(parent)
-                }) {
-                trailingContent()
-            }
+      if (trailingContent != null) {
+        Row(
+          Modifier.padding(start = 4.dp).constrainAs(trailing) {
+            end.linkTo(parent.end)
+            centerVerticallyTo(parent)
+          }
+        ) {
+          trailingContent()
         }
+      }
     }
-}
+  }
 
 /**
- * Similar to [androidx.compose.material3.ListItem] but with a [androidx.compose.material3.RadioButton] as leading content.
+ * Similar to [androidx.compose.material3.ListItem] but with a
+ * [androidx.compose.material3.RadioButton] as leading content.
+ *
  * @see [Tile]
  */
 @Composable
 fun RadioTile(
-    modifier: Modifier = Modifier,
-    selected: Boolean,
-    headlineContent: @Composable () -> Unit,
-    supportingContent: (@Composable () -> Unit)? = null,
-    headlineTextStyle: TextStyle = MaterialTheme.typography.bodyLarge
-) = ConstraintLayout(modifier) {
+  modifier: Modifier = Modifier,
+  selected: Boolean,
+  headlineContent: @Composable () -> Unit,
+  supportingContent: (@Composable () -> Unit)? = null,
+  headlineTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
+) =
+  ConstraintLayout(modifier) {
     val (leading, headline, supporting) = createRefs()
 
-    RadioButton(selected = selected, onClick = null, modifier = Modifier.constrainAs(leading) {
-        centerVerticallyTo(parent)
-        start.linkTo(parent.start, 10.dp)
-    })
+    RadioButton(
+      selected = selected,
+      onClick = null,
+      modifier =
+        Modifier.constrainAs(leading) {
+          centerVerticallyTo(parent)
+          start.linkTo(parent.start, 10.dp)
+        },
+    )
 
     CompositionLocalProvider(
-        LocalContentColor provides ListItemDefaults.colors().headlineColor,
-        LocalTextStyle provides LocalTextStyle.current.merge(headlineTextStyle)
+      LocalContentColor provides ListItemDefaults.colors().headlineColor,
+      LocalTextStyle provides LocalTextStyle.current.merge(headlineTextStyle),
     ) {
-        Box(Modifier.constrainAs(headline) {
-            start.linkTo(leading.end, 24.dp)
-            if (supportingContent == null) centerVerticallyTo(parent) else top.linkTo(parent.top)
-            width = Dimension.preferredWrapContent
-        }) {
-            headlineContent()
+      Box(
+        Modifier.constrainAs(headline) {
+          start.linkTo(leading.end, 24.dp)
+          if (supportingContent == null) centerVerticallyTo(parent) else top.linkTo(parent.top)
+          width = Dimension.preferredWrapContent
         }
+      ) {
+        headlineContent()
+      }
     }
 
     if (supportingContent != null) {
-        CompositionLocalProvider(
-            LocalContentColor provides ListItemDefaults.colors().supportingTextColor,
-            LocalTextStyle provides LocalTextStyle.current.merge(MaterialTheme.typography.bodyMedium)
+      CompositionLocalProvider(
+        LocalContentColor provides ListItemDefaults.colors().supportingTextColor,
+        LocalTextStyle provides LocalTextStyle.current.merge(MaterialTheme.typography.bodyMedium),
+      ) {
+        Box(
+          Modifier.constrainAs(supporting) {
+            start.linkTo(headline.start)
+            top.linkTo(headline.bottom)
+          }
         ) {
-            Box(Modifier.constrainAs(supporting) {
-                start.linkTo(headline.start)
-                top.linkTo(headline.bottom)
-            }) {
-                supportingContent()
-            }
+          supportingContent()
         }
+      }
     }
-}
+  }

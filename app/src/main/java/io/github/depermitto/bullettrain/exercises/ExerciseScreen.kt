@@ -28,56 +28,69 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun ExerciseScreen(
-    modifier: Modifier = Modifier, historyDao: HistoryDao, settingsDao: SettingsDao, exerciseDescriptor: ExerciseDescriptor
+  modifier: Modifier = Modifier,
+  historyDao: HistoryDao,
+  settingsDao: SettingsDao,
+  exerciseDescriptor: ExerciseDescriptor,
 ) {
-    val settings by settingsDao.getSettings.collectAsStateWithLifecycle()
-    val exercises by historyDao.where(exerciseDescriptor).collectAsStateWithLifecycle(initialValue = emptyList())
-    val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMM dd yyyy")
+  val settings by settingsDao.getSettings.collectAsStateWithLifecycle()
+  val exercises by
+    historyDao.where(exerciseDescriptor).collectAsStateWithLifecycle(initialValue = emptyList())
+  val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMM dd yyyy")
 
-    LazyColumn(
-        modifier = modifier,
-        contentPadding = PaddingValues(start = Dp.Medium, end = Dp.Medium, bottom = Dp.EmptyScrollSpace),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Dp.Small),
-    ) {
-        items(exercises) { exercise ->
-            val doneDate = exercise.lastPerformedSet()?.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
-            DataPanel<ExerciseSet>(
-                items = exercise.getPerformedSets(),
-                separateHeaderAndContent = false,
-                headline = {
-                    Tile(
-                        headlineContent = { Text(dateFormatter.format(doneDate)) },
-                        headlineTextStyle = MaterialTheme.typography.titleMedium,
-                        contentPadding = PaddingValues(Dp.Medium),
-                    )
-                },
-                headerPadding = PaddingValues(horizontal = Dp.Medium),
-                headerContent = {
-                    Text("Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
-                    Spacer(Modifier.weight(1f))
-                    Text("Completed", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
-                },
-            ) { setIndex, set ->
-                Tile(
-                    headlineContent = { Text("${setIndex + 1}", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                    trailingContent = {
-                        Text(maxLines = 1, overflow = TextOverflow.Ellipsis, text = run {
-                            val perfVar = set.actualPerfVar.encodeToStringOutput() // is always non-zero
-                            val weight = set.weight.encodeToStringOutput()
+  LazyColumn(
+    modifier = modifier,
+    contentPadding =
+      PaddingValues(start = Dp.Medium, end = Dp.Medium, bottom = Dp.EmptyScrollSpace),
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(Dp.Small),
+  ) {
+    items(exercises) { exercise ->
+      val doneDate =
+        exercise.lastPerformedSet()?.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
+      DataPanel<ExerciseSet>(
+        items = exercise.getPerformedSets(),
+        separateHeaderAndContent = false,
+        headline = {
+          Tile(
+            headlineContent = { Text(dateFormatter.format(doneDate)) },
+            headlineTextStyle = MaterialTheme.typography.titleMedium,
+            contentPadding = PaddingValues(Dp.Medium),
+          )
+        },
+        headerPadding = PaddingValues(horizontal = Dp.Medium),
+        headerContent = {
+          Text("Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+          Spacer(Modifier.weight(1f))
+          Text("Completed", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+        },
+      ) { setIndex, set ->
+        Tile(
+          headlineContent = {
+            Text("${setIndex + 1}", maxLines = 1, overflow = TextOverflow.Ellipsis)
+          },
+          trailingContent = {
+            Text(
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis,
+              text =
+                run {
+                  val perfVar = set.actualPerfVar.encodeToStringOutput() // is always non-zero
+                  val weight = set.weight.encodeToStringOutput()
 
-                            when {
-                                weight.isBlank() -> "$perfVar ${set.targetPerfVar.category.shortName.lowercase()}"
-                                else -> "$perfVar x $weight ${settings.unitSystem.weightUnit()}"
-                            }
-                        })
-                    },
-                    contentPadding = PaddingValues(horizontal = Dp.Medium),
-                    headlineTextStyle = MaterialTheme.typography.bodyLarge,
-                    supportingTextStyle = MaterialTheme.typography.bodyLarge,
-                )
-            }
-        }
+                  when {
+                    weight.isBlank() ->
+                      "$perfVar ${set.targetPerfVar.category.shortName.lowercase()}"
+                    else -> "$perfVar x $weight ${settings.unitSystem.weightUnit()}"
+                  }
+                },
+            )
+          },
+          contentPadding = PaddingValues(horizontal = Dp.Medium),
+          headlineTextStyle = MaterialTheme.typography.bodyLarge,
+          supportingTextStyle = MaterialTheme.typography.bodyLarge,
+        )
+      }
     }
+  }
 }
-

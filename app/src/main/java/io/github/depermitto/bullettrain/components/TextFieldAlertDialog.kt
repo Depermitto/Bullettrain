@@ -25,35 +25,34 @@ import io.github.depermitto.bullettrain.theme.Large
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextFieldAlertDialog(
-    startingText: String = "",
-    modifier: Modifier = Modifier,
-    onDismissRequest: () -> Unit,
-    dismissButton: @Composable () -> Unit,
-    confirmButton: @Composable (String) -> Unit,
-    label: @Composable (() -> Unit)? = null,
-    isError: Boolean = false,
-    errorMessage: String = "",
-) = BasicAlertDialog(onDismissRequest = onDismissRequest) {
-    Card(
-        modifier
-            .heightIn(0.dp, 250.dp)
-            .clip(MaterialTheme.shapes.extraLarge)
-    ) {
-        var name by rememberSaveable { mutableStateOf(startingText) }
-        OutlinedTextField(
-            modifier = Modifier.padding(start = Dp.ExtraLarge, end = Dp.ExtraLarge, top = Dp.ExtraLarge),
-            value = name, onValueChange = { name = it },
-            label = label,
-            maxLines = 4,
-            isError = isError,
-            supportingText = { if (isError) Text(errorMessage) },
-        )
+  startingText: String = "",
+  modifier: Modifier = Modifier,
+  onDismissRequest: () -> Unit,
+  dismissButton: @Composable () -> Unit,
+  confirmButton: @Composable (String) -> Unit,
+  label: @Composable (() -> Unit)? = null,
+  isError: Boolean = false,
+  errorMessage: String = "",
+) =
+  BasicAlertDialog(onDismissRequest = onDismissRequest) {
+    Card(modifier.heightIn(0.dp, 250.dp).clip(MaterialTheme.shapes.extraLarge)) {
+      var name by rememberSaveable { mutableStateOf(startingText) }
+      OutlinedTextField(
+        modifier =
+          Modifier.padding(start = Dp.ExtraLarge, end = Dp.ExtraLarge, top = Dp.ExtraLarge),
+        value = name,
+        onValueChange = { name = it },
+        label = label,
+        maxLines = 4,
+        isError = isError,
+        supportingText = { if (isError) Text(errorMessage) },
+      )
 
+      Spacer(Modifier.weight(1f))
+      Row(modifier = Modifier.padding(end = Dp.Large, bottom = Dp.ExtraLarge)) {
         Spacer(Modifier.weight(1f))
-        Row(modifier = Modifier.padding(end = Dp.Large, bottom = Dp.ExtraLarge)) {
-            Spacer(Modifier.weight(1f))
-            dismissButton()
-            confirmButton(name)
-        }
+        dismissButton()
+        confirmButton(name)
+      }
     }
-}
+  }

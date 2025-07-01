@@ -24,38 +24,37 @@ import io.github.depermitto.bullettrain.theme.Large
 
 @Composable
 fun <T> DataPanel(
-    items: List<T>,
-    modifier: Modifier = Modifier,
-    headline: @Composable () -> Unit,
-    headerTextStyle: TextStyle = MaterialTheme.typography.titleSmall,
-    headerPadding: PaddingValues = PaddingValues(horizontal = Dp.Large),
-    headerContent: @Composable RowScope.() -> Unit,
-    backgroundColor: Color = MaterialTheme.colorScheme.background,
-    separateHeaderAndContent: Boolean = true,
-    textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
-    content: @Composable RowScope.(Int, T) -> Unit,
-) = Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = backgroundColor)) {
+  items: List<T>,
+  modifier: Modifier = Modifier,
+  headline: @Composable () -> Unit,
+  headerTextStyle: TextStyle = MaterialTheme.typography.titleSmall,
+  headerPadding: PaddingValues = PaddingValues(horizontal = Dp.Large),
+  headerContent: @Composable RowScope.() -> Unit,
+  backgroundColor: Color = MaterialTheme.colorScheme.background,
+  separateHeaderAndContent: Boolean = true,
+  textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
+  contentPadding: PaddingValues = PaddingValues(0.dp),
+  content: @Composable RowScope.(Int, T) -> Unit,
+) =
+  Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = backgroundColor)) {
     // TODO next step: try to overwrite BasicTable with this
     headline.invoke()
-    CompositionLocalProvider(LocalTextStyle provides LocalTextStyle.current.merge(headerTextStyle)) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(headerPadding),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            headerContent.invoke(this)
-        }
+    CompositionLocalProvider(
+      LocalTextStyle provides LocalTextStyle.current.merge(headerTextStyle)
+    ) {
+      Row(
+        modifier = Modifier.fillMaxWidth().padding(headerPadding),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        headerContent.invoke(this)
+      }
     }
     if (separateHeaderAndContent) HorizontalDivider(modifier = Modifier.padding(headerPadding))
     CompositionLocalProvider(LocalTextStyle provides LocalTextStyle.current.merge(textStyle)) {
-        items.forEachIndexed { index, item ->
-            Row(modifier = Modifier.padding(contentPadding)) {
-                content.invoke(this, index, item)
-            }
-        }
+      items.forEachIndexed { index, item ->
+        Row(modifier = Modifier.padding(contentPadding)) { content.invoke(this, index, item) }
+      }
     }
     Spacer(Modifier.height(12.dp)) // Equivalent to HeroTile vertical Dp
-}
+  }

@@ -14,25 +14,24 @@ import io.github.depermitto.bullettrain.theme.unlinedColors
 
 @Composable
 fun ProgramCreationScreen(
-    modifier: Modifier = Modifier,
-    programViewModel: ProgramViewModel,
-    navController: NavController,
-) = Column(modifier = modifier.fillMaxSize()) {
+  modifier: Modifier = Modifier,
+  programViewModel: ProgramViewModel,
+  navController: NavController,
+) =
+  Column(modifier = modifier.fillMaxSize()) {
     TextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = Dp.Medium),
-        value = programViewModel.programName,
-        onValueChange = { programViewModel.programName = it },
-        maxLines = 1,
-        singleLine = true,
-        placeholder = { Text(text = "Workout Name") },
-        shape = MaterialTheme.shapes.medium,
-        colors = TextFieldDefaults.unlinedColors()
+      modifier = Modifier.fillMaxWidth().padding(horizontal = Dp.Medium),
+      value = programViewModel.programName,
+      onValueChange = { programViewModel.programName = it },
+      maxLines = 1,
+      singleLine = true,
+      placeholder = { Text(text = "Workout Name") },
+      shape = MaterialTheme.shapes.medium,
+      colors = TextFieldDefaults.unlinedColors(),
     )
     ProgramScreen(
-        modifier = Modifier.padding(top = Dp.Medium),
-        programViewModel = programViewModel,
-        navController = navController
+      modifier = Modifier.padding(top = Dp.Medium),
+      programViewModel = programViewModel,
+      navController = navController,
     )
-}
+  }

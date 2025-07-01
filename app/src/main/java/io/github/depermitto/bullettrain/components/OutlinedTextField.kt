@@ -24,69 +24,71 @@ import io.github.depermitto.bullettrain.theme.numeric
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OutlinedTextField(
-    value: TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit,
-    modifier: Modifier = Modifier,
-    textStyle: TextStyle = TextStyle.numeric(),
-    visualTransformation: VisualTransformation = VisualTransformation.None,
-    singleLine: Boolean = true,
-    enabled: Boolean = true,
-    readOnly: Boolean = false,
-    label: @Composable (() -> Unit)? = null,
-    placeholder: @Composable (() -> Unit)? = null,
-    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-    keyboardActions: KeyboardActions = KeyboardActions(),
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
-    cursorBrush: Brush = SolidColor(MaterialTheme.colorScheme.primary),
-    focusedBorderThickness: Dp = OutlinedTextFieldDefaults.FocusedBorderThickness,
-    unfocusedBorderThickness: Dp = OutlinedTextFieldDefaults.UnfocusedBorderThickness,
-    contentPadding: PaddingValues,
+  value: TextFieldValue,
+  onValueChange: (TextFieldValue) -> Unit,
+  modifier: Modifier = Modifier,
+  textStyle: TextStyle = TextStyle.numeric(),
+  visualTransformation: VisualTransformation = VisualTransformation.None,
+  singleLine: Boolean = true,
+  enabled: Boolean = true,
+  readOnly: Boolean = false,
+  label: @Composable (() -> Unit)? = null,
+  placeholder: @Composable (() -> Unit)? = null,
+  keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+  keyboardActions: KeyboardActions = KeyboardActions(),
+  interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+  colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
+  cursorBrush: Brush = SolidColor(MaterialTheme.colorScheme.primary),
+  focusedBorderThickness: Dp = OutlinedTextFieldDefaults.FocusedBorderThickness,
+  unfocusedBorderThickness: Dp = OutlinedTextFieldDefaults.UnfocusedBorderThickness,
+  contentPadding: PaddingValues,
 ) {
-    BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier,
-        visualTransformation = visualTransformation,
-        singleLine = singleLine,
-        readOnly = readOnly,
-        textStyle = textStyle,
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        interactionSource = interactionSource,
-        cursorBrush = cursorBrush
-    ) { innerTextField ->
-        OutlinedTextFieldDefaults.DecorationBox(value = value.text,
-            visualTransformation = visualTransformation,
-            label = label,
-            placeholder = placeholder,
-            innerTextField = innerTextField,
-            colors = colors,
-            singleLine = singleLine,
-            enabled = enabled,
-            interactionSource = interactionSource,
-            contentPadding = contentPadding,
-            container = {
-                OutlinedTextFieldDefaults.Container(
-                    enabled = enabled,
-                    isError = false,
-                    interactionSource = interactionSource,
-                    colors = colors,
-                    focusedBorderThickness = focusedBorderThickness,
-                    unfocusedBorderThickness = unfocusedBorderThickness
-                )
-            })
-    }
+  BasicTextField(
+    value = value,
+    onValueChange = onValueChange,
+    modifier = modifier,
+    visualTransformation = visualTransformation,
+    singleLine = singleLine,
+    readOnly = readOnly,
+    textStyle = textStyle,
+    keyboardOptions = keyboardOptions,
+    keyboardActions = keyboardActions,
+    interactionSource = interactionSource,
+    cursorBrush = cursorBrush,
+  ) { innerTextField ->
+    OutlinedTextFieldDefaults.DecorationBox(
+      value = value.text,
+      visualTransformation = visualTransformation,
+      label = label,
+      placeholder = placeholder,
+      innerTextField = innerTextField,
+      colors = colors,
+      singleLine = singleLine,
+      enabled = enabled,
+      interactionSource = interactionSource,
+      contentPadding = contentPadding,
+      container = {
+        OutlinedTextFieldDefaults.Container(
+          enabled = enabled,
+          isError = false,
+          interactionSource = interactionSource,
+          colors = colors,
+          focusedBorderThickness = focusedBorderThickness,
+          unfocusedBorderThickness = unfocusedBorderThickness,
+        )
+      },
+    )
+  }
 }
 
 @Composable
 fun Placeholder(text: String, modifier: Modifier = Modifier.fillMaxWidth()) {
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.40f),
-            maxLines = 1
-        )
-    }
-} 
+  Box(modifier = modifier, contentAlignment = Alignment.Center) {
+    Text(
+      text = text,
+      style = MaterialTheme.typography.bodyMedium,
+      color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.40f),
+      maxLines = 1,
+    )
+  }
+}

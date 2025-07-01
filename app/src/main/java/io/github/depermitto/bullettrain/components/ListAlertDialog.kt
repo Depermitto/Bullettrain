@@ -26,30 +26,35 @@ import io.github.depermitto.bullettrain.theme.Large
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> ListAlertDialog(
-    title: String,
-    modifier: Modifier = Modifier,
-    onDismissRequest: () -> Unit,
-    dismissButton: @Composable () -> Unit,
-    onClick: (T) -> Unit,
-    list: List<T>,
-    content: @Composable (T) -> Unit,
-) = BasicAlertDialog(onDismissRequest = onDismissRequest) {
+  title: String,
+  modifier: Modifier = Modifier,
+  onDismissRequest: () -> Unit,
+  dismissButton: @Composable () -> Unit,
+  onClick: (T) -> Unit,
+  list: List<T>,
+  content: @Composable (T) -> Unit,
+) =
+  BasicAlertDialog(onDismissRequest = onDismissRequest) {
     Card(modifier.clip(MaterialTheme.shapes.extraLarge)) {
-        Text(title, Modifier.padding(Dp.ExtraLarge), style = MaterialTheme.typography.titleLarge, maxLines = 2)
+      Text(
+        title,
+        Modifier.padding(Dp.ExtraLarge),
+        style = MaterialTheme.typography.titleLarge,
+        maxLines = 2,
+      )
 
-        LazyColumn(Modifier.heightIn(0.dp, 250.dp)) {
-            items(list) { item ->
-                DropdownMenuItem(text = { content(item) }, onClick = { onClick(item) })
-            }
+      LazyColumn(Modifier.heightIn(0.dp, 250.dp)) {
+        items(list) { item ->
+          DropdownMenuItem(text = { content(item) }, onClick = { onClick(item) })
         }
+      }
 
-        Spacer(Modifier.height(24.dp))
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .padding(bottom = Dp.Large, end = Dp.Large), contentAlignment = Alignment.BottomEnd
-        ) {
-            dismissButton()
-        }
+      Spacer(Modifier.height(24.dp))
+      Box(
+        Modifier.fillMaxWidth().padding(bottom = Dp.Large, end = Dp.Large),
+        contentAlignment = Alignment.BottomEnd,
+      ) {
+        dismissButton()
+      }
     }
-}
+  }

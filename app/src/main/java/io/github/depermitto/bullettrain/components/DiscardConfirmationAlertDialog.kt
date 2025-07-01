@@ -8,11 +8,24 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun DiscardConfirmationAlertDialog(
-    text: String, onDismissRequest: () -> Unit, onConfirm: () -> Unit, modifier: Modifier = Modifier,
-) = AlertDialog(
+  text: String,
+  onDismissRequest: () -> Unit,
+  onConfirm: () -> Unit,
+  modifier: Modifier = Modifier,
+) =
+  AlertDialog(
     modifier = modifier,
     onDismissRequest = onDismissRequest,
     dismissButton = { TextButton(onClick = onDismissRequest) { Text("Cancel") } },
-    confirmButton = { TextButton(onClick = { onDismissRequest(); onConfirm() }) { Text("Discard") } },
+    confirmButton = {
+      TextButton(
+        onClick = {
+          onDismissRequest()
+          onConfirm()
+        }
+      ) {
+        Text("Discard")
+      }
+    },
     text = { Text(text = text) },
-)
+  )

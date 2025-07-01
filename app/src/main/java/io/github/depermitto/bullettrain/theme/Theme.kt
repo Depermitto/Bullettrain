@@ -10,25 +10,28 @@ import androidx.compose.ui.unit.sp
 import io.github.depermitto.bullettrain.database.entities.Settings
 
 @Composable
-fun BullettrainTheme(
-    settings: Settings,
-    content: @Composable () -> Unit,
-) {
-    val colorScheme = when {
-        settings.theme.isDarkMode() && settings.trueBlack -> settings.palette.darkScheme.copy(background = Color.Black)
-        settings.theme.isDarkMode() -> settings.palette.darkScheme
-        else -> settings.palette.lightScheme
+fun BullettrainTheme(settings: Settings, content: @Composable () -> Unit) {
+  val colorScheme =
+    when {
+      settings.theme.isDarkMode() && settings.trueBlack ->
+        settings.palette.darkScheme.copy(background = Color.Black)
+      settings.theme.isDarkMode() -> settings.palette.darkScheme
+      else -> settings.palette.lightScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme, content = content, typography = Typography(
-            titleLarge = TextStyle(
-                fontFamily = FontFamily.Default,
-                fontWeight = FontWeight.Normal,
-                fontSize = 20.sp,
-                lineHeight = 28.sp,
-                letterSpacing = 0.sp
-            ),
-        )
-    )
+  MaterialTheme(
+    colorScheme = colorScheme,
+    content = content,
+    typography =
+      Typography(
+        titleLarge =
+          TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Normal,
+            fontSize = 20.sp,
+            lineHeight = 28.sp,
+            letterSpacing = 0.sp,
+          )
+      ),
+  )
 }

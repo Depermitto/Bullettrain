@@ -76,9 +76,11 @@ private val surfaceContainerDark = Color(0xFF211F1F)
 private val surfaceContainerHighDark = Color(0xFF2B2A29)
 private val surfaceContainerHighestDark = Color(0xFF363434)
 
-val BonemashPalette = Palette(
+val BonemashPalette =
+  Palette(
     name = "Bonemash",
-    lightScheme = lightColorScheme(
+    lightScheme =
+      lightColorScheme(
         primary = primaryLight,
         onPrimary = onPrimaryLight,
         primaryContainer = primaryContainerLight,
@@ -114,7 +116,9 @@ val BonemashPalette = Palette(
         surfaceContainer = surfaceContainerLight,
         surfaceContainerHigh = surfaceContainerHighLight,
         surfaceContainerHighest = surfaceContainerHighestLight,
-    ), darkScheme = darkColorScheme(
+      ),
+    darkScheme =
+      darkColorScheme(
         primary = primaryDark,
         onPrimary = onPrimaryDark,
         primaryContainer = primaryContainerDark,
@@ -150,5 +154,5 @@ val BonemashPalette = Palette(
         surfaceContainer = surfaceContainerDark,
         surfaceContainerHigh = surfaceContainerHighDark,
         surfaceContainerHighest = surfaceContainerHighestDark,
-    )
-)
+      ),
+  )

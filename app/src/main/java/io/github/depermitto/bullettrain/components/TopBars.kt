@@ -16,41 +16,51 @@ import io.github.depermitto.bullettrain.Destination
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBarWithSettingsButton(
-    navController: NavController,
-    title: String,
-) = TopAppBar(title = {
-    Text(
+fun TopBarWithSettingsButton(navController: NavController, title: String) =
+  TopAppBar(
+    title = {
+      Text(
         text = title,
         style = MaterialTheme.typography.titleLarge,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-    )
-}, actions = {
-    IconButton(onClick = { navController.navigate(Destination.Settings) }) {
+      )
+    },
+    actions = {
+      IconButton(onClick = { navController.navigate(Destination.Settings) }) {
         Icon(Icons.Filled.Settings, contentDescription = "Settings")
-    }
-}, colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent))
+      }
+    },
+    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+  )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBarWithBackButton(
-    modifier: Modifier = Modifier,
-    navController: NavController,
-    topEndContent: (@Composable () -> Unit)? = null,
-    title: String,
+  modifier: Modifier = Modifier,
+  navController: NavController,
+  topEndContent: (@Composable () -> Unit)? = null,
+  title: String,
 ) {
-    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-    TopAppBar(modifier = modifier, title = {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }, navigationIcon = {
-        IconButton(onClick = { onBackPressedDispatcher?.onBackPressed() ?: navController.navigateUp() }) {
-            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back Button")
-        }
-    }, actions = { topEndContent?.invoke() }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent))
+  val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+  TopAppBar(
+    modifier = modifier,
+    title = {
+      Text(
+        text = title,
+        style = MaterialTheme.typography.titleLarge,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
+      )
+    },
+    navigationIcon = {
+      IconButton(
+        onClick = { onBackPressedDispatcher?.onBackPressed() ?: navController.navigateUp() }
+      ) {
+        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back Button")
+      }
+    },
+    actions = { topEndContent?.invoke() },
+    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+  )
 }

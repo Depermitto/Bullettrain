@@ -8,8 +8,13 @@ import io.github.depermitto.bullettrain.database.entities.ExerciseDao
 import io.github.depermitto.bullettrain.database.entities.HistoryDao
 
 @Composable
-fun ExerciseTab(modifier: Modifier = Modifier, exerciseDao: ExerciseDao, historyDao: HistoryDao, navController: NavController) {
-    ExercisesListScreen(modifier = modifier, exerciseDao = exerciseDao, historyDao = historyDao) {
-        navController.navigate(Destination.Exercise(exerciseId = it.id))
-    }
+fun ExerciseTab(
+  modifier: Modifier = Modifier,
+  exerciseDao: ExerciseDao,
+  historyDao: HistoryDao,
+  navController: NavController,
+) {
+  ExercisesListScreen(modifier = modifier, exerciseDao = exerciseDao, historyDao = historyDao) {
+    navController.navigate(Destination.Exercise(exerciseId = it.id))
+  }
 }

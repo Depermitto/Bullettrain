@@ -17,21 +17,22 @@ import androidx.compose.ui.draw.clip
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HoldToShowOptionsBox(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-    holdOptions: @Composable (closeDropdown: () -> Unit) -> Unit,
-    content: @Composable BoxScope.() -> Unit
+  modifier: Modifier = Modifier,
+  onClick: () -> Unit,
+  holdOptions: @Composable (closeDropdown: () -> Unit) -> Unit,
+  content: @Composable BoxScope.() -> Unit,
 ) {
-    var showDropdown by remember { mutableStateOf(false) }
-    Box(
-        modifier = modifier
-            .clip(shape = MaterialTheme.shapes.medium)
-            .combinedClickable(onClick = onClick, onLongClick = { showDropdown = true })
-    ) {
-        DropdownMenu(expanded = showDropdown, onDismissRequest = { showDropdown = false }) {
-            holdOptions { showDropdown = false }
-        }
-
-        content()
+  var showDropdown by remember { mutableStateOf(false) }
+  Box(
+    modifier =
+      modifier
+        .clip(shape = MaterialTheme.shapes.medium)
+        .combinedClickable(onClick = onClick, onLongClick = { showDropdown = true })
+  ) {
+    DropdownMenu(expanded = showDropdown, onDismissRequest = { showDropdown = false }) {
+      holdOptions { showDropdown = false }
     }
+
+    content()
+  }
 }
