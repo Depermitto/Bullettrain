@@ -1,25 +1,17 @@
 package io.github.depermitto.bullettrain.database.daos
 
-import android.util.Log
 import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
 import io.github.depermitto.bullettrain.util.BKTree
 import io.github.depermitto.bullettrain.util.bigListSet
-import io.github.depermitto.bullettrain.util.loadAndUncompressData
-import io.github.depermitto.bullettrain.util.saveAndCompressData
-import java.nio.file.Path
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.updateAndGet
+import kotlinx.coroutines.flow.update
 
-/**
- * Abstraction representing a Data Access Object. Every method executes synchronously.
- *
- * @param filepath file containing our data.
- */
-class ExerciseDao(private val filepath: Path) {
-  internal val items = MutableStateFlow<List<ExerciseDescriptor>>(loadAndUncompressData(filepath))
+/** Abstraction representing a Data Access Object. Every method executes synchronously. */
+class ExerciseDao(state: List<ExerciseDescriptor>) {
+  internal val items = MutableStateFlow(state)
   private var newId = items.value.maxOfOrNull { it.id } ?: 0
   private val bkTree =
     BKTree("Press") // Most frequent word in our database, followed by "Dumbbell" and "Barbell"
@@ -46,28 +38,22 @@ class ExerciseDao(private val filepath: Path) {
     val existingIndex = items.value.indexOfFirst { it.id == item.id }
     if (existingIndex == -1) return false
 
-    val state =
-      items.updateAndGet { state ->
-        state.bigListSet(existingIndex, item.copy(name = item.name.capitalizeWords()))
-      }
-    saveAndCompressData(filepath, state)
-    Log.i("db-${filepath}", state.toString())
+    items.update { state ->
+      state.bigListSet(existingIndex, item.copy(name = item.name.capitalizeWords()))
+    }
     return true
   }
 
   /** @return Id of the inserted item. */
   fun insert(item: ExerciseDescriptor): Int {
-    val state =
-      items.updateAndGet { state ->
-        newId += 1
-        state +
-          item.copy(
-            name = item.name.capitalizeWords().also { preppedName -> bkTree.insert(preppedName) },
-            id = newId,
-          )
-      }
-    saveAndCompressData(filepath, state)
-    Log.i("db-${filepath}", state.toString())
+    items.update { state ->
+      newId += 1
+      state +
+        item.copy(
+          name = item.name.capitalizeWords().also { preppedName -> bkTree.insert(preppedName) },
+          id = newId,
+        )
+    }
     return newId
   }
 

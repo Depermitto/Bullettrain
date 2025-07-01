@@ -1,12 +1,5 @@
 package io.github.depermitto.bullettrain.util
 
-import io.github.depermitto.bullettrain.database.Compressor
-import java.nio.file.Path
-import kotlin.io.path.readText
-import kotlin.io.path.writeText
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-
 /**
  * Copy the list with item at [index] set to [value]. Preferred for lists smaller than ~50 elements.
  */
@@ -28,9 +21,3 @@ fun String.splitOnUppercase(): String =
     .filter { it.isNotEmpty() }
     .joinToString(" ") { it.lowercase() }
     .replaceFirstChar { it.uppercaseChar() }
-
-inline fun <reified T> loadAndUncompressData(filepath: Path): T =
-  Json.decodeFromString<T>(Compressor.uncompress(filepath.readText()))
-
-inline fun <reified T> saveAndCompressData(filepath: Path, data: T) =
-  filepath.writeText(Compressor.compress(Json.encodeToString(data)))

@@ -11,8 +11,6 @@ import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
 import io.github.depermitto.bullettrain.database.entities.HistoryRecord
 import io.github.depermitto.bullettrain.database.entities.Program
 import io.github.depermitto.bullettrain.database.entities.Settings
-import io.github.depermitto.bullettrain.util.loadAndUncompressData
-import io.github.depermitto.bullettrain.util.saveAndCompressData
 import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerType
 import io.github.vinceglb.filekit.core.pickFile
@@ -26,49 +24,36 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 import kotlin.Result.Companion.failure
 import kotlin.Result.Companion.success
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.div
-import kotlin.io.path.exists
-import kotlin.io.path.name
-import kotlin.io.path.nameWithoutExtension
-import kotlin.io.path.readBytes
-import kotlin.io.path.writeBytes
-import kotlinx.coroutines.Dispatchers
+import kotlin.io.path.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class Database(private val dir: Path, private val context: Context) {
+  private val _sloc = dir / "settings"
+  private val _hloc = dir / "history"
+  private val _ploc = dir / "programs"
+  private val _eloc = dir / "exercises"
+  private val _locs = listOf(_sloc, _hloc, _ploc, _eloc)
 
-  private val settingsLoc = dir / "settings"
-  private val historyLoc = dir / "history"
-  private val programsLoc = dir / "programs"
-  private val exercisesLoc = dir / "exercises"
-  private val dataLocations = listOf(settingsLoc, historyLoc, programsLoc, exercisesLoc)
+  val settingsDao: SettingsDao
+  val historyDao: HistoryDao
+  val programDao: ProgramDao
+  val exerciseDao: ExerciseDao
 
-  init {
-    if (!settingsLoc.exists()) {
-      saveAndCompressData(settingsLoc, Settings())
-      Log.i("db", "settings initialized.")
-    }
-    if (!historyLoc.exists()) {
-      saveAndCompressData(historyLoc, emptyList<HistoryRecord>())
-      Log.i("db", "history initialized.")
-    }
-    if (!programsLoc.exists()) {
-      saveAndCompressData(programsLoc, listOf(Program.EmptyWorkout))
-      Log.i("db", "programs initialized.")
-    }
-    if (!exercisesLoc.exists()) {
-      saveAndCompressData(exercisesLoc, emptyList<ExerciseDescriptor>())
-      Log.i("db", "exercises initialized.")
-    }
+  private inline fun <reified T> decodeAndUncompress(filepath: Path) =
+    Json.decodeFromString<T>(Compressor.uncompress(filepath.readText()))
+
+  private inline fun <reified T> compressAndWrite(filepath: Path, data: T) =
+    filepath.writeText(Compressor.compress(Json.encodeToString(data)))
+
+  fun saveAppDataToPersistentStorage() {
+    compressAndWrite(_sloc, settingsDao.item.value)
+    compressAndWrite(_hloc, historyDao.items.value)
+    compressAndWrite(_ploc, programDao.items.value)
+    compressAndWrite(_eloc, exerciseDao.items.value)
   }
-
-  val settingsDao = SettingsDao(settingsLoc)
-  val historyDao = HistoryDao(historyLoc)
-  val programDao = ProgramDao(programsLoc)
-  val exerciseDao = ExerciseDao(exercisesLoc)
 
   /**
    * Launch a file picker, export the zipped database to the selected location, and return the name
@@ -81,7 +66,7 @@ class Database(private val dir: Path, private val context: Context) {
     val backup = dir / "bullettrain-$now.bk.zip"
     withContext(Dispatchers.IO) {
       ZipOutputStream(FileOutputStream(backup.absolutePathString())).use { zipOutputStream ->
-        for (loc in dataLocations) {
+        for (loc in _locs) {
           zipOutputStream.putNextEntry(ZipEntry(loc.name))
           zipOutputStream.write(loc.readBytes())
         }
@@ -105,19 +90,21 @@ class Database(private val dir: Path, private val context: Context) {
           ZipFile(tmpFile).use { zipFile ->
             val entries = zipFile.entries().toList()
             // we should probably check if file is not corrupt here
-            if (!entries.zip(dataLocations).all { (entry, backup) -> entry.name == backup.name }) {
+            if (!entries.zip(_locs).all { (entry, backup) -> entry.name == backup.name }) {
               return@withContext failure(Throwable(message = "data is in incorrect format"))
             }
 
             entries.forEachIndexed { i, entry ->
-              val loc = dataLocations[i]
+              val loc = _locs[i]
               loc.writeBytes(zipFile.getInputStream(entry).readBytes())
 
               when (loc.nameWithoutExtension) {
-                "settings" -> settingsDao.item.update { SettingsDao(loc).item.value }
-                "history" -> historyDao.items.update { HistoryDao(loc).items.value }
-                "programs" -> programDao.items.update { ProgramDao(loc).items.value }
-                "exercises" -> exerciseDao.items.update { ExerciseDao(loc).items.value }
+                "settings" -> settingsDao.item.update { decodeAndUncompress<Settings>(loc) }
+                "history" ->
+                  historyDao.items.update { decodeAndUncompress<List<HistoryRecord>>(loc) }
+                "programs" -> programDao.items.update { decodeAndUncompress<List<Program>>(loc) }
+                "exercises" ->
+                  exerciseDao.items.update { decodeAndUncompress<List<ExerciseDescriptor>>(loc) }
               }
             }
           }
@@ -152,8 +139,20 @@ class Database(private val dir: Path, private val context: Context) {
   }
 
   init {
-    val freshBoot = loadAndUncompressData<List<ExerciseDescriptor>>(exercisesLoc).isEmpty()
-    if (freshBoot && runBlocking { factoryReset() })
-      Log.i("db", "polluted database with default data")
+    if (_locs.any { !it.exists() }) {
+      settingsDao = SettingsDao(Settings())
+      historyDao = HistoryDao(emptyList())
+      programDao = ProgramDao(emptyList())
+      exerciseDao = ExerciseDao(emptyList())
+      saveAppDataToPersistentStorage()
+
+      runBlocking { factoryReset() }
+      Log.i("DB", "Database initialized.")
+    } else {
+      settingsDao = SettingsDao(decodeAndUncompress<Settings>(_sloc))
+      historyDao = HistoryDao(decodeAndUncompress<List<HistoryRecord>>(_hloc))
+      programDao = ProgramDao(decodeAndUncompress<List<Program>>(_ploc))
+      exerciseDao = ExerciseDao(decodeAndUncompress<List<ExerciseDescriptor>>(_eloc))
+    }
   }
 }
