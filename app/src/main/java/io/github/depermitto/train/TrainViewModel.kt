@@ -70,7 +70,7 @@ class TrainViewModel(
 
     fun completeWorkout() = endWorkout { state ->
         val record = state.historyRecord.copy(
-            workoutPhase = WorkoutPhase.Completed, day = Day(state.historyRecord.day.name, exercises.toList())
+            workoutPhase = WorkoutPhase.Completed, day = state.historyRecord.day.copy(exercises = exercises.toList())
         )
         val program = programDao.whereId(record.relatedProgramId) ?: return@endWorkout
         val nextDay = (program.nextDay + 1) % program.days.size
@@ -90,11 +90,11 @@ class TrainViewModel(
     private fun endWorkout(deinit: suspend (WorkoutState) -> Unit) = workoutState?.let { state ->
         state.saveTimer.cancel()
         state.clockTimer.cancel()
+
+        runBlocking(Dispatchers.IO) { deinit(state) }
+
         workoutState = null
         exercises.clear()
-
-        viewModelScope.launch(Dispatchers.IO) { deinit(state) }
-
         navController.popBackStack(Screen.MainScreen.route, false)
     }
 
@@ -113,9 +113,13 @@ class TrainViewModel(
             exercises = historyRecord.day.exercises.toMutableStateList()
             workoutState = WorkoutState(historyRecord = record,
                 clockTimer = timer(initialDelay = 1000L, period = 1000L) { clock = clock.plusSeconds(1L) },
-                saveTimer = timer(initialDelay = 0L, period = 10000L) {
+                saveTimer = timer(initialDelay = 1000L, period = 10000L) {
+                    workoutState = workoutState?.let {
+                        it.copy(historyRecord = it.historyRecord.copy(day = it.historyRecord.day.copy(exercises = exercises.toList())))
+                    }
+
                     viewModelScope.launch(Dispatchers.IO) {
-                        historyDao.update(historyRecord.copy(day = historyRecord.day.copy(exercises = exercises.toList())))
+                        historyDao.upsert(workoutState?.historyRecord ?: return@launch)
                     }
                 })
         } else throw UnsupportedOperationException("WorkoutState Is Not Null")
