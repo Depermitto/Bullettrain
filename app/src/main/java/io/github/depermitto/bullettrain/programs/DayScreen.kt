@@ -100,7 +100,6 @@ fun DayScreen(
           shape = MaterialTheme.shapes.medium,
           threshold = 0.9f,
           onDelete = {
-            val deletedDay = day
             programViewModel.setDay(dayIndex, day.copy(entries = day.entries - exercise))
             scope.launch {
               val snackBarResult =
@@ -112,7 +111,7 @@ fun DayScreen(
                   withDismissAction = true,
                 )
               if (snackBarResult == SnackbarResult.ActionPerformed) {
-                programViewModel.setDay(dayIndex, deletedDay)
+                programViewModel.setDay(dayIndex, day)
               }
             }
           },

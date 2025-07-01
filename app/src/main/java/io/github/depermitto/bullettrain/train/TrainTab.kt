@@ -52,10 +52,7 @@ fun TrainTab(
 
       Card(
         modifier = Modifier.heightIn(0.dp, 400.dp),
-        colors =
-          CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.focalGround(settings.theme)
-          ),
+        colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
       ) {
         val program =
           programs.getOrElse(selectedProgramIndex) {

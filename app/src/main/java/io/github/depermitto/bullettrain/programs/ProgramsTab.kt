@@ -79,10 +79,7 @@ fun ProgramsTab(
         ) {
           Card(
             modifier = Modifier.align(Alignment.Center),
-            colors =
-              CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.focalGround(settings.theme)
-              ),
+            colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
           ) {
             Tile(
               headlineContent = {

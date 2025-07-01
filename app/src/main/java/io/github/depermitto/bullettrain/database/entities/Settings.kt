@@ -8,11 +8,11 @@ import io.github.depermitto.bullettrain.theme.palettes.Palette
 import io.github.depermitto.bullettrain.theme.palettes.RhinoButtercupPalette
 import io.github.depermitto.bullettrain.util.loadAndUncompressData
 import io.github.depermitto.bullettrain.util.saveAndCompressData
+import java.nio.file.Path
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.serialization.Serializable
-import java.nio.file.Path
 
 enum class UnitSystem {
   Metric,

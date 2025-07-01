@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
@@ -42,14 +41,13 @@ fun WorkoutEntry(
   DataPanel(
     items = workoutEntry.sets,
     modifier = modifier,
-    backgroundColor = MaterialTheme.colorScheme.focalGround(settings.theme),
+    backgroundColor = focalGround(settings.theme),
     headerPadding = PaddingValues(horizontal = Dp.Medium),
     headline = headline,
     headerContent = headerContent,
   ) { setIndex, set ->
     SwipeToDeleteBox(
       onDelete = {
-        val deletedExercise = workoutEntry
         onWorkoutEntryChange(
           workoutEntry.copy(sets = workoutEntry.sets.filterIndexed { i, _ -> i != setIndex })
         )
@@ -62,16 +60,16 @@ fun WorkoutEntry(
                 withDismissAction = true,
               )
             if (snackBarResult == SnackbarResult.ActionPerformed) {
-              onWorkoutEntryChange(deletedExercise)
+              onWorkoutEntryChange(workoutEntry)
             }
           }
       }
     ) {
       Row(
         modifier =
-        Modifier.fillMaxWidth()
-          .background(color = MaterialTheme.colorScheme.focalGround(settings.theme))
-          .padding(Dp.Medium),
+          Modifier.fillMaxWidth()
+            .background(color = focalGround(settings.theme))
+            .padding(Dp.Medium),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically,
       ) {

@@ -120,7 +120,7 @@ fun HistoryTab(
                 plannedWorkout.entries.any { it.descriptorId == workoutEntry.descriptorId }
               !skipped || planned
             },
-          backgroundColor = MaterialTheme.colorScheme.focalGround(settings.theme),
+          backgroundColor = focalGround(settings.theme),
           headline = {
             Tile(
               headlineContent = { Text(text = relatedProgram.name) },

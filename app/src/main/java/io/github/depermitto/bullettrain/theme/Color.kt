@@ -1,7 +1,6 @@
 package io.github.depermitto.bullettrain.theme
 
 import androidx.compose.material3.BottomAppBarDefaults
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextFieldDefaults
@@ -25,7 +24,7 @@ fun TextFieldDefaults.unlinedColors() =
   )
 
 @Composable
-fun ColorScheme.focalGround(theme: Theme) =
+fun focalGround(theme: Theme) =
   if (theme.isDarkMode())
     Color(
       ColorUtils.blendARGB(

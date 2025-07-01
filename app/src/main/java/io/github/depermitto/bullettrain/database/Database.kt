@@ -40,35 +40,35 @@ import kotlinx.coroutines.withContext
 
 class Database(private val dir: Path, private val context: Context) {
 
-  private val locSettings = dir / "settings"
-  private val locHistory = dir / "history"
-  private val locPrograms = dir / "programs"
-  private val locExercises = dir / "exercises"
-  private val dataLocations = listOf(locSettings, locHistory, locPrograms, locExercises)
+  private val settingsLoc = dir / "settings"
+  private val historyLoc = dir / "history"
+  private val programsLoc = dir / "programs"
+  private val exercisesLoc = dir / "exercises"
+  private val dataLocations = listOf(settingsLoc, historyLoc, programsLoc, exercisesLoc)
 
   init {
-    if (!locSettings.exists()) {
-      saveAndCompressData(locSettings, Settings())
+    if (!settingsLoc.exists()) {
+      saveAndCompressData(settingsLoc, Settings())
       Log.i("db", "settings initialized.")
     }
-    if (!locHistory.exists()) {
-      saveAndCompressData(locHistory, emptyList<HistoryRecord>())
+    if (!historyLoc.exists()) {
+      saveAndCompressData(historyLoc, emptyList<HistoryRecord>())
       Log.i("db", "history initialized.")
     }
-    if (!locPrograms.exists()) {
-      saveAndCompressData(locHistory, listOf(Program.EmptyWorkout))
+    if (!programsLoc.exists()) {
+      saveAndCompressData(historyLoc, listOf(Program.EmptyWorkout))
       Log.i("db", "programs initialized.")
     }
-    if (!locExercises.exists()) {
-      saveAndCompressData(locExercises, emptyList<ExerciseDescriptor>())
+    if (!exercisesLoc.exists()) {
+      saveAndCompressData(exercisesLoc, emptyList<ExerciseDescriptor>())
       Log.i("db", "exercises initialized.")
     }
   }
 
-  val settingsDao = SettingsDao(locSettings)
-  val historyDao = HistoryDao(locHistory)
-  val programDao = ProgramDao(locPrograms)
-  val exerciseDao = ExerciseDao(locExercises)
+  val settingsDao = SettingsDao(settingsLoc)
+  val historyDao = HistoryDao(historyLoc)
+  val programDao = ProgramDao(programsLoc)
+  val exerciseDao = ExerciseDao(exercisesLoc)
 
   /**
    * Launch a file picker, export the zipped database to the selected location, and return the name
@@ -153,7 +153,7 @@ class Database(private val dir: Path, private val context: Context) {
 
   init {
     if (
-      loadAndUncompressData<List<Program>>(locPrograms).isEmpty() && runBlocking { factoryReset() }
+      loadAndUncompressData<List<Program>>(programsLoc).isEmpty() && runBlocking { factoryReset() }
     )
       Log.i("db", "polluted database with default data")
   }
