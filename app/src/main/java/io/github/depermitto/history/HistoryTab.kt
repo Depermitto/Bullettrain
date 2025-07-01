@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.components.WorkoutInfo
 import io.github.depermitto.components.encodeToStringOutput
@@ -30,6 +29,7 @@ import io.github.depermitto.database.SettingsDao
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
+import io.github.depermitto.util.blockingFirstOrEmpty
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -39,7 +39,7 @@ fun HistoryTab(
     modifier: Modifier = Modifier, settingsDao: SettingsDao, historyDao: HistoryDao
 ) = Box(modifier = modifier.fillMaxSize()) {
     var date by rememberSaveable { mutableStateOf(LocalDate.now()) }
-    val historyRecords by historyDao.getAll.collectAsStateWithLifecycle()
+    val historyRecords = historyDao.where(date.month, date.year).blockingFirstOrEmpty()
     var selectedRecord by remember { mutableStateOf(historyRecords.lastOrNull()) }
 
     fun findWorkout(calendarDay: LocalDate) = historyRecords.find { record ->

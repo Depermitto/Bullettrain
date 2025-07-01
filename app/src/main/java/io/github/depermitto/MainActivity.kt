@@ -29,6 +29,7 @@ import io.github.depermitto.settings.SettingsScreen
 import io.github.depermitto.theme.GymAppTheme
 import io.github.depermitto.train.TrainViewModel
 import io.github.depermitto.train.TrainingScreen
+import io.github.depermitto.util.blockingFirstOrNull
 import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.runBlocking
 
@@ -92,7 +93,7 @@ fun App(db: Database) = MaterialTheme {
         composable(ProgramScreen.route) { navBackStackEntry ->
             val programId = (navBackStackEntry.arguments?.getString("programId") ?: return@composable).toInt()
 
-            val program = runBlocking { db.programDao.where(programId) }
+            val program = db.programDao.where(programId).blockingFirstOrNull()
             if (program != null) {
                 val programViewModel =
                     viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(program, db.programDao))

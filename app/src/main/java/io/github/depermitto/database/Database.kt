@@ -6,6 +6,7 @@ import io.github.depermitto.util.set
 import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerType
 import io.github.vinceglb.filekit.core.pickFile
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,6 +15,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import java.io.File
 import java.io.FileOutputStream
+import java.time.Month
+import java.time.ZoneId
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
@@ -33,9 +36,9 @@ class Database(private val databaseDirectory: File) {
 
     init {
         if (!settingsFile.file.exists()) settingsFile.write(Settings())
-        if (!historyFile.file.exists()) historyFile.write(listOf())
-        if (!programsFile.file.exists()) programsFile.write(listOf())
-        if (!exercisesFile.file.exists()) exercisesFile.write(listOf())
+        if (!historyFile.file.exists()) historyFile.write(emptyList())
+        if (!programsFile.file.exists()) programsFile.write(emptyList())
+        if (!exercisesFile.file.exists()) exercisesFile.write(emptyList())
     }
 
     private val backupFile = File(databaseDirectory, "bullet-train.bk.zip")
@@ -135,7 +138,7 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
 
     fun delete(item: T) = write { state -> state - item }
 
-    suspend fun where(id: Int): T? = items.map { it.filter { it.id == id } }.firstOrNull()?.firstOrNull()
+    fun where(id: Int): Flow<T?> = items.map { it.filter { it.id == id }.firstOrNull() }
 
     private fun write(operation: (List<T>) -> List<T>) {
         items.update { state -> operation(state) }
@@ -162,6 +165,13 @@ class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
     suspend fun getUnfinishedBusiness(): HistoryRecord? =
         getAll.map { records -> records.filter { record -> record.workoutPhase == WorkoutPhase.During } }.firstOrNull()
             ?.firstOrNull()
+
+    fun where(month: Month, year: Int): Flow<List<HistoryRecord>> = getAll.map { records ->
+        records.filter { record ->
+            val date = record.date.atZone(ZoneId.systemDefault())
+            date.month == month && date.year == year
+        }
+    }
 }
 
 class ProgramDao(file: ProgramsFile) : Dao<Program>(file)

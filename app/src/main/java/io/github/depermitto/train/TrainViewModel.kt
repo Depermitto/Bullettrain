@@ -14,6 +14,7 @@ import io.github.depermitto.database.HistoryDao
 import io.github.depermitto.database.HistoryRecord
 import io.github.depermitto.database.Program
 import io.github.depermitto.database.ProgramDao
+import io.github.depermitto.util.blockingFirstOrNull
 import io.github.depermitto.util.set
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -92,7 +93,7 @@ class TrainViewModel(
             workoutPhase = WorkoutPhase.Completed,
             workout = state.historyRecord.workout.copy(exercises = exercises.toList())
         )
-        val program = programDao.where(record.relatedProgram.id) ?: return@endWorkout
+        val program = programDao.where(record.relatedProgram.id).blockingFirstOrNull() ?: return@endWorkout
         val nextDay = (program.nextDay + 1) % program.days.size
 
         historyDao.upsert(record)
