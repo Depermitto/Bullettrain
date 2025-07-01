@@ -113,36 +113,56 @@ fun ExerciseTargetField(
     value: PerfVar,
     onValueChange: (PerfVar) -> Unit,
     readOnly: Boolean = false,
-) = when (value) {
-    is PerfVar.Reps -> NumberField(
-        modifier, value = value.reps, onValueChange = { onValueChange(value.copy(it)) }, readOnly = readOnly
-    )
+) = Box(modifier = modifier) {
+    when (value) {
+        is PerfVar.Reps -> NumberField(
+            modifier = Modifier.fillMaxWidth(),
+            value = value.reps,
+            onValueChange = { onValueChange(value.copy(it)) },
+            readOnly = readOnly
+        )
 
-    is PerfVar.Time -> Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        NumberField(
-            modifier = modifier, value = value.time, onValueChange = { onValueChange(value.copy(it)) }, readOnly = readOnly
-        )
-        Text(text = "min")
-    }
+        is PerfVar.Time -> Row(verticalAlignment = Alignment.CenterVertically) {
+            NumberField(
+                modifier = Modifier.weight(1f),
+                value = value.time,
+                onValueChange = { onValueChange(value.copy(it)) },
+                readOnly = readOnly
+            )
+            Text(text = "min")
+        }
 
-    is PerfVar.RepRange -> Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        NumberField(
-            modifier = modifier, value = value.min, onValueChange = { onValueChange(value.copy(min = it)) }, readOnly = readOnly
-        )
-        Text(text = "-")
-        NumberField(
-            modifier = modifier, value = value.max, onValueChange = { onValueChange(value.copy(max = it)) }, readOnly = readOnly
-        )
-    }
+        is PerfVar.RepRange -> Row(verticalAlignment = Alignment.CenterVertically) {
+            NumberField(
+                modifier = Modifier.weight(0.5f),
+                value = value.min,
+                onValueChange = { onValueChange(value.copy(min = it)) },
+                readOnly = readOnly
+            )
+            Text(text = "-", modifier = Modifier.padding(horizontal = 2.dp))
+            NumberField(
+                modifier = Modifier.weight(0.5f),
+                value = value.max,
+                onValueChange = { onValueChange(value.copy(max = it)) },
+                readOnly = readOnly
+            )
+        }
 
-    is PerfVar.TimeRange -> Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        NumberField(
-            modifier = modifier, value = value.min, onValueChange = { onValueChange(value.copy(min = it)) }, readOnly = readOnly
-        )
-        Text(text = "-")
-        NumberField(
-            modifier = modifier, value = value.max, onValueChange = { onValueChange(value.copy(max = it)) }, readOnly = readOnly
-        )
-        Text(text = "min")
+        is PerfVar.TimeRange -> Row(verticalAlignment = Alignment.CenterVertically) {
+            NumberField(
+                modifier = Modifier.weight(0.5f),
+                value = value.min,
+                onValueChange = { onValueChange(value.copy(min = it)) },
+                readOnly = readOnly
+            )
+            Text(text = "-", modifier = Modifier.padding(horizontal = 2.dp))
+            NumberField(
+                modifier = Modifier.weight(0.5f),
+                value = value.max,
+                onValueChange = { onValueChange(value.copy(max = it)) },
+                readOnly = readOnly
+            )
+            Text(text = "min")
+        }
     }
 }

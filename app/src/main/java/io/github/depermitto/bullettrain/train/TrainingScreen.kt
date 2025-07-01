@@ -134,7 +134,7 @@ fun TrainingScreen(
                 }
             })
 
-            Row(modifier = Modifier.padding(Dp.Small)) {
+            Row(modifier = Modifier.padding(horizontal = Dp.Medium, vertical = Dp.Small)) {
                 Header(Modifier.weight(NarrowWeight), "Set")
                 if (exercise.intensity != null) {
                     Header(Modifier.weight(NarrowWeight), exercise.intensity.name)
@@ -146,7 +146,7 @@ fun TrainingScreen(
                     Header(Modifier.weight(NarrowWeight), "")
                 }
             }
-            HorizontalDivider(modifier = Modifier.padding(horizontal = Dp.Small))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = Dp.Medium))
 
             exercise.sets.forEachIndexed { setIndex, set ->
                 SwipeToDeleteBox(onDelete = {
@@ -167,7 +167,8 @@ fun TrainingScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(color = MaterialTheme.colorScheme.focalGround(settings.theme))
-                            .padding(vertical = Dp.Medium, horizontal = Dp.Small), verticalAlignment = Alignment.CenterVertically
+                            .padding(Dp.Medium),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             modifier = Modifier.weight(NarrowWeight),
@@ -212,7 +213,7 @@ fun TrainingScreen(
                     }
                 }
             }
-            Spacer(Modifier.height(Dp.Medium))
+            Spacer(Modifier.height(12.dp)) // Equivalent to HeroTile vertical Dp
         }
 
         if (showExerciseDeleteDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showExerciseDeleteDialog = false },

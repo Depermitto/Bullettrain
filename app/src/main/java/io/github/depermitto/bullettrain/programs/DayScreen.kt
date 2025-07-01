@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -19,16 +21,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.Icons.Sharp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.sharp.KeyboardArrowDown
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
@@ -80,7 +81,6 @@ fun DayScreen(
     val day = programViewModel.getDay(dayIndex)
     ReorderableColumn(modifier = Modifier
         .padding(horizontal = Dp.Medium)
-        .fillMaxSize()
         .verticalScroll(rememberScrollState())
         .padding(bottom = Dp.EmptyScrollSpace),
         list = day.entries,
@@ -93,15 +93,6 @@ fun DayScreen(
         onSettle = { fromIndex, toIndex ->
             programViewModel.setDay(dayIndex, day.copy(entries = day.entries.reorder(fromIndex, toIndex)))
         }) { exerciseIndex, exercise, isDragging ->
-        fun setIntensity(cat: Intensity?) {
-            val intensity = if (cat != null) 0f else null
-            programViewModel.setExercise(
-                dayIndex,
-                exerciseIndex,
-                exercise.copy(intensity = cat, sets = exercise.sets.map { it.copy(actualIntensity = intensity) })
-            )
-        }
-
         key(exercise.descriptorId) {
             val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
             val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
@@ -133,19 +124,46 @@ fun DayScreen(
                                 style = MaterialTheme.typography.titleMedium,
                             )
                         }, trailingContent = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                FilledTonalIconButton(modifier = Modifier.size(SqueezableIconSize), onClick = {
+                                    programViewModel.setExercise(
+                                        dayIndex, exerciseIndex, exercise.copy(
+                                            sets = exercise.sets + ExerciseSet(
+                                                actualIntensity = exercise.intensity?.let { 0f },
+                                                targetPerfVar = PerfVar.of(exercise.perfVarCategory)
+                                            )
+                                        )
+                                    )
+                                }) {
+                                    Icon(Icons.Filled.Add, null)
+                                }
+
                                 IconButton(
                                     modifier = Modifier.size(SqueezableIconSize),
                                     onClick = { showSwapExerciseChooser = true }) {
                                     SwapIcon()
                                 }
 
-                                if (!exercise.hasIntensity) IconButton(
-                                    modifier = Modifier.size(SqueezableIconSize),
-                                    onClick = { setIntensity(Intensity.RPE) }) {
+                                if (!exercise.hasIntensity) IconButton(modifier = Modifier.size(SqueezableIconSize), onClick = {
+                                    programViewModel.setExercise(
+                                        dayIndex,
+                                        exerciseIndex,
+                                        exercise.copy(intensity = Intensity.RPE,
+                                            sets = exercise.sets.map { it.copy(actualIntensity = 0f) })
+                                    )
+                                }) {
                                     HeartPlusIcon()
                                 }
-                                else IconButton(modifier = Modifier.size(SqueezableIconSize), onClick = { setIntensity(null) }) {
+                                else IconButton(modifier = Modifier.size(SqueezableIconSize), onClick = {
+                                    programViewModel.setExercise(
+                                        dayIndex,
+                                        exerciseIndex,
+                                        exercise.copy(intensity = null,
+                                            sets = exercise.sets.map { it.copy(actualIntensity = null) })
+                                    )
+                                }) {
                                     HeartRemoveIcon()
                                 }
 
@@ -153,7 +171,7 @@ fun DayScreen(
                             }
                         })
 
-                        Row(modifier = Modifier.padding(Dp.Small), verticalAlignment = Alignment.CenterVertically) {
+                        Row(modifier = Modifier.padding(horizontal = Dp.Medium, vertical = Dp.Small)) {
                             Header(Modifier.weight(NarrowWeight), "Set")
                             // PerfVarCategory Dropdown with Icon
                             Row(
@@ -187,7 +205,7 @@ fun DayScreen(
                             }
                             Header(Modifier.weight(NarrowWeight), "")
                         }
-                        HorizontalDivider()
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = Dp.Medium))
 
                         exercise.sets.forEachIndexed { setIndex, set ->
                             SwipeToDeleteBox(onDelete = {
@@ -197,16 +215,14 @@ fun DayScreen(
                                     exerciseIndex,
                                     exercise.copy(sets = exercise.sets.filterIndexed { i, _ -> i != setIndex })
                                 )
-                                scope.launch {
-                                    if (set.targetPerfVar != PerfVar.of(exercise.perfVarCategory)) {
-                                        val snackBarResult = snackbarHostState.showSnackbar(
-                                            message = "${set.targetPerfVar.encodeToStringOutput()} of ${exerciseDescriptor.name} deleted",
-                                            actionLabel = "Undo",
-                                            withDismissAction = true
-                                        )
-                                        if (snackBarResult == SnackbarResult.ActionPerformed) {
-                                            programViewModel.setExercise(dayIndex, exerciseIndex, deletedExercise)
-                                        }
+                                if (set.targetPerfVar != PerfVar.of(exercise.perfVarCategory)) scope.launch {
+                                    val snackBarResult = snackbarHostState.showSnackbar(
+                                        message = "${set.targetPerfVar.encodeToStringOutput()} of ${exerciseDescriptor.name} deleted",
+                                        actionLabel = "Undo",
+                                        withDismissAction = true
+                                    )
+                                    if (snackBarResult == SnackbarResult.ActionPerformed) {
+                                        programViewModel.setExercise(dayIndex, exerciseIndex, deletedExercise)
                                     }
                                 }
                             }) {
@@ -214,8 +230,7 @@ fun DayScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(color = MaterialTheme.colorScheme.focalGround(settings.theme))
-                                        .padding(vertical = Dp.Medium, horizontal = Dp.Small),
-                                    verticalAlignment = Alignment.CenterVertically
+                                        .padding(Dp.Medium), verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
                                         modifier = Modifier.weight(NarrowWeight),
@@ -260,24 +275,7 @@ fun DayScreen(
                                 }
                             }
                         }
-
-                        OutlinedButton(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(Dp.Medium),
-                            colors = ButtonDefaults.outlinedButtonColors()
-                                .copy(contentColor = MaterialTheme.colorScheme.tertiary),
-                            onClick = {
-                                programViewModel.setExercise(
-                                    dayIndex, exerciseIndex, exercise.copy(
-                                        sets = exercise.sets + ExerciseSet(
-                                            actualIntensity = exercise.intensity?.let { 0f },
-                                            targetPerfVar = PerfVar.of(exercise.perfVarCategory)
-                                        )
-                                    )
-                                )
-                            }) {
-                            Text(text = "Add Set")
-                        }
+                        Spacer(Modifier.height(12.dp)) // Equivalent to HeroTile vertical Dp
                     }
                 }
             }
