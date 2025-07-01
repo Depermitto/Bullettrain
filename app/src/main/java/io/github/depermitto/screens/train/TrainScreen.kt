@@ -16,6 +16,7 @@ import io.github.depermitto.components.NumberField
 import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.data.ExerciseDao
 import io.github.depermitto.presentation.TrainViewModel
+import io.github.depermitto.presentation.WorkoutState
 import io.github.depermitto.replaceAt
 import io.github.depermitto.screens.exercises.ExerciseChooser
 import io.github.depermitto.theme.ItemPadding
@@ -29,17 +30,34 @@ import java.util.*
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TrainScreen(viewModel: TrainViewModel, exerciseDao: ExerciseDao) {
-    val start = Instant.now()
     RibbonScaffold(ribbon = {
         OutlinedCard(modifier = Modifier.padding(start = ItemPadding, end = ItemPadding, bottom = ItemPadding)) {
-            Row(modifier = Modifier.padding(horizontal = ItemPadding), verticalAlignment = Alignment.CenterVertically) {
-                Text(text = viewModel.instantSince(start).format("m:ss"), style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.weight(1f))
-                TextButton(
-                    onClick = { TODO() },
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
-                ) {
-                    Text(text = "Finish")
+            when (viewModel.workoutState) {
+                WorkoutState.NotStartedYet -> {
+                    TextButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { viewModel.startWorkoutOnce() },
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
+                    ) { Text(text = "Start") }
+                }
+
+                WorkoutState.Started -> {
+                    Row(Modifier.padding(horizontal = ItemPadding), verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = viewModel.elapsedSince(), style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.weight(1f))
+                        TextButton(
+                            onClick = { viewModel.stopWorkoutOnce() },
+                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
+                        ) { Text(text = "Finish") }
+                    }
+                }
+
+                WorkoutState.Done -> {
+                    TextButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { viewModel.startWorkoutOnce() },
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
+                    ) { Text(text = "Workout Done") }
                 }
             }
         }
@@ -65,7 +83,7 @@ fun TrainScreen(viewModel: TrainViewModel, exerciseDao: ExerciseDao) {
                                     Text(
                                         modifier = Modifier.padding(4.dp),
                                         text = if (set.all { it.done != null }) "Done"
-                                        else viewModel.instantSince(exercise.done!!).format("m:ss"),
+                                        else viewModel.elapsedSince(exercise.done!!),
                                         style = MaterialTheme.typography.titleMedium
                                     )
                                 }
