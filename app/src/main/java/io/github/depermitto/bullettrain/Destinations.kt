@@ -1,9 +1,8 @@
 package io.github.depermitto.bullettrain
 
-import com.kiwi.navigationcompose.typed.Destination
 import kotlinx.serialization.Serializable
 
-sealed interface Destinations : Destination {
+sealed interface Destinations {
     @Serializable
     data class Home(val tab: Tabs) : Destinations {
         enum class Tabs(val icon: Int) {
