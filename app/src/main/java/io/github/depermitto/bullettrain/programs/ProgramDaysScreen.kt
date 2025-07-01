@@ -1,12 +1,7 @@
 package io.github.depermitto.bullettrain.programs
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Delete
@@ -19,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destinations
+import io.github.depermitto.bullettrain.components.ConfirmAlertDialog
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
@@ -30,15 +26,17 @@ import io.github.depermitto.bullettrain.util.DuplicateIcon
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgramDaysScreen(
-    programViewModel: ProgramViewModel, navController: NavController
-) = LazyColumn(
-    modifier = Modifier.fillMaxSize(),
-    contentPadding = PaddingValues(ItemPadding),
+    modifier: Modifier = Modifier, programViewModel: ProgramViewModel, navController: NavController
+) = Column(
+    modifier = modifier
+        .fillMaxSize()
+        .padding(horizontal = ItemPadding),
     verticalArrangement = Arrangement.spacedBy(CardSpacing),
     horizontalAlignment = Alignment.CenterHorizontally
 ) {
-    itemsIndexed(programViewModel.getDays()) { dayIndex, day ->
+    programViewModel.getDays().forEachIndexed { dayIndex, day ->
         var showRenameDialog by rememberSaveable { mutableStateOf(false) }
+        var showDayDeleteDialog by rememberSaveable { mutableStateOf(false) }
         HoldToShowOptionsBox(onClick = { navController.navigate(Destinations.Day(dayIndex)) }, holdOptions = {
             DropdownMenuItem(text = { Text(text = "Rename") },
                 leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
@@ -48,39 +46,40 @@ fun ProgramDaysScreen(
                 onClick = { programViewModel.addDay(day) })
             DropdownMenuItem(text = { Text(text = "Delete") },
                 leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
-                onClick = { programViewModel.removeDayAt(dayIndex) })
+                onClick = { showDayDeleteDialog = true })
         }) {
             OutlinedCard {
                 ListItem(headlineContent = { Text(text = day.name, maxLines = 1) },
                     supportingContent = { Text(text = "${day.exercises.sumOf { it.sets.size }} sets", maxLines = 1) },
-                    trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForward, null) })
+                    trailingContent = {
+                        IconButton(onClick = { navController.navigate(Destinations.Day(dayIndex)) }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                        }
+                    })
             }
 
-            AnimatedVisibility(visible = showRenameDialog, enter = scaleIn(), exit = scaleOut()) {
-                TextFieldAlertDialog(
-                    label = { Text("Day Name") },
-                    onDismissRequest = { showRenameDialog = false },
-                    dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            programViewModel.setDay(dayIndex, day.copy(name = it))
-                            showRenameDialog = false
-                        }) {
-                            Text("Confirm")
-                        }
-                    },
-                )
-            }
+            if (showDayDeleteDialog) ConfirmAlertDialog(text = "Do you definitely want to delete ${day.name}?",
+                onDismissRequest = { showDayDeleteDialog = false },
+                onConfirm = { programViewModel.removeDayAt(dayIndex) })
+
+            if (showRenameDialog) TextFieldAlertDialog(
+                label = { Text("Day Name") },
+                onDismissRequest = { showRenameDialog = false },
+                dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
+                confirmButton = {
+                    TextButton(onClick = {
+                        programViewModel.setDay(dayIndex, day.copy(name = it))
+                        showRenameDialog = false
+                    }) {
+                        Text("Confirm")
+                    }
+                },
+            )
         }
     }
 
-    item {
-        Button(
-            onClick = { programViewModel.addDay() },
-            enabled = programViewModel.getDays().size < 7,
-        ) {
-            Text("Add Day")
-        }
+    Button(onClick = { programViewModel.addDay() }, enabled = programViewModel.getDays().size < 7) {
+        Text("Add Day")
     }
 }
 

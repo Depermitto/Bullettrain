@@ -3,6 +3,7 @@ package io.github.depermitto.bullettrain.train
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -20,13 +21,13 @@ fun TrainTab(
     modifier: Modifier = Modifier,
     trainViewModel: TrainViewModel,
     programDao: ProgramDao,
-): Unit = Column(
+) = Column(
     modifier = modifier.padding(horizontal = ItemPadding),
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Center,
 ) {
     val programs = runBlocking { programDao.getAlmostAll.firstOrNull() ?: emptyList() }
-    var selectedProgramIndex by remember { mutableIntStateOf(0) }
+    var selectedProgramIndex by rememberSaveable { mutableIntStateOf(0) }
 
     Card(
         modifier = Modifier

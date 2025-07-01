@@ -1,8 +1,5 @@
 package io.github.depermitto.bullettrain.exercises
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -45,7 +42,7 @@ fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) =
             )
         }
 
-        items(exercises.filter { it.name.lowercase().contains(searchText.lowercase()) }) { exercise ->
+        items(exercises.filter { it.name.lowercase().contains(searchText.lowercase().trim()) }) { exercise ->
             OutlinedCard(colors = CardDefaults.cardColors(containerColor = filledContainerColor()),
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { onSelection(exercise) }) {
@@ -61,7 +58,7 @@ fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) =
         text = { Text(text = "Add") },
     )
 
-    AnimatedVisibility(visible = showDialog, enter = scaleIn(), exit = scaleOut()) {
+    if (showDialog) {
         var isError by remember { mutableStateOf(false) }
         TextFieldAlertDialog(onDismissRequest = { showDialog = false },
             dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } },
@@ -72,7 +69,7 @@ fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) =
                         return@TextButton
                     }
 
-                    exerciseDao.upsert(Exercise(name = name))
+                    exerciseDao.upsert(Exercise(name = name.trim()))
                     showDialog = false
                 }) { Text("Confirm") }
             },

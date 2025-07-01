@@ -7,12 +7,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun DiscardAlertDialog(
-    text: String, modifier: Modifier = Modifier, onDismissRequest: () -> Unit, onDiscardClick: () -> Unit
+fun ConfirmAlertDialog(
+    text: String, onDismissRequest: () -> Unit, onConfirm: () -> Unit, modifier: Modifier = Modifier,
 ) = AlertDialog(
     modifier = modifier,
     onDismissRequest = onDismissRequest,
     dismissButton = { TextButton(onClick = onDismissRequest) { Text("Cancel") } },
-    confirmButton = { TextButton(onClick = { onDismissRequest(); onDiscardClick() }) { Text("Discard") } },
+    confirmButton = { TextButton(onClick = { onDismissRequest(); onConfirm() }) { Text("Discard") } },
     text = { Text(text = text) },
 )

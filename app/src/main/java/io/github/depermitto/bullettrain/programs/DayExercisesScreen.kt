@@ -69,7 +69,7 @@ fun DayExercisesScreen(
     modifier: Modifier = Modifier, programViewModel: ProgramViewModel, dayIndex: Int, exerciseDao: ExerciseDao
 ) = Box(modifier = modifier.fillMaxSize()) {
     val day = programViewModel.getDay(dayIndex)
-    ReorderableColumn(modifier = Modifier,
+    ReorderableColumn(modifier = Modifier.padding(horizontal = ItemPadding),
         list = day.exercises,
         verticalArrangement = Arrangement.spacedBy(CardSpacing),
         onSettle = { fromIndex, toIndex ->
@@ -237,7 +237,12 @@ fun DayExercisesScreen(
     var showExerciseChooser by rememberSaveable { mutableStateOf(false) }
     if (showExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
         onDismissRequest = { showExerciseChooser = false },
-        onChoose = { programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises + it)) })
+        onChoose = {
+            programViewModel.setDay(
+                dayIndex,
+                day.copy(exercises = day.exercises + it.copy(sets = listOf(ExerciseSet(targetPerfVar = PerfVar.of(it.perfVarCategory)))))
+            )
+        })
     AnchoredFloatingActionButton(text = { Text("Add Exercise") },
         icon = { Icon(Icons.Filled.Add, null) },
         onClick = { showExerciseChooser = true })

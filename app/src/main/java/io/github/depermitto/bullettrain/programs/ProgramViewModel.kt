@@ -29,11 +29,14 @@ class ProgramViewModel(program: Program) : ViewModel() {
         dayIndex, getDay(dayIndex).copy(exercises = getDay(dayIndex).exercises.smallListSet(exerciseIndex, exercise))
     )
 
+    fun isEqual(program: Program): Boolean = getDays().toList() == program.days.toList()
+    fun isEmpty(): Boolean = programName.isEmpty() && days.isEmpty()
+
     fun constructProgram(): Program = Program(id = programId, name = programName, days = days.toList(), followed = followed)
     fun clear() {
         programName = ""
         days.clear()
-        followed = false
+        days.add(Day())
     }
 
     companion object {

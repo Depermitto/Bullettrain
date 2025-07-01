@@ -1,5 +1,6 @@
 package io.github.depermitto.bullettrain.components
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -43,7 +44,9 @@ fun BoxScope.Ribbon(
     settingsGear: Boolean = true,
     title: String? = null,
 ) {
-    if (backButton) IconButton(modifier = Modifier.align(Alignment.TopStart), onClick = { navController.navigateUp() }) {
+    val onBackPressedDispatcherOwner = LocalOnBackPressedDispatcherOwner.current
+    if (backButton) IconButton(modifier = Modifier.align(Alignment.TopStart),
+        onClick = { onBackPressedDispatcherOwner?.onBackPressedDispatcher?.onBackPressed() ?: navController.navigateUp() }) {
         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back Button")
     }
     if (title != null) Text(
@@ -51,27 +54,9 @@ fun BoxScope.Ribbon(
         text = title,
         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
     )
-    if (settingsGear) IconButton(modifier = Modifier.align(Alignment.TopEnd),
+    if (settingsGear) IconButton(
+        modifier = Modifier.align(Alignment.TopEnd),
         onClick = { navController.navigate(Destinations.Settings) }) {
         Icon(Icons.Filled.Settings, contentDescription = "Settings")
-    }
-}
-
-@Composable
-fun BoxScope.Ribbon(
-    leftButton: (@Composable () -> Unit)? = null,
-    rightButton: (@Composable () -> Unit)? = null,
-    title: String? = null,
-) {
-    if (leftButton != null) Box(modifier = Modifier.align(Alignment.TopStart), contentAlignment = Alignment.Center) {
-        leftButton()
-    }
-    if (title != null) Text(
-        modifier = Modifier.align(Alignment.Center),
-        text = title,
-        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-    )
-    if (rightButton != null) Box(modifier = Modifier.align(Alignment.TopEnd), contentAlignment = Alignment.Center) {
-        rightButton()
     }
 }

@@ -16,6 +16,7 @@ import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.history.HistoryTab
+import io.github.depermitto.bullettrain.programs.ProgramViewModel
 import io.github.depermitto.bullettrain.programs.ProgramsTab
 import io.github.depermitto.bullettrain.theme.adaptiveIconTint
 import io.github.depermitto.bullettrain.theme.filledContainerColor
@@ -26,6 +27,7 @@ import io.github.depermitto.bullettrain.train.TrainViewModel
 fun HomeScreen(
     homeViewModel: HomeViewModel,
     trainViewModel: TrainViewModel,
+    programViewModel: ProgramViewModel,
     settingsDao: SettingsDao,
     programDao: ProgramDao,
     historyDao: HistoryDao,
@@ -46,6 +48,7 @@ fun HomeScreen(
     when (homeViewModel.activeBar) {
         Destinations.Home.Tabs.Programs -> ProgramsTab(
             modifier = Modifier.padding(paddingValues),
+            programViewModel = programViewModel,
             programDao = programDao,
             navController = navController,
         )

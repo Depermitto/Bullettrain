@@ -70,7 +70,7 @@ dependencies {
     implementation "io.github.vinceglb:filekit-compose:$filekit_version"
     
     // Drag 'n drop
-    implementation 'sh.calvin.reorderable:reorderable:2.3.1'
+    implementation 'sh.calvin.reorderable:reorderable:2.3.2'
 
     // Testing
     testImplementation 'junit:junit:4.13.2'

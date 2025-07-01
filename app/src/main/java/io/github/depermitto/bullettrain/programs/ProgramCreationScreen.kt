@@ -37,7 +37,9 @@ fun ProgramCreationScreen(
         colors = notUnderlinedTextFieldColors()
     )
     Box(modifier = Modifier.weight(1f)) {
-        ProgramDaysScreen(programViewModel = programViewModel, navController = navController)
+        ProgramDaysScreen(
+            modifier = Modifier.padding(top = ItemPadding), programViewModel = programViewModel, navController = navController
+        )
         AnchoredFloatingActionButton(text = { Text(text = "Complete Program") }, onClick = {
             if (programViewModel.programName.isBlank()) {
                 scope.launch { snackbarHostState.showSnackbar("Blank Program Name") }
@@ -45,6 +47,7 @@ fun ProgramCreationScreen(
             }
 
             programDao.insert(programViewModel.constructProgram())
+            programViewModel.clear()
             scope.launch { snackbarHostState.showSnackbar("Successfully Created") }
             navController.popBackStack()
         })

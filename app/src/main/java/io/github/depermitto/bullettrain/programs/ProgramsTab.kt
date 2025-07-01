@@ -1,8 +1,5 @@
 package io.github.depermitto.bullettrain.programs
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Column
@@ -27,6 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destinations
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
+import io.github.depermitto.bullettrain.components.ConfirmAlertDialog
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.ProgramDao
@@ -40,6 +38,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ProgramsTab(
     modifier: Modifier = Modifier,
+    programViewModel: ProgramViewModel,
     programDao: ProgramDao,
     navController: NavController,
 ) = Box(modifier = modifier.fillMaxSize()) {
@@ -50,14 +49,16 @@ fun ProgramsTab(
     ) {
         items(programs) { program ->
             var showRenameDialog by rememberSaveable { mutableStateOf(false) }
+            var showProgramDeleteDialog by rememberSaveable { mutableStateOf(false) }
             HoldToShowOptionsBox(onClick = { navController.navigate(Destinations.Program(program)) }, holdOptions = {
                 DropdownMenuItem(text = { Text(text = "Rename") },
                     leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
                     onClick = { showRenameDialog = true })
                 DropdownMenuItem(text = { Text(text = "Delete") },
                     leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
-                    onClick = { programDao.delete(program) })
+                    onClick = { showProgramDeleteDialog = true })
             }) {
+
                 Card(
                     modifier = Modifier
                         .clip(MaterialTheme.shapes.medium)
@@ -86,20 +87,22 @@ fun ProgramsTab(
                         })
                 }
 
-                AnimatedVisibility(visible = showRenameDialog, enter = scaleIn(), exit = scaleOut()) {
-                    TextFieldAlertDialog(label = { Text("Program Name") },
-                        onDismissRequest = { showRenameDialog = false },
-                        dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
-                        confirmButton = { name ->
-                            TextButton(onClick = {
-                                programDao.update(program.copy(name = name))
-                                showRenameDialog = false
-                                true
-                            }) {
-                                Text("Confirm")
-                            }
-                        })
-                }
+                if (showProgramDeleteDialog) ConfirmAlertDialog(text = "Do you definitely want to delete ${program.name}?",
+                    onDismissRequest = { showProgramDeleteDialog = false },
+                    onConfirm = { programDao.delete(program) })
+
+                if (showRenameDialog) TextFieldAlertDialog(label = { Text("Program Name") },
+                    onDismissRequest = { showRenameDialog = false },
+                    dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
+                    confirmButton = { name ->
+                        TextButton(onClick = {
+                            programDao.update(program.copy(name = name))
+                            showRenameDialog = false
+                            true
+                        }) {
+                            Text("Confirm")
+                        }
+                    })
             }
         }
     }
@@ -107,6 +110,6 @@ fun ProgramsTab(
     AnchoredFloatingActionButton(
         icon = { Icon(Icons.Filled.Add, contentDescription = "Create Program") },
         text = { Text(text = "Create") },
-        onClick = { navController.navigate(Destinations.ProgramCreation) },
+        onClick = { programViewModel.clear(); navController.navigate(Destinations.ProgramCreation) },
     )
 }
