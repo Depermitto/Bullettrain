@@ -335,9 +335,9 @@ private enum class Tab {
 }
 
 private enum class Period {
-  Weekly,
-  Monthly,
   Yearly,
+  Monthly,
+  Weekly,
 }
 
 private enum class Metric {

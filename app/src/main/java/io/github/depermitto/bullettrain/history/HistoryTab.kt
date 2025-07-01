@@ -203,7 +203,7 @@ fun HistoryTab(
                 when {
                   actual.isBlank() && weight.isBlank() -> notPerformedLabel
                   actual.isBlank() -> "$weight ${settings.unitSystem.weightUnit()}"
-                  weight.isBlank() -> "$actual ${exercise.type}"
+                  weight.isBlank() -> "$actual reps"
                   else -> "$actual x $weight ${settings.unitSystem.weightUnit()}"
                 }
               }

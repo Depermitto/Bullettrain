@@ -196,7 +196,7 @@ fun TrainingScreen(
             if (exercise.hasIntensity)
               Text("RPE", Modifier.weight(.3F), textAlign = TextAlign.Center)
             Text("Target", Modifier.weight(.4F), textAlign = TextAlign.Center)
-            Text(exercise.type.name, Modifier.weight(.7F), textAlign = TextAlign.Center)
+            Text("Reps", Modifier.weight(.7F), textAlign = TextAlign.Center)
             Text(
               settings.unitSystem.weightUnit(),
               Modifier.weight(.7F),
@@ -217,13 +217,10 @@ fun TrainingScreen(
                 textAlign = TextAlign.Center,
               )
             Text(
-              run {
-                val target =
-                  if (set.target == 0F) return@run "--"
-                  else if (exercise.hasTarget2) set.target.format() + "-" + set.target2.format()
-                  else set.target.format()
-                "$target ${if (exercise.type == Exercise.Type.Reps) "reps" else "min"}"
-              },
+              if (set.target == 0F) "--"
+              else if (exercise.hasTarget2)
+                set.target.format() + "-" + set.target2.format() + " reps"
+              else set.target.format() + " reps",
               modifier = Modifier.weight(.4F),
               textAlign = TextAlign.Center,
               style = MaterialTheme.typography.bodyMedium,

@@ -164,7 +164,7 @@ fun DayScreen(
                       )
                       if (!exercise.hasTarget2)
                         DropdownMenuItem(
-                          text = { Text("Variable Target") },
+                          text = { Text("Secondary Target") },
                           leadingIcon = SplitIcon,
                           onClick = {
                             showDropdown = false
@@ -233,39 +233,7 @@ fun DayScreen(
             },
             headerContent = {
               Text("Set", Modifier.weight(.2F), textAlign = TextAlign.Center)
-              Row(
-                modifier = Modifier.weight(.9F).clickable { showExerciseTypeDropdown = true },
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-              ) {
-                val rotationDegrees by
-                  animateFloatAsState(if (showExerciseTypeDropdown) 90F else 0F)
-
-                Text(exercise.type.name, textAlign = TextAlign.Center)
-                Icon(
-                  Icons.Sharp.KeyboardArrowDown,
-                  contentDescription = "Choose Exercise Type",
-                  modifier = Modifier.rotate(rotationDegrees),
-                )
-                DropdownMenu(
-                  expanded = showExerciseTypeDropdown,
-                  onDismissRequest = { showExerciseTypeDropdown = false },
-                ) {
-                  for (type in 0..1) {
-                    DropdownMenuItem(
-                      text = { Text(Exercise.Type.forNumber(type).name) },
-                      onClick = {
-                        programViewModel.setExercise(
-                          dayIndex,
-                          exerciseIndex,
-                          exercise.toBuilder().setTypeValue(type),
-                        )
-                        showExerciseTypeDropdown = false
-                      },
-                    )
-                  }
-                }
-              }
+              Text("Reps", Modifier.weight(.9F), textAlign = TextAlign.Center)
               if (exercise.hasIntensity)
                 Text("RPE", Modifier.weight(.6F), textAlign = TextAlign.Center)
               Spacer(Modifier.weight(.2F))
@@ -300,7 +268,6 @@ fun DayScreen(
                         )
                       },
                     )
-                    if (exercise.type == Exercise.Type.Time) Text("min")
                   }
                 else
                   Row(verticalAlignment = Alignment.CenterVertically) {
@@ -316,7 +283,6 @@ fun DayScreen(
                         )
                       },
                     )
-                    if (exercise.type == Exercise.Type.Time) Text("min")
                   }
               }
               if (exercise.hasIntensity)

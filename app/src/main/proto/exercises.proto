@@ -8,7 +8,6 @@ import "google/protobuf/timestamp.proto";
 message Exercise {
   uint32 descriptorId = 1;
   repeated Set sets = 2;
-  Type type = 3;
   bool hasTarget2 = 4;
   bool hasIntensity = 5;
 
@@ -25,10 +24,5 @@ message Exercise {
     float weight = 4;
     uint32 intensity = 5;
     optional google.protobuf.Timestamp doneTs = 6;
-  }
-
-  enum Type {
-    Reps = 0;
-    Time = 1;
   }
 }

@@ -77,7 +77,7 @@ fun ExercisesSetsListings(
                 val actual = set.actual.format()
                 val weight = set.weight.format()
                 when {
-                  weight.isBlank() -> "$actual ${exercise.type}"
+                  weight.isBlank() -> "$actual reps"
                   else -> "$actual x $weight ${settings.unitSystem.weightUnit()}"
                 }
               },
