@@ -5,6 +5,7 @@ import androidx.compose.animation.core.EaseInCubic
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
@@ -25,6 +26,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -75,9 +77,19 @@ fun HistoryTab(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(ItemSpacing),
         ) {
+            var dragDirection by remember { mutableFloatStateOf(0f) }
             Calendar(
                 date = homeViewModel.date,
-                modifier = Modifier.heightIn(0.dp, 350.dp),
+                modifier = Modifier
+                    .heightIn(0.dp, 350.dp)
+                    .pointerInput(Unit) {
+                        detectDragGestures(onDragEnd = {
+                            when {
+                                dragDirection > 0 -> homeViewModel.date = homeViewModel.date.minusMonths(1)
+                                dragDirection < 0 -> homeViewModel.date = homeViewModel.date.plusMonths(1)
+                            }
+                        }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
+                    },
                 onItemClick = { homeViewModel.selectedRecord = findWorkout(it) },
                 ifHighlightItem = { findWorkout(it) != null },
             )
@@ -112,8 +124,8 @@ fun HistoryTab(
     AnimatedVisibility(
         modifier = Modifier.align(Alignment.BottomCenter),
         visible = homeViewModel.date.month != today.month || homeViewModel.date.year != today.year,
-        enter = slideInVertically(animationSpec = tween(durationMillis = 400, easing = EaseInCubic), initialOffsetY = { it }),
-        exit = slideOutVertically(animationSpec = tween(durationMillis = 400, easing = EaseInCubic), targetOffsetY = { it }),
+        enter = slideInVertically(animationSpec = tween(durationMillis = 600, easing = EaseInCubic), initialOffsetY = { it }),
+        exit = slideOutVertically(animationSpec = tween(durationMillis = 600, easing = EaseInCubic), targetOffsetY = { it }),
     ) {
         TextButton(
             modifier = Modifier.padding(bottom = ItemPadding),

@@ -1,11 +1,13 @@
 package io.github.depermitto.bullettrain.train
 
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import io.github.depermitto.bullettrain.components.WorkoutInfo
 import io.github.depermitto.bullettrain.database.Day
@@ -15,6 +17,8 @@ import io.github.depermitto.bullettrain.theme.ItemSpacing
 import io.github.depermitto.bullettrain.theme.filledContainerColor
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
+import kotlin.math.max
+import kotlin.math.min
 
 @Composable
 fun TrainTab(
@@ -28,11 +32,20 @@ fun TrainTab(
 ) {
     val programs = runBlocking { programDao.getAlmostAll.firstOrNull() ?: emptyList() }
     var selectedProgramIndex by rememberSaveable { mutableIntStateOf(0) }
+    var dragDirection by remember { mutableFloatStateOf(0f) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(0.dp, 350.dp),
+            .heightIn(0.dp, 350.dp)
+            .pointerInput(Unit) {
+                detectDragGestures(onDragEnd = {
+                    when {
+                        dragDirection > 0 -> selectedProgramIndex = max(selectedProgramIndex - 1, 0)
+                        dragDirection < 0 -> selectedProgramIndex = min(selectedProgramIndex + 1, programs.size - 1)
+                    }
+                }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
+            },
         colors = CardDefaults.cardColors(containerColor = filledContainerColor())
     ) {
         Box(
