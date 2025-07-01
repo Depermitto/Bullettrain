@@ -55,16 +55,17 @@ fun MainScreen(
             Ribbon(navController = navController, title = activeBar.name, backButton = false)
         }
     }) { paddingValues ->
-        val scroll = rememberScrollState()
         when (activeBar) {
             Screen.MainScreen.Tabs.Programs -> ProgramsTab(
-                modifier = Modifier.padding(paddingValues), programDao = programDao, navController = navController
+                modifier = Modifier.padding(paddingValues),
+                programDao = programDao,
+                navController = navController,
             )
 
             Screen.MainScreen.Tabs.History -> HistoryTab(
-                modifier = Modifier.padding(paddingValues).verticalScroll(scroll),
+                modifier = Modifier .padding(paddingValues),
+                settingsViewModel = settingsViewModel,
                 historyDao = historyDao,
-                settingsViewModel = settingsViewModel
             )
 
             Screen.MainScreen.Tabs.Train -> TrainTab(

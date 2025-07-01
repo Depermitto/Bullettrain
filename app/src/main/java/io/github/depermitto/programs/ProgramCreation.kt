@@ -30,6 +30,7 @@ fun ProgramCreation(
                 .padding(horizontal = ItemPadding),
             value = programViewModel.programName,
             onValueChange = { programViewModel.setName(it) },
+            maxLines = 1,
             placeholder = { Text(text = "Workout Name") },
             shape = MaterialTheme.shapes.medium,
             colors = notUnderlinedTextFieldColors()

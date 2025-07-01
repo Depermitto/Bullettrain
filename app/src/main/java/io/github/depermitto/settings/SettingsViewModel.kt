@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import io.github.depermitto.settings.UnitSystem.Imperial
+import io.github.depermitto.settings.UnitSystem.Metric
 import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerType
 import io.github.vinceglb.filekit.core.pickFile
@@ -16,14 +18,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-enum class UnitSystem {
-    Metric, Imperial;
-
-    fun weightUnit() = when (this) {
-        Metric -> "kg"
-        Imperial -> "lbs"
-    }
-}
+enum class UnitSystem { Metric, Imperial }
 
 const val SETTINGS_FILENAME = "settings.json"
 const val DB_FILENAME = "firetent.sqlite"
@@ -71,6 +66,11 @@ class SettingsViewModel(private val _data: PersistentData) : ViewModel() {
                 Json.encodeToString<Settings>(this@SettingsViewModel.settings).encodeToByteArray()
             )
         }
+    }
+
+    fun weightUnit() = when (settings.unitSystem) {
+        Metric -> "kg"
+        Imperial -> "lbs"
     }
 
     companion object {

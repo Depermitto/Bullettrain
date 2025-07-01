@@ -53,6 +53,7 @@ enum class PerfVarCategory {
     Reps, RepRange, Time;
 
     val prettyName = name.split(regex = Regex("(?=[A-Z])")).joinToString(" ")
+    fun trainName() = if (this == RepRange) "Reps" else name
 }
 
 @Serializable

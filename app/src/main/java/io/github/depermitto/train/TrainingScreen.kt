@@ -34,8 +34,8 @@ fun TrainingScreen(
     settingsViewModel: SettingsViewModel,
     exerciseDao: ExerciseDao,
 ) = RibbonScaffold(ribbon = {
-    OutlinedCard(modifier = Modifier.padding(start = ItemPadding, end = ItemPadding, bottom = ItemPadding)) {
-        if (trainViewModel.isWorkoutRunning()) {
+    if (trainViewModel.isWorkoutRunning()) {
+        OutlinedCard(modifier = Modifier.padding(start = ItemPadding, end = ItemPadding, bottom = ItemPadding)) {
             Row(Modifier.padding(horizontal = ItemPadding), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = { trainViewModel.cancelWorkout() }) {
                     Icon(Icons.Sharp.Close, contentDescription = "Cancel Workout")
@@ -119,8 +119,8 @@ fun TrainExercise(
                     Header(Modifier.weight(ExerciseSetNarrowWeight), exercise.intensityCategory.name)
                 }
                 Header(Modifier.weight(ExerciseSetNarrowWeight + 0.1f), "Target")
-                Header(Modifier.weight(ExerciseSetWideWeight), exercise.perfVarCategory.prettyName)
-                Header(Modifier.weight(ExerciseSetWideWeight), settingsViewModel.settings.unitSystem.weightUnit())
+                Header(Modifier.weight(ExerciseSetWideWeight), exercise.perfVarCategory.trainName())
+                Header(Modifier.weight(ExerciseSetWideWeight), settingsViewModel.weightUnit())
                 if (trainViewModel.isWorkoutRunning()) {
                     Header(Modifier.weight(ExerciseSetNarrowWeight), "")
                 }
@@ -128,6 +128,7 @@ fun TrainExercise(
             HorizontalDivider()
 
             exercise.sets.forEachIndexed { setIndex, set ->
+//                SwipeToDismissBox() { }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         modifier = Modifier.weight(ExerciseSetNarrowWeight),

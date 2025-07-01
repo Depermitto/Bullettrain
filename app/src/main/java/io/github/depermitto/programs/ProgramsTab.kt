@@ -25,6 +25,8 @@ import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -35,24 +37,23 @@ fun ProgramsTab(
 ) = Box(modifier = modifier.fillMaxSize()) {
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val programs by programDao.getAll().collectAsStateWithLifecycle(emptyList())
-    var showDropdown by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
     ) {
         items(programs) { program ->
+            var showDropdown by remember { mutableStateOf(false) }
             Box(
                 modifier = Modifier
                     .clip(shape = MaterialTheme.shapes.medium)
                     .combinedClickable(onClick = { navController.navigate(Screen.ProgramScreen.passId(program.programId)) },
                         onLongClick = { showDropdown = true })
             ) {
-                OutlinedCard(
+                ProgramInfo(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .align(Alignment.Center),
-                    colors = CardDefaults.cardColors(containerColor = filledContainerColor())
-                ) { ProgramInfo(program = program) }
+                        .align(Alignment.Center), program = program
+                )
 
                 DropdownMenu(expanded = showDropdown, onDismissRequest = { showDropdown = false }) {
                     DropdownMenuItem(text = { Text(text = "Edit") },
@@ -73,12 +74,25 @@ fun ProgramsTab(
 }
 
 @Composable
-fun ProgramInfo(modifier: Modifier = Modifier, program: Program) = Column(modifier.padding(ItemPadding * 2)) {
-    Text(text = program.name, style = MaterialTheme.typography.titleLarge)
-    Text(text = "${program.days.size} day program", style = MaterialTheme.typography.bodyMedium)
-    Text(
-        modifier = Modifier.weight(1f),
-        text = "${program.days.sumOf { day -> day.exercises.sumOf { it.sets.size } }} total sets",
-        style = MaterialTheme.typography.bodyMedium
-    )
-}
+fun ProgramInfo(modifier: Modifier = Modifier, program: Program) = ListItem(
+    modifier = modifier.clip(MaterialTheme.shapes.medium),
+    colors = ListItemDefaults.colors(containerColor = filledContainerColor()),
+    headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
+    supportingContent = {
+        Column {
+            Text(text = "${program.days.size} day program", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = "${program.days.sumOf { day -> day.exercises.sumOf { it.sets.size } }} total sets",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            program.mostRecentWorkoutDate?.let { instant ->
+                val date = instant.atZone(ZoneId.systemDefault())
+                val formatter = DateTimeFormatter.ofPattern("dd MM yyyy")
+                Text(
+                    text = "Most recent workout: ${formatter.format(date)}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+    }
+)

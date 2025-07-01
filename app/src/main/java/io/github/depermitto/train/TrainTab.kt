@@ -8,18 +8,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import io.github.depermitto.data.entities.ProgramDao
 import io.github.depermitto.Screen
-import io.github.depermitto.programs.ProgramInfo
+import io.github.depermitto.components.WorkoutInfo
+import io.github.depermitto.data.entities.ProgramDao
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
 
-// TODO P1
-//  1. Slideshow of programs to start/track with progress stats
-//   - If there is no workout tracked, big-ass button that lets you choose
-//  2. Next workout preview with a start Day x button
-//  3. Empty workout starter
+// TODO P2
+//  1*. If there is no workout tracked, big-ass button that lets you choose
+//  2. Empty workout starter
 @Composable
 fun TrainTab(
     modifier: Modifier = Modifier,
@@ -56,14 +54,17 @@ fun TrainTab(
             }
 
             programs.getOrNull(selectedProgramIndex)?.let { program ->
-                ProgramInfo(modifier = Modifier.align(Alignment.TopStart), program = program)
+                WorkoutInfo(modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopStart),
+                    workout = program.days[program.nextDay],
+                    program = program,
+                    exerciseInfo = { Text(text = it.sets.size.toString()) })
                 ElevatedButton(
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                    onClick = {
+                    modifier = Modifier.align(Alignment.BottomCenter), onClick = {
                         navController.navigate(Screen.TrainingScreen.route)
                         trainViewModel.startWorkout(program.days[program.nextDay], program)
-                    },
-                    colors = ButtonDefaults.elevatedButtonColors(
+                    }, colors = ButtonDefaults.elevatedButtonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )
