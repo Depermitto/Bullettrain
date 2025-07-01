@@ -19,7 +19,7 @@ class ProgramViewModel(program: Program) : ViewModel() {
     var followed by mutableStateOf(program.followed)
         private set
 
-    fun getDays(): List<Day> = days
+    fun getDays(): List<Day> = days.toList()
     fun getDay(dayIndex: Int) = days[dayIndex]
     fun addDay(day: Day) = days.add(day)
     fun addDay() = addDay(Day("Day ${days.size + 1}"))
@@ -29,7 +29,9 @@ class ProgramViewModel(program: Program) : ViewModel() {
         dayIndex, getDay(dayIndex).copy(exercises = getDay(dayIndex).exercises.smallListSet(exerciseIndex, exercise))
     )
 
-    fun areDaysEqual(program: Program): Boolean = getDays().toList() == program.days.toList()
+    fun reorderDays(fromIndex: Int, toIndex: Int) = days.add(toIndex, days.removeAt(fromIndex))
+
+    fun areDaysEqual(program: Program): Boolean = getDays() == program.days
     fun hasContent(ignoreDay1: Boolean = false): Boolean {
         if (programName.isNotBlank()) return true
         return if (!ignoreDay1) {
@@ -38,7 +40,7 @@ class ProgramViewModel(program: Program) : ViewModel() {
         } else days.isNotEmpty()
     }
 
-    fun constructProgram(): Program = Program(id = programId, name = programName, days = days.toList(), followed = followed)
+    fun constructProgram(): Program = Program(id = programId, name = programName, days = getDays(), followed = followed)
     fun clear() {
         programName = ""
         days.clear()

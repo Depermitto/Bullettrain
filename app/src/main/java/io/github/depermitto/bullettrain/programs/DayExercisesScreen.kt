@@ -29,7 +29,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
@@ -45,6 +44,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
+import io.github.depermitto.bullettrain.components.DragButton
 import io.github.depermitto.bullettrain.components.Header
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
@@ -56,7 +56,6 @@ import io.github.depermitto.bullettrain.database.PerfVarCategory
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
 import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.CompactIconSize
-import io.github.depermitto.bullettrain.theme.DragHandleIcon
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
 import io.github.depermitto.bullettrain.theme.ExerciseSetNarrowWeight
 import io.github.depermitto.bullettrain.theme.ExerciseSetSpacing
@@ -88,17 +87,14 @@ fun DayExercisesScreen(
     ReorderableColumn(modifier = Modifier
         .padding(horizontal = ItemPadding)
         .fillMaxSize()
-        .verticalScroll(rememberScrollState(0)),
-        list = day.exercises,
-        verticalArrangement = Arrangement.spacedBy(CardSpacing),
-        onMove = {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
-            }
-        },
-        onSettle = { fromIndex, toIndex ->
-            programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises.reorder(fromIndex, toIndex)))
-        }) { exerciseIndex, exercise, isDragging ->
+        .verticalScroll(rememberScrollState(0))
+        .padding(bottom = 100.dp), list = day.exercises, verticalArrangement = Arrangement.spacedBy(CardSpacing), onMove = {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
+        }
+    }, onSettle = { fromIndex, toIndex ->
+        programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises.reorder(fromIndex, toIndex)))
+    }) { exerciseIndex, exercise, isDragging ->
         key(exercise.id) {
             val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
 
@@ -110,7 +106,7 @@ fun DayExercisesScreen(
                         val snackBarResult = snackbarHostState.showSnackbar(
                             message = (if (exercise.sets.size == 1) "A set" else "${exercise.sets.size} sets") + " of ${exercise.name} deleted",
                             actionLabel = "Undo",
-                            duration = SnackbarDuration.Short
+                            withDismissAction = true
                         )
                         if (snackBarResult == SnackbarResult.ActionPerformed) {
                             programViewModel.setDay(dayIndex, deletedDay)
@@ -134,8 +130,7 @@ fun DayExercisesScreen(
                                     programViewModel.setExercise(
                                         dayIndex,
                                         exerciseIndex,
-                                        exercise.copy(
-                                            intensityCategory = cat,
+                                        exercise.copy(intensityCategory = cat,
                                             sets = exercise.sets.map { it.copy(intensity = intensity) })
                                     )
                                 }
@@ -148,24 +143,7 @@ fun DayExercisesScreen(
                                     HeartRemoveIcon()
                                 }
 
-                                IconButton(modifier = with(
-                                    receiver = this@ReorderableColumn
-                                ) {
-                                    Modifier.draggableHandle(
-                                        onDragStarted = {
-                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                                                view.performHapticFeedback(HapticFeedbackConstants.DRAG_START)
-                                            }
-                                        },
-                                        onDragStopped = {
-                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                                view.performHapticFeedback(HapticFeedbackConstants.GESTURE_END)
-                                            }
-                                        },
-                                    )
-                                }.size(SqueezableIconSize), onClick = {}) {
-                                    DragHandleIcon()
-                                }
+                                DragButton(this@ReorderableColumn, view)
                             }
 
                             Row(modifier = Modifier.padding(top = ItemPadding, bottom = ItemSpacing)) {
@@ -180,8 +158,7 @@ fun DayExercisesScreen(
                                     Header(text = exercise.perfVarCategory.prettyName)
                                     Icon(Sharp.KeyboardArrowDown, contentDescription = null)
 
-                                    DropdownMenu(
-                                        expanded = showTargetEditDropdown,
+                                    DropdownMenu(expanded = showTargetEditDropdown,
                                         onDismissRequest = { showTargetEditDropdown = false }) {
                                         PerfVarCategory.entries.forEach { entry ->
                                             DropdownMenuItem(text = { Text(entry.prettyName) }, onClick = {
@@ -216,7 +193,7 @@ fun DayExercisesScreen(
                                             val snackBarResult = snackbarHostState.showSnackbar(
                                                 message = "${set.targetPerfVar.encodeToStringOutput()} of ${exercise.name} deleted",
                                                 actionLabel = "Undo",
-                                                duration = SnackbarDuration.Short
+                                                withDismissAction = true
                                             )
                                             if (snackBarResult == SnackbarResult.ActionPerformed) {
                                                 programViewModel.setExercise(dayIndex, exerciseIndex, deletedExercise)
@@ -262,10 +239,9 @@ fun DayExercisesScreen(
                                                     )
                                                 })
                                         }
-                                        IconButton(
-                                            modifier = Modifier
-                                                .size(CompactIconSize)
-                                                .weight(ExerciseSetNarrowWeight),
+                                        IconButton(modifier = Modifier
+                                            .size(CompactIconSize)
+                                            .weight(ExerciseSetNarrowWeight),
                                             onClick = {
                                                 programViewModel.setExercise(
                                                     dayIndex, exerciseIndex, exercise.copy(sets = exercise.sets + set)

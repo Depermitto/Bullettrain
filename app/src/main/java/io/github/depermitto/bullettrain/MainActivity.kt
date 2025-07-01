@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -216,20 +217,25 @@ fun App(db: Database) = MaterialTheme {
                     text = "Do you want to discard ${programViewModel.programName.ifBlank { "your new creation" }}?",
                     onConfirm = { navController.navigateUp(); programViewModel.clear() })
 
-                if (programViewModel.hasContent(ignoreDay1 = false)) {
-                    BackHandler { showDiscardDialog = true }
-                }
+                BackHandler(enabled = programViewModel.hasContent(ignoreDay1 = false)) { showDiscardDialog = true }
             }
 
             composable<Destinations.Program>(typeMap = mapOf(typeOf<Program>() to serializableType<Program>())) { navBackStackEntry ->
-                val program = navBackStackEntry.toRoute<Destinations.Program>().program
-                programViewModel = viewModel(factory = ProgramViewModel.Factory(program))
+                val program by db.programDao.where(navBackStackEntry.toRoute<Destinations.Program>().programId)
+                    .collectAsStateWithLifecycle(null)
+                programViewModel = viewModel(factory = ProgramViewModel.Factory(program ?: return@composable))
 
-                RibbonScaffold(ribbon = { Ribbon(navController, title = programViewModel.programName, settingsGear = false) }) {
+                RibbonScaffold(ribbon = {
+                    Ribbon(
+                        navController,
+                        title = programViewModel.programName,
+                        settingsGear = false
+                    )
+                }) {
                     ProgramScreen(
                         programViewModel = programViewModel,
                         programDao = db.programDao,
-                        program = program,
+                        program = program ?: return@RibbonScaffold,
                         navController = navController
                     )
                 }
@@ -238,7 +244,7 @@ fun App(db: Database) = MaterialTheme {
                     text = "Do you want to discard changes made to ${programViewModel.programName}?",
                     onConfirm = { navController.navigateUp() })
 
-                if (!programViewModel.areDaysEqual(program)) BackHandler { showDiscardDialog = true }
+                BackHandler(enabled = !programViewModel.areDaysEqual(program ?: return@composable)) { showDiscardDialog = true }
             }
 
             composable<Destinations.Day> { navBackStackEntry ->

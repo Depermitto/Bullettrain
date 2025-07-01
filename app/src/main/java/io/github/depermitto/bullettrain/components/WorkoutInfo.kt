@@ -34,7 +34,11 @@ fun WorkoutInfo(
     map: (List<Exercise>) -> List<String>,
     workout: Day,
     program: Program,
+    exercisesToSetsRatio: Float = 0.5f
 ) = Column(modifier = modifier) {
+    assert(exercisesToSetsRatio <= 1f)
+    assert(exercisesToSetsRatio >= 0f)
+
     if (program == ProgramDao.EmptyWorkout) ListItem(
         headlineContent = { Text(text = "Impromptu Workout", style = MaterialTheme.typography.titleLarge) },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -66,12 +70,12 @@ fun WorkoutInfo(
 
         workout.exercises.zip(processedExercises).forEach { (exercise, info) ->
             Row {
-                Box(modifier = Modifier.weight(0.5f), contentAlignment = CenterStart) {
+                Box(modifier = Modifier.weight(exercisesToSetsRatio), contentAlignment = CenterStart) {
                     val scroll = rememberScrollState(0)
                     Text(modifier = Modifier.horizontalScroll(scroll), text = exercise.name, maxLines = 1)
                 }
                 Spacer(modifier = Modifier.width(20.dp))
-                Box(modifier = Modifier.weight(0.5f), contentAlignment = CenterEnd) {
+                Box(modifier = Modifier.weight(1f - exercisesToSetsRatio), contentAlignment = CenterEnd) {
                     val scroll = rememberScrollState(0)
                     Text(
                         modifier = Modifier.horizontalScroll(scroll),

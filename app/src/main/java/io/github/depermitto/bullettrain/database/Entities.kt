@@ -107,11 +107,18 @@ sealed class PerfVar(val category: PerfVarCategory) {
             PerfVarCategory.Time -> Time()
             PerfVarCategory.RepRange -> RepRange()
         }
+
+        fun of(category: PerfVarCategory, vararg performance: Float) = when {
+            category == PerfVarCategory.Reps && performance.size == 1 -> Reps(performance[0])
+            category == PerfVarCategory.Time && performance.size == 1 -> Time(performance[0])
+            category == PerfVarCategory.RepRange && performance.size == 2 -> RepRange(performance[0], performance[1])
+            else -> of(category)
+        }
     }
 
     fun encodeToStringOutput(): String = when (this) {
         is RepRange -> if (this == RepRange()) "" else "${min.encodeToStringOutput()}-${max.encodeToStringOutput()} reps"
-        is Reps -> if (this == Reps()) "" else reps.encodeToStringOutput() + " reps"
+        is Reps -> if (this == Reps()) "" else reps.encodeToStringOutput() + if (reps == 1f) " rep" else " reps"
         is Time -> if (this == Time()) "" else time.encodeToStringOutput() + " min"
     }
 }

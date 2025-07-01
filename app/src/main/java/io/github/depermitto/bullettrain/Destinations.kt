@@ -23,5 +23,5 @@ sealed interface Destinations {
     data class Day(val dayIndex: Int) : Destinations
 
     @Serializable
-    data class Program(val program: io.github.depermitto.bullettrain.database.Program) : Destinations
+    data class Program(val programId: Int) : Destinations
 }

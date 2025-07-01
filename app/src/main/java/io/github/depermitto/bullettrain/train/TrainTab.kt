@@ -61,10 +61,11 @@ fun TrainTab(
             programs.getOrNull(selectedProgramIndex)?.let { program ->
                 WorkoutInfo(modifier = Modifier
                     .fillMaxWidth()
-                    .align(Alignment.TopStart),
+                    .align(Alignment.TopCenter),
                     workout = program.days[program.nextDay],
                     program = program,
-                    map = { exercises -> exercises.map { exercise -> exercise.sets.size.toString() } })
+                    map = { exercises -> exercises.map { exercise -> exercise.sets.size.toString() } },
+                    exercisesToSetsRatio = 0.9f)
                 ElevatedButton(
                     modifier = Modifier.align(Alignment.BottomCenter),
                     onClick = { trainViewModel.startWorkout(program.days[program.nextDay], program) },

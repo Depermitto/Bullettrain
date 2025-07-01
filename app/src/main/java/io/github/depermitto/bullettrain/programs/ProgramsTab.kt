@@ -50,14 +50,15 @@ fun ProgramsTab(
         items(programs) { program ->
             var showRenameDialog by rememberSaveable { mutableStateOf(false) }
             var showProgramDeleteDialog by rememberSaveable { mutableStateOf(false) }
-            HoldToShowOptionsBox(onClick = { navController.navigate(Destinations.Program(program)) }, holdOptions = {
-                DropdownMenuItem(text = { Text(text = "Rename") },
-                    leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
-                    onClick = { showRenameDialog = true })
-                DropdownMenuItem(text = { Text(text = "Delete") },
-                    leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
-                    onClick = { showProgramDeleteDialog = true })
-            }) {
+            HoldToShowOptionsBox(onClick = { navController.navigate(Destinations.Program(program.id)) },
+                holdOptions = { closeDropdown ->
+                    DropdownMenuItem(text = { Text(text = "Rename") },
+                        leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
+                        onClick = { closeDropdown(); showRenameDialog = true })
+                    DropdownMenuItem(text = { Text(text = "Delete") },
+                        leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+                        onClick = { closeDropdown(); showProgramDeleteDialog = true })
+                }) {
 
                 Card(
                     modifier = Modifier
@@ -87,7 +88,7 @@ fun ProgramsTab(
                         })
                 }
 
-                if (showProgramDeleteDialog) DiscardConfirmationAlertDialog(text = "Do you definitely want to delete ${program.name}?",
+                if (showProgramDeleteDialog) DiscardConfirmationAlertDialog(text = "Do you definitely want to discard ${program.name}?",
                     onDismissRequest = { showProgramDeleteDialog = false },
                     onConfirm = { programDao.delete(program) })
 

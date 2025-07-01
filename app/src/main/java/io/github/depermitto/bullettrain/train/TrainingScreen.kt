@@ -21,7 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -36,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DropdownButton
 import io.github.depermitto.bullettrain.components.Header
 import io.github.depermitto.bullettrain.components.NumberField
@@ -76,6 +76,7 @@ fun TrainingScreen(
         .verticalScroll(rememberScrollState(0)),
     verticalArrangement = Arrangement.spacedBy(CardSpacing)
 ) {
+    var showExerciseDeleteDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     trainViewModel.getExercises().forEachIndexed { exerciseIndex, exercise ->
         Card(modifier = Modifier, colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
@@ -110,7 +111,10 @@ fun TrainingScreen(
                         onShowChange = { showDropdownButton = it }) {
                         DropdownMenuItem(leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
                             text = { Text(text = "Delete") },
-                            onClick = { trainViewModel.removeExercise(exerciseIndex) })
+                            onClick = {
+                                showDropdownButton = false
+                                showExerciseDeleteDialog = true
+                            })
                         DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
                             showDropdownButton = false
                             showExerciseChooserSwapper = true
@@ -136,12 +140,12 @@ fun TrainingScreen(
                     SwipeToDeleteBox(onDelete = {
                         val deletedExercise = exercise
                         trainViewModel.removeExerciseSet(exerciseIndex, setIndex)
-                        scope.launch {
+                        if (set.actualPerfVar != 0f) scope.launch {
                             val snackBarResult = snackbarHostState.showSnackbar(
-                                message = "${set.targetPerfVar.encodeToStringOutput()} of ${exercise.name} deleted",
+                                message = PerfVar.of(exercise.perfVarCategory, set.actualPerfVar).encodeToStringOutput() +
+                                        " of ${exercise.name} deleted",
                                 actionLabel = "Undo",
                                 withDismissAction = true,
-                                duration = SnackbarDuration.Long
                             )
                             if (snackBarResult == SnackbarResult.ActionPerformed) {
                                 trainViewModel.setExercise(exerciseIndex, deletedExercise)
@@ -228,6 +232,10 @@ fun TrainingScreen(
                     }) { Text(text = "Add Set") }
             }
         }
+
+        if (showExerciseDeleteDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showExerciseDeleteDialog = false },
+            text = "Do you definitely want to discard ${exercise.name}?",
+            onConfirm = { trainViewModel.removeExercise(exerciseIndex) })
     }
 
     var showExerciseChooser by rememberSaveable { mutableStateOf(false) }
