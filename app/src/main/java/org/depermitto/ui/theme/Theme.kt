@@ -3,18 +3,16 @@ package org.depermitto.ui.theme
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
@@ -68,6 +66,10 @@ fun GymAppTheme(
         colorScheme = colorScheme,
         typography = Typography,
         content = content,
+        shapes = Shapes(
+            extraSmall = RoundedCornerShape(8.dp),
+            medium = RoundedCornerShape(16.dp),
+        )
     )
 }
 
@@ -83,10 +85,26 @@ fun transparentTextFieldColors() = TextFieldDefaults.colors(
 )
 
 @Composable
-fun OutlinedCardColumn(content: @Composable () -> Unit) {
-    OutlinedCard(modifier = Modifier.padding(top = 8.dp)) {
-        Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.Center) {
-            content()
-        }
-    }
-}
+fun notUnderlinedTextFieldColors() = TextFieldDefaults.colors(
+    focusedIndicatorColor = Color.Transparent,
+    unfocusedIndicatorColor = Color.Transparent,
+    disabledIndicatorColor = Color.Transparent
+)
+
+@Composable
+fun filledContainerColor() = if (isSystemInDarkTheme())
+    Color(
+        ColorUtils.blendARGB(
+            MaterialTheme.colorScheme.background.toArgb(),
+            MaterialTheme.colorScheme.surfaceBright.toArgb(),
+            0.5F
+        )
+    )
+else
+    Color(
+        ColorUtils.blendARGB(
+            MaterialTheme.colorScheme.background.toArgb(),
+            MaterialTheme.colorScheme.surfaceDim.toArgb(),
+            0.5F
+        )
+    )

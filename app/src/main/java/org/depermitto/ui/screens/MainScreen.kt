@@ -27,17 +27,17 @@ fun MainScreen(programDao: ProgramDao, navController: NavController) {
             }
         }
     }) { paddingValues ->
-        when (Screen.MainScreen.Tabs.entries[activeTabIndex]) {
-            Screen.MainScreen.Tabs.Programs -> ProgramsScreen(
-                modifier = Modifier.padding(paddingValues), programDao = programDao, navController = navController
-            )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (Screen.MainScreen.Tabs.entries[activeTabIndex]) {
+                Screen.MainScreen.Tabs.Programs -> ProgramsScreen(
+                    programDao = programDao, navController = navController
+                )
 
-            else -> Box(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .fillMaxSize()
-            ) {
-                Text(modifier = Modifier.align(Alignment.Center), text = "Currently Empty")
+                else -> Text(modifier = Modifier.align(Alignment.Center), text = "Currently Empty")
             }
         }
     }

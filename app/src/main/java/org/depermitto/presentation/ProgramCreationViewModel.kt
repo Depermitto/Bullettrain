@@ -15,6 +15,10 @@ class ProgramCreationViewModel : ViewModel() {
     var state by mutableStateOf(ProgramCreationState())
         private set
 
+    fun reset() {
+        state = ProgramCreationState()
+    }
+
     fun setWorkoutName(name: String) {
         state = state.copy(workoutName = name)
     }
