@@ -14,13 +14,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import io.github.depermitto.components.DropdownButton
+import io.github.depermitto.components.Header
 import io.github.depermitto.components.NumberField
 import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.data.entities.ExerciseDao
 import io.github.depermitto.data.entities.ExerciseSet
 import io.github.depermitto.data.entities.PerfVar
 import io.github.depermitto.exercises.AddExerciseButton
-import io.github.depermitto.exercises.Header
 import io.github.depermitto.exercises.exerciseChooser
 import io.github.depermitto.misc.SwapIcon
 import io.github.depermitto.misc.set
