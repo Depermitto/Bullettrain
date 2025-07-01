@@ -29,7 +29,7 @@ fun ListItem(
     ConstraintLayout(
         Modifier
             .fillMaxWidth()
-            .padding(12.dp)
+            .padding(vertical = 12.dp, horizontal = 16.dp)
     ) {
         val (headline, supporting, trailing) = createRefs()
         createHorizontalChain(headline, trailing, chainStyle = ChainStyle.SpreadInside)
@@ -67,7 +67,7 @@ fun ListItem(
                     end.linkTo(parent.end)
                     centerVerticallyTo(parent)
                 }
-                .padding(start = 12.dp)) {
+                .padding(start = 16.dp)) {
                 trailingContent()
             }
         }
