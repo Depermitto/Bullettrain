@@ -1,10 +1,9 @@
 package io.github.depermitto.bullettrain.history
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.EaseInCubic
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
@@ -36,6 +35,7 @@ import io.github.depermitto.bullettrain.components.HeroTile
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.home.HomeViewModel
+import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Large
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
@@ -61,12 +61,14 @@ fun HistoryTab(
     LaunchedEffect(historyRecords) {
         if (homeViewModel.selectedDate == null) homeViewModel.selectedDate = historyRecords.lastOrNull()?.date
     }
+    val today = LocalDate.now()
+    val resetDateButtonVisible = homeViewModel.calendarDate.month != today.month || homeViewModel.calendarDate.year != today.year
 
     Column(
         modifier = Modifier
             .padding(horizontal = Dp.Medium)
             .verticalScroll(rememberScrollState())
-            .padding(bottom = Dp.Medium),
+            .padding(bottom = if (resetDateButtonVisible) Dp.EmptyScrollSpace / 4 else Dp.Medium),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Dp.Small)
     ) {
@@ -119,7 +121,7 @@ fun HistoryTab(
                     Spacer(Modifier.weight(1f))
                     Text("Best Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
                 },
-                contentPadding = PaddingValues(horizontal = Dp.Large)
+                contentPadding = PaddingValues(horizontal = Dp.Large),
             ) { entryIndex, entry ->
                 val bestSet = entry.getPerformedSets().maxByOrNull { set -> set.weight * set.actualPerfVar }?.let { bestSet ->
                     val perfVar = bestSet.actualPerfVar.encodeToStringOutput() // is always non-zero
@@ -143,17 +145,19 @@ fun HistoryTab(
         }
     }
 
-    val today = LocalDate.now()
     AnimatedVisibility(
+        visible = resetDateButtonVisible,
         modifier = Modifier.align(Alignment.BottomCenter),
-        visible = homeViewModel.calendarDate.month != today.month || homeViewModel.calendarDate.year != today.year,
-        enter = slideInVertically(animationSpec = tween(durationMillis = 600, easing = EaseInCubic), initialOffsetY = { it }),
-        exit = slideOutVertically(animationSpec = tween(durationMillis = 200), targetOffsetY = { it }),
+        enter = slideInVertically(animationSpec = tween(durationMillis = 600), initialOffsetY = { it }),
+        exit = fadeOut(),
     ) {
         TextButton(
             modifier = Modifier.padding(bottom = Dp.Medium),
             onClick = { homeViewModel.calendarDate = today },
-            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+            colors = ButtonDefaults.textButtonColors(
+                contentColor = MaterialTheme.colorScheme.onBackground,
+                containerColor = MaterialTheme.colorScheme.background
+            ),
             elevation = ButtonDefaults.buttonElevation()
         ) {
             Icon(modifier = Modifier.size(ButtonDefaults.IconSize), imageVector = Icons.Filled.Refresh, contentDescription = null)

@@ -75,11 +75,11 @@ fun TrainingScreen(
         if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
             historyDao = historyDao,
             onDismissRequest = { showSwapExerciseChooser = false },
-            onChoose = { it -> trainViewModel.setExercise(exerciseIndex, exercise.copy(descriptorId = it.id)) })
+            onChoose = { it -> trainViewModel.setWorkoutEntry(exerciseIndex, exercise.copy(descriptorId = it.id)) })
 
         WorkoutEntry(
             workoutEntry = exercise,
-            onWorkoutEntryChange = { trainViewModel.setExercise(exerciseIndex, it) },
+            onWorkoutEntryChange = { trainViewModel.setWorkoutEntry(exerciseIndex, it) },
             headline = {
                 HeroTile(headlineContent = {
                     TextLink(
@@ -118,7 +118,7 @@ fun TrainingScreen(
                         }
                         Spacer(Modifier.width(8.dp))
                         FilledTonalIconButton(modifier = Modifier.size(SqueezableIconSize), onClick = {
-                            trainViewModel.setExercise(
+                            trainViewModel.setWorkoutEntry(
                                 exerciseIndex, exercise.copy(
                                     sets = exercise.sets + ExerciseSet(
                                         actualIntensity = exercise.intensity?.let { 0f },

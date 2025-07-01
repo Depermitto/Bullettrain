@@ -36,12 +36,12 @@ class TrainViewModel(
     fun isWorkoutRunning(): Boolean = workoutState?.workoutPhase != WorkoutPhase.Completed
     fun isWorkoutEditing(): Boolean = workoutState?.workoutPhase == WorkoutPhase.Editing
 
-    fun setExercise(index: Int, workoutEntry: WorkoutEntry) {
+    fun setWorkoutEntry(index: Int, workoutEntry: WorkoutEntry) {
         workoutEntries[index] = workoutEntry
         backup()
     }
 
-    fun setExerciseSet(exerciseIndex: Int, setIndex: Int, set: ExerciseSet) = setExercise(
+    fun setExerciseSet(exerciseIndex: Int, setIndex: Int, set: ExerciseSet) = setWorkoutEntry(
         exerciseIndex, getWorkoutEntry(exerciseIndex).copy(sets = getWorkoutEntry(exerciseIndex).sets.smallListSet(setIndex, set))
     )
 
@@ -57,11 +57,6 @@ class TrainViewModel(
         workoutEntries.removeAt(index)
         backup()
     }
-
-    fun removeExerciseSet(exerciseIndex: Int, setIndex: Int) = setExercise(
-        exerciseIndex,
-        getWorkoutEntry(exerciseIndex).copy(sets = getWorkoutEntry(exerciseIndex).sets.filterIndexed { i, _ -> i != setIndex })
-    )
 
     fun toggleCompletion(checked: Boolean, exerciseIndex: Int, setIndex: Int) = workoutState?.let { state ->
         val lastPerformedSet = getWorkoutEntry(exerciseIndex).lastPerformedSet()
