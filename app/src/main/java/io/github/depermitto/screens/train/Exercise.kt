@@ -45,7 +45,6 @@ fun Exercise(
     })
 
     Column(modifier = Modifier.padding(ItemPadding), verticalArrangement = Arrangement.spacedBy(2 * ItemSpacing)) {
-        // Title + Dropdown
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 modifier = Modifier.weight(1f),
@@ -69,13 +68,12 @@ fun Exercise(
                     text = { Text(text = "Delete") },
                     onClick = { trainViewModel.exercises.removeAt(setsIndex) })
                 DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
-                    exerciseChooserToggle()
+                    exerciseChooserToggle() // TODO add alternatives here
                     showDropdownButton = false
                 })
             }
         }
 
-        // Set/Reps/Weight/RPE content
         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2 * ItemSpacing)) {
             Row(
                 modifier = Modifier
@@ -83,30 +81,11 @@ fun Exercise(
                     .offset(y = 2 * ItemSpacing),
                 horizontalArrangement = Arrangement.Center
             ) {
-                Text(
-                    modifier = Modifier.weight(0.3f),
-                    text = "Set",
-                    style = MaterialTheme.typography.titleSmall,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = "Reps",
-                    style = MaterialTheme.typography.titleSmall,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = "Weight",
-                    style = MaterialTheme.typography.titleSmall,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = "RPE",
-                    style = MaterialTheme.typography.titleSmall,
-                    textAlign = TextAlign.Center
-                )
+                Header("Set", 0.3f)
+                Header("Previous")
+                Header("Reps")
+                Header("Weight")
+                Header("RPE")
             }
             HorizontalDivider()
 
@@ -117,17 +96,20 @@ fun Exercise(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(modifier = Modifier.weight(0.3f), text = (j + 1).toString(), textAlign = TextAlign.Center)
-
+                    Text(
+                        modifier = Modifier.weight(1f), text = "15 x 10 kg", // TODO take this data from "history"
+                        textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium
+                    )
                     NumberField(
                         Modifier
                             .weight(1f)
-                            .padding(horizontal = 2 * ItemSpacing),
+                            .padding(horizontal = ItemSpacing),
                         value = set.reps,
                         onValueChange = { sets[j] = set.copy(reps = it) })
                     NumberField(
                         Modifier
                             .weight(1f)
-                            .padding(horizontal = 2 * ItemSpacing),
+                            .padding(horizontal = ItemSpacing),
                         value = set.weight,
                         onValueChange = { sets[j] = set.copy(weight = it) },
                         trailingText = settingsViewModel.settings.unitSystem.weightUnit()
@@ -135,7 +117,7 @@ fun Exercise(
                     NumberField(
                         Modifier
                             .weight(1f)
-                            .padding(horizontal = 2 * ItemSpacing),
+                            .padding(horizontal = ItemSpacing),
                         value = set.rpe,
                         onValueChange = { sets[j] = set.copy(rpe = min(10f, it)) })
                 }
@@ -146,9 +128,18 @@ fun Exercise(
             colors = ButtonDefaults.outlinedButtonColors()
                 .copy(contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
             onClick = { sets += ExerciseSet(exerciseId = sets.first().exerciseId, name = sets.first().name) }) {
-            Text(
-                text = "Add Set"
-            )
+            Text(text = "Add Set")
         }
     }
 }
+
+@Composable
+fun RowScope.Header(
+    text: String,
+    weight: Float = 1f,
+) = Text(
+    modifier = Modifier.weight(weight),
+    text = text,
+    style = MaterialTheme.typography.titleSmall,
+    textAlign = TextAlign.Center
+)

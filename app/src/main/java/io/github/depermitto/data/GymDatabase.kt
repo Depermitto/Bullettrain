@@ -35,8 +35,8 @@ interface GymDao {
 data class ExerciseSet(
     @SerialName("exercise-id") @ColumnInfo(name = "exercise_id") @PrimaryKey(autoGenerate = true) val exerciseId: Long = 0,
     var name: String,
-    val reps: Float = 0f,
-    val rpe: Float = 0f,
+    val reps: Float = 0f, // TODO allow for rep ranges, time, etc
+    val rpe: Float = 0f, // TODO make this an optional field
     val weight: Float = 0f,
     val superset: List<Int>? = null,
     val alternatives: List<Int>? = null,
