@@ -27,12 +27,7 @@ fun EmptyScreen(text: String, modifier: Modifier = Modifier, showIcon: Boolean =
     Spacer(Modifier.weight(if (showIcon) 0.8F else 1F))
     val color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7F)
     if (showIcon)
-      Icon(
-        Icons.Filled.Clear,
-        contentDescription = "No data found",
-        modifier = Modifier.size(70.dp),
-        tint = color,
-      )
+      Icon(Icons.Filled.Clear, "No data found", modifier = Modifier.size(70.dp), tint = color)
     Text(text = text, textAlign = TextAlign.Center, color = color)
     Spacer(Modifier.weight(1F))
   }

@@ -4,13 +4,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.delete
 import androidx.compose.foundation.text.input.placeCursorAtEnd
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.selectAll
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
@@ -39,8 +40,11 @@ fun NumberField(
   unfocusedBorderThickness: Dp = OutlinedTextFieldDefaults.UnfocusedBorderThickness,
   contentPadding: PaddingValues = PaddingValues(3.dp),
 ) {
-  val valueFormatted = remember(value) { value.format() }
-  val textFieldState = rememberTextFieldState(valueFormatted)
+  val valueFormatted = rememberSaveable(value) { value.format() }
+  val textFieldState =
+    rememberSaveable(valueFormatted, saver = TextFieldState.Saver) {
+      TextFieldState(initialText = valueFormatted)
+    }
 
   LaunchedEffect(enabled) {
     textFieldState.edit {

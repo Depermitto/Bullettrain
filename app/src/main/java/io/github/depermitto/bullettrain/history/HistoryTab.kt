@@ -96,12 +96,12 @@ fun HistoryTab(
         IconButton(
           onClick = { homeViewModel.calendarPage = homeViewModel.calendarPage.minusMonths(1) }
         ) {
-          Icon(Icons.AutoMirrored.Filled.ArrowBack, "Previous Month")
+          Icon(Icons.AutoMirrored.Filled.ArrowBack, "Previous month")
         }
         IconButton(
           onClick = { homeViewModel.calendarPage = homeViewModel.calendarPage.plusMonths(1) }
         ) {
-          Icon(Icons.AutoMirrored.Filled.ArrowForward, "Next Month")
+          Icon(Icons.AutoMirrored.Filled.ArrowForward, "Next month")
         }
       }
 
@@ -149,7 +149,7 @@ fun HistoryTab(
                 DropdownButton(showDropdown, onShowChange = { showDropdown = it }) {
                   DropdownMenuItem(
                     text = { Text("Edit") },
-                    leadingIcon = { Icon(Icons.Filled.Edit, "Edit Workout") },
+                    leadingIcon = { Icon(Icons.Filled.Edit, "Edit workout") },
                     onClick = {
                       showDropdown = false
                       trainViewModel.editWorkout(record.id)
@@ -157,7 +157,7 @@ fun HistoryTab(
                   )
                   DropdownMenuItem(
                     text = { Text("Delete") },
-                    leadingIcon = { Icon(Icons.Filled.Delete, "Delete Workout") },
+                    leadingIcon = { Icon(Icons.Filled.Delete, "Delete workout") },
                     onClick = {
                       showDropdown = false
                       showRecordDeleteDialog = true
@@ -240,11 +240,7 @@ fun HistoryTab(
           ),
         elevation = ButtonDefaults.buttonElevation(),
       ) {
-        Icon(
-          modifier = Modifier.size(ButtonDefaults.IconSize),
-          imageVector = Icons.Filled.Refresh,
-          contentDescription = "Reset date",
-        )
+        Icon(Icons.Filled.Refresh, "Reset date", modifier = Modifier.size(ButtonDefaults.IconSize))
         Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
         Text("Reset Date")
       }

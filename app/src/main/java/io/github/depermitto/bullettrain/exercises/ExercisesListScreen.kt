@@ -67,7 +67,7 @@ fun ExercisesListScreen(
         maxLines = 1,
         singleLine = true,
         placeholder = { Text("Search Exercises") },
-        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search exercises") },
+        leadingIcon = { Icon(Icons.Default.Search, "Search exercises") },
       )
 
       LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -88,7 +88,7 @@ fun ExercisesListScreen(
     var showDialog by rememberSaveable { mutableStateOf(false) }
     AnchoredFloatingActionButton(
       onClick = { showDialog = true },
-      icon = { Icon(Icons.Default.Add, contentDescription = "Add exercise") },
+      icon = { Icon(Icons.Default.Add, "Add exercise") },
       text = { Text("Add") },
     )
 

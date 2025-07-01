@@ -220,7 +220,7 @@ fun App(db: Db) = MaterialTheme {
                 colors =
                   ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
               ) {
-                Icon(Icons.Filled.Close, "Cancel Workout", Modifier.size(ButtonDefaults.IconSize))
+                Icon(Icons.Filled.Close, "Cancel workout", Modifier.size(ButtonDefaults.IconSize))
                 Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
                 Text("Drop")
               }
@@ -315,9 +315,9 @@ fun App(db: Db) = MaterialTheme {
                 }
               ) {
                 Icon(
+                  Icons.Filled.Check,
+                  "Finish program creation",
                   modifier = Modifier.size(ButtonDefaults.IconSize),
-                  imageVector = Icons.Filled.Check,
-                  contentDescription = "Finish program creation",
                 )
                 Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
                 Text("Complete")
@@ -392,9 +392,9 @@ fun App(db: Db) = MaterialTheme {
                   }
                 ) {
                   Icon(
+                    Icons.Filled.Check,
+                    "Complete program edit",
                     modifier = Modifier.size(ButtonDefaults.IconSize),
-                    imageVector = Icons.Filled.Check,
-                    contentDescription = "Complete program edit",
                   )
                   Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
                   Text("Finish Edit")
@@ -436,7 +436,7 @@ fun App(db: Db) = MaterialTheme {
               DropdownButton(showDropdown, { showDropdown = it }) {
                 DropdownMenuItem(
                   text = { Text("Rename") },
-                  leadingIcon = { Icon(Icons.Filled.Edit, "Rename Exercise") },
+                  leadingIcon = { Icon(Icons.Filled.Edit, "Rename exercise") },
                   onClick = {
                     showDropdown = false
                     showRenameDialog = true
@@ -445,7 +445,7 @@ fun App(db: Db) = MaterialTheme {
                 if (!descriptor.obsolete)
                   DropdownMenuItem(
                     text = { Text("Delete") },
-                    leadingIcon = { Icon(Icons.Filled.Delete, "Delete Exercise") },
+                    leadingIcon = { Icon(Icons.Filled.Delete, "Delete exercise") },
                     onClick = {
                       showDropdown = false
                       showDiscardOrDeleteDialog = true
@@ -546,10 +546,7 @@ fun App(db: Db) = MaterialTheme {
               IconButton(
                 onClick = { onBackPressedDispatcher?.onBackPressed() ?: navController.navigateUp() }
               ) {
-                Icon(
-                  imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                  contentDescription = "Back button",
-                )
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back button")
               }
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
@@ -600,9 +597,9 @@ fun App(db: Db) = MaterialTheme {
                   }
                 ) {
                   Icon(
+                    Icons.Filled.Check,
+                    "Finish workout edit",
                     modifier = Modifier.size(ButtonDefaults.IconSize),
-                    imageVector = Icons.Filled.Check,
-                    contentDescription = "Finish workout edit",
                   )
                   Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
                   Text("Finish Edit")

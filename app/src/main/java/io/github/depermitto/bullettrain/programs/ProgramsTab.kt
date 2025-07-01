@@ -47,7 +47,7 @@ fun ProgramsTab(
 ) {
   Box(modifier = Modifier.fillMaxHeight() then modifier) {
     AnchoredFloatingActionButton(
-      icon = { Icon(Icons.Filled.Add, contentDescription = "Create program") },
+      icon = { Icon(Icons.Filled.Add, "Create program") },
       text = { Text("Create") },
       onClick = {
         programViewModel.revertToDefault()
@@ -114,7 +114,7 @@ fun ProgramsTab(
           holdOptions = { closeDropdown ->
             DropdownMenuItem(
               text = { Text("Rename") },
-              leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = "Rename program") },
+              leadingIcon = { Icon(Icons.Filled.Edit, "Rename program") },
               onClick = {
                 closeDropdown()
                 showRenameDialog = true
@@ -122,7 +122,7 @@ fun ProgramsTab(
             )
             DropdownMenuItem(
               text = { Text("Delete") },
-              leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = "Delete program") },
+              leadingIcon = { Icon(Icons.Filled.Delete, "Delete program") },
               onClick = {
                 closeDropdown()
                 showProgramDeleteDialog = true

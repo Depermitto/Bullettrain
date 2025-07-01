@@ -90,7 +90,22 @@ fun DayScreen(
     ) {
       programViewModel.getExercises(dayIndex).forEachIndexed { exerciseIndex, exercise ->
         val descriptor by exerciseDao.whereAsState(exercise.descriptorId)
+
         var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
+        if (showSwapExerciseChooser)
+          ExerciseChooser(
+            exerciseDao = exerciseDao,
+            historyDao = historyDao,
+            onDismissRequest = { showSwapExerciseChooser = false },
+            exclude = programViewModel.getExercises(dayIndex).map { e -> e.descriptorId },
+            onSelection = {
+              programViewModel.setExercise(
+                dayIndex,
+                exerciseIndex,
+                exercise.toBuilder().setDescriptorId(it.id).build(),
+              )
+            },
+          )
 
         SwipeToDeleteBox(
           shape = MaterialTheme.shapes.medium,
@@ -162,7 +177,7 @@ fun DayScreen(
                             programViewModel.setExercise(
                               dayIndex,
                               exerciseIndex,
-                              exercise.toBuilder().setHasTarget2(true),
+                              exercise.toBuilder().setHasTarget2(true).build(),
                             )
                           },
                         )
@@ -175,7 +190,7 @@ fun DayScreen(
                             programViewModel.setExercise(
                               dayIndex,
                               exerciseIndex,
-                              exercise.toBuilder().setHasTarget2(false),
+                              exercise.toBuilder().setHasTarget2(false).build(),
                             )
                           },
                         )
@@ -188,7 +203,7 @@ fun DayScreen(
                             programViewModel.setExercise(
                               dayIndex,
                               exerciseIndex,
-                              exercise.toBuilder().setHasIntensity(true),
+                              exercise.toBuilder().setHasIntensity(true).build(),
                             )
                           },
                         )
@@ -201,7 +216,7 @@ fun DayScreen(
                             programViewModel.setExercise(
                               dayIndex,
                               exerciseIndex,
-                              exercise.toBuilder().setHasIntensity(false),
+                              exercise.toBuilder().setHasIntensity(false).build(),
                             )
                           },
                         )
@@ -216,7 +231,7 @@ fun DayScreen(
                         )
                       }
                     ) {
-                      Icon(Icons.Filled.Add, "Add Exercise Set")
+                      Icon(Icons.Filled.Add, "Add exercise set")
                     }
                   }
                 },
@@ -242,7 +257,10 @@ fun DayScreen(
                         programViewModel.setExercise(
                           dayIndex,
                           exerciseIndex,
-                          exercise.toBuilder().setSets(setIndex, set.toBuilder().setTarget(it)),
+                          exercise
+                            .toBuilder()
+                            .setSets(setIndex, set.toBuilder().setTarget(it))
+                            .build(),
                         )
                       },
                     )
@@ -255,7 +273,10 @@ fun DayScreen(
                         programViewModel.setExercise(
                           dayIndex,
                           exerciseIndex,
-                          exercise.toBuilder().setSets(setIndex, set.toBuilder().setTarget2(it)),
+                          exercise
+                            .toBuilder()
+                            .setSets(setIndex, set.toBuilder().setTarget2(it))
+                            .build(),
                         )
                       },
                     )
@@ -270,7 +291,10 @@ fun DayScreen(
                         programViewModel.setExercise(
                           dayIndex,
                           exerciseIndex,
-                          exercise.toBuilder().setSets(setIndex, set.toBuilder().setTarget(it)),
+                          exercise
+                            .toBuilder()
+                            .setSets(setIndex, set.toBuilder().setTarget(it))
+                            .build(),
                         )
                       },
                     )
@@ -290,7 +314,8 @@ fun DayScreen(
                         .setSets(
                           setIndex,
                           set.toBuilder().setIntensity(max(min(it.toInt(), 10), 0)),
-                        ),
+                        )
+                        .build(),
                     )
                   },
                 )
@@ -300,12 +325,11 @@ fun DayScreen(
                   programViewModel.setExercise(
                     dayIndex,
                     exerciseIndex,
-                    exercise.toBuilder().addSets(setIndex, set),
+                    exercise.toBuilder().addSets(setIndex, set).build(),
                   )
                 },
-              ) {
-                DuplicateIcon()
-              }
+                content = DuplicateIcon,
+              )
             },
             descriptor = descriptor,
             settings = settings,
@@ -313,21 +337,6 @@ fun DayScreen(
             snackbarHostState = snackbarHostState,
           )
         }
-
-        if (showSwapExerciseChooser)
-          ExerciseChooser(
-            exerciseDao = exerciseDao,
-            historyDao = historyDao,
-            onDismissRequest = { showSwapExerciseChooser = false },
-            exclude = programViewModel.getExercises(dayIndex).map { e -> e.descriptorId },
-            onSelection = {
-              programViewModel.setExercise(
-                dayIndex,
-                exerciseIndex,
-                exercise.toBuilder().setDescriptorId(it.id),
-              )
-            },
-          )
       }
     }
 
@@ -352,9 +361,10 @@ fun DayScreen(
           )
         },
       )
+
     AnchoredFloatingActionButton(
       text = { Text("Add Exercise") },
-      icon = { Icon(Icons.Filled.Add, "Add Exercise") },
+      icon = { Icon(Icons.Filled.Add, "Add exercise") },
       onClick = { showAddExerciseChooser = true },
     )
   }

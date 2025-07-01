@@ -28,7 +28,7 @@ fun HomeScreenTopBar(navController: NavController, title: String) {
     },
     actions = {
       IconButton(onClick = { navController.navigate(Destination.Settings) }) {
-        Icon(Icons.Filled.Settings, contentDescription = "Settings")
+        Icon(Icons.Filled.Settings, "Settings")
       }
     },
     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
@@ -58,7 +58,7 @@ fun TopBarWithBackButton(
       IconButton(
         onClick = { onBackPressedDispatcher?.onBackPressed() ?: navController.navigateUp() }
       ) {
-        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back button")
+        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, "Back button")
       }
     },
     actions = { endContent?.invoke() },

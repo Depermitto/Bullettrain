@@ -18,7 +18,7 @@ fun DropdownButton(
 ) {
   Box(modifier = Modifier) {
     IconButton(modifier = modifier, onClick = { onShowChange(true) }) {
-      Icon(Icons.Filled.MoreVert, contentDescription = "Options")
+      Icon(Icons.Filled.MoreVert, "Options")
     }
     DropdownMenu(expanded = show, onDismissRequest = { onShowChange(false) }) { dropdownItems() }
   }

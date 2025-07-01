@@ -175,14 +175,14 @@ fun TrainingScreen(
                         showDropdown = false
                         showDeleteExerciseDialog = true
                       },
-                      leadingIcon = { Icon(Icons.Filled.Delete, "Remove Exercise") },
+                      leadingIcon = { Icon(Icons.Filled.Delete, "Remove exercise") },
                     )
                   }
 
                   FilledTonalIconButton(
                     onClick = { trainViewModel.addExerciseSet(exerciseIndex) }
                   ) {
-                    Icon(Icons.Filled.Add, "Add Exercise Set")
+                    Icon(Icons.Filled.Add, "Add exercise set")
                   }
                 }
               },

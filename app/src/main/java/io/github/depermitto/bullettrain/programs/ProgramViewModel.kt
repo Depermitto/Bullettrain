@@ -34,10 +34,7 @@ class ProgramViewModel(private val base: Program) : ViewModel() {
   fun setExercise(dayIndex: Int, exerciseIndex: Int, exercise: Exercise) =
     setDay(dayIndex, getDay(dayIndex).toBuilder().setExercises(exerciseIndex, exercise).build())
 
-  fun setExercise(dayIndex: Int, exerciseIndex: Int, exercise: Exercise.Builder) =
-    setDay(dayIndex, getDay(dayIndex).toBuilder().setExercises(exerciseIndex, exercise).build())
-
-  fun getExercises(dayIndex: Int): List<Exercise> = getDay(dayIndex).exercisesList
+  fun getExercises(dayIndex: Int): List<Exercise> = getDay(dayIndex).exercisesList.toList()
 
   fun reorderDays(fromIndex: Int, toIndex: Int) =
     workouts.add(toIndex, workouts.removeAt(fromIndex))

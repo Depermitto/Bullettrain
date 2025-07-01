@@ -119,7 +119,7 @@ fun ProgramScreen(
               holdOptions = { closeDropdown ->
                 DropdownMenuItem(
                   text = { Text("Rename") },
-                  leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = "Rename day") },
+                  leadingIcon = { Icon(Icons.Filled.Edit, "Rename day") },
                   onClick = {
                     closeDropdown()
                     showRenameDialog = true
@@ -137,7 +137,7 @@ fun ProgramScreen(
                 )
                 DropdownMenuItem(
                   text = { Text("Delete") },
-                  leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = "Delete day") },
+                  leadingIcon = { Icon(Icons.Filled.Delete, "Delete day") },
                   onClick = {
                     closeDropdown()
                     showDayDeleteDialog = true
@@ -182,7 +182,7 @@ fun ProgramScreen(
       AnchoredFloatingActionButton(
         onClick = { programViewModel.addDay() },
         text = { Text("Add Day") },
-        icon = { Icon(Icons.Filled.Add, contentDescription = "Add new day") },
+        icon = { Icon(Icons.Filled.Add, "Add new day") },
       )
   }
 }
