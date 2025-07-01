@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.update
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
@@ -53,7 +55,8 @@ class Database(private val databaseDirectory: File, private val context: Context
      * @see [importDatabase]
      */
     suspend fun exportDatabase(): Result<String> {
-        val backupFile = File(databaseDirectory, "bullet-train.bk.zip")
+        val backupFile =
+            File(databaseDirectory, "bullettrain-${LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))}.bk.zip")
         ZipOutputStream(FileOutputStream(backupFile)).use { zipOutputStream ->
             for (backup in backupFiles) {
                 zipOutputStream.putNextEntry(ZipEntry(backup.file.name))
@@ -81,8 +84,9 @@ class Database(private val databaseDirectory: File, private val context: Context
         val (bytes, filename) = when (importType) {
             is ImportType.FromStream -> importType.stream.readBytes() to ""
             is ImportType.Interactive -> {
-                val file = FileKit.pickFile(title = "Pick a data backup", type = PickerType.File())
-                    ?: return failure(Throwable(message = "Restoring a data backup cancelled"))
+                val file = FileKit.pickFile(title = "Pick a data backup", type = PickerType.File()) ?: return failure(
+                    Throwable(message = "Restoring a data backup cancelled")
+                )
                 file.readBytes() to file.name
             }
         }

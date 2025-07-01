@@ -90,9 +90,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FileKit.init(this)
 
+        val db = Database(application.filesDir, applicationContext)
         setContent {
-            val db = Database(application.filesDir, applicationContext)
-            BullettrainTheme(db.settingsDao) {
+            val settings by db.settingsDao.getSettings.collectAsStateWithLifecycle()
+            BullettrainTheme(settings) {
                 // this is for color flashing during navigating
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     App(db)

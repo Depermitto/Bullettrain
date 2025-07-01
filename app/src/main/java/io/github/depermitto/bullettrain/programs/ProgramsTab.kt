@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,20 +26,22 @@ import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
-import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.HeroTile
+import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
-import io.github.depermitto.bullettrain.components.TransparentCard
 import io.github.depermitto.bullettrain.database.entities.ProgramDao
+import io.github.depermitto.bullettrain.database.entities.Settings
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
+import io.github.depermitto.bullettrain.theme.focalGround
 
 @Composable
 fun ProgramsTab(
     modifier: Modifier = Modifier,
     programViewModel: ProgramViewModel,
     programDao: ProgramDao,
+    settings: Settings,
     navController: NavController,
 ) = Box(modifier = modifier.fillMaxSize()) {
     val programs by programDao.getUserPrograms.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -59,7 +62,10 @@ fun ProgramsTab(
                         leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
                         onClick = { closeDropdown(); showProgramDeleteDialog = true })
                 }) {
-                TransparentCard(modifier = Modifier.align(Alignment.Center)) {
+                Card(
+                    modifier = Modifier.align(Alignment.Center),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround(settings.theme))
+                ) {
                     HeroTile(headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
                         supportingContent = {
                             Column {

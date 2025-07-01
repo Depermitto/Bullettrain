@@ -48,6 +48,8 @@ fun HomeScreen(
             navController = navController
         )
 
-        Tab.Programs -> ProgramsTab(programViewModel = programViewModel, programDao = programDao, navController = navController)
+        Tab.Programs -> ProgramsTab(
+            programViewModel = programViewModel, programDao = programDao, settings = settings, navController = navController
+        )
     }
 }

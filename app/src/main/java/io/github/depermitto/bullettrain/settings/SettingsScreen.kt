@@ -41,7 +41,7 @@ fun SettingsScreen(
     SettingGroup(headline = "Appearance") {
         SettingList(headline = "Palette",
             supporting = settings.palette.name,
-            list = listOfNotNull(dynamicPalette, RhinoButtercupPalette, FlamePeaPalette, WoodsmokePalette, EmeraldPalette),
+            list = listOfNotNull(dynamicPalette, RhinoButtercupPalette, FlamePeaPalette, WoodsmokePalette),
             onClick = { db.settingsDao.update { state -> state.copy(palette = it) } }) { palette ->
             RadioTile(headlineContent = { Text(palette.name) }, selected = palette.name == settings.palette.name)
         }
@@ -147,7 +147,7 @@ fun <T> SettingList(
         supportingTextStyle = MaterialTheme.typography.bodySmall
     )
 
-    if (showDialog) ListAlertDialog(title = "Unit System",
+    if (showDialog) ListAlertDialog(title = headline,
         list = list,
         onClick = { showDialog = false; onClick(it) },
         onDismissRequest = { showDialog = false },
