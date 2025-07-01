@@ -35,7 +35,7 @@ fun BoxScope.BackButton(navController: NavController, modifier: Modifier = Modif
 //  the state of application instead of just deciding 
 //  whether to render or not the scaffold
 @Composable
-fun Scaffold(
+fun RibbonScaffold(
     ribbon: @Composable BoxScope.() -> Unit,
     content: @Composable () -> Unit,
 ) {

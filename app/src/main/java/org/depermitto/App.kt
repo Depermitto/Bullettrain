@@ -10,7 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import org.depermitto.database.GymDatabase
 import org.depermitto.presentation.ProgramCreationViewModel
 import org.depermitto.ui.Ribbon
-import org.depermitto.ui.Scaffold
+import org.depermitto.ui.RibbonScaffold
 import org.depermitto.ui.screens.*
 import java.io.File
 
@@ -23,15 +23,15 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
 
     val programCreationViewModel: ProgramCreationViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
+    NavHost(navController = navController, startDestination = Screen.ProgramsCreationScreen.route) {
         composable(Screen.MainScreen.route) {
-            Scaffold(ribbon = { Ribbon(navController = navController, backButton = false) }) {
+            RibbonScaffold(ribbon = { Ribbon(navController = navController, backButton = false) }) {
                 MainScreen(db.getProgramDao(), navController)
             }
         }
 
         composable(Screen.ProgramsCreationScreen.route) {
-            Scaffold(ribbon = { Ribbon(navController = navController, title = "New Program") }) {
+            RibbonScaffold(ribbon = { Ribbon(navController = navController, title = "New Program") }) {
                 ProgramsCreationScreen(
                     programCreationViewModel,
                     programDao = db.getProgramDao(),
@@ -42,19 +42,19 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
         }
 
         composable(Screen.ExercisesScreen.route) {
-            Scaffold(ribbon = { Ribbon(navController = navController, title = "Exercises") }) {
+            RibbonScaffold(ribbon = { Ribbon(navController = navController, title = "Exercises") }) {
                 ExercisesScreen(exerciseDao = db.getExerciseDao(), onSelection = { })
             }
         }
 
         composable(Screen.ExercisesCreationScreen.route) {
-            Scaffold(ribbon = { Ribbon(navController = navController) }) {
+            RibbonScaffold(ribbon = { Ribbon(navController = navController) }) {
                 ExercisesCreationScreen(exerciseDao = db.getExerciseDao())
             }
         }
 
         composable(Screen.SettingsScreen.route) {
-            Scaffold(ribbon = { Ribbon(navController = navController, settingsGear = false, title = "Settings") }) {
+            RibbonScaffold(ribbon = { Ribbon(navController = navController, settingsGear = false, title = "Settings") }) {
                 SettingsScreen(db = db, dbFile = dbFile, fallbackBytes = fallbackBytes, scope = scope)
             }
         }
