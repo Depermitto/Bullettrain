@@ -54,7 +54,7 @@ fun Calendar(
         else null
     }
 
-    var longClickedDate: LocalDate by rememberSaveable { mutableStateOf(today) }
+    var longClickedDate by rememberSaveable { mutableStateOf(today) }
     var showProgramListDialog by rememberSaveable { mutableStateOf(false) }
     var showWorkoutDiscardDialog by rememberSaveable { mutableStateOf(false) }
     Column {
@@ -113,7 +113,7 @@ fun Calendar(
         }
     }
 
-    val programs by programDao.getAll.collectAsStateWithLifecycle(initialValue = emptyList())
+    val programs by programDao.getPerformable.collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedProgram: Program? by rememberSaveable { mutableStateOf(null) }
 
     if (showProgramListDialog) ListAlertDialog(title = "Select program",
@@ -123,7 +123,7 @@ fun Calendar(
         onSelected = { program ->
             showProgramListDialog = false
             if (program corresponds Program.EmptyWorkout) {
-                trainViewModel.startWorkout(Day(), Program.EmptyWorkout, date = longClickedDate)
+                trainViewModel.startWorkout(Day(), Program.EmptyWorkout.id, date = longClickedDate)
             } else {
                 selectedProgram = program
             }
@@ -138,7 +138,7 @@ fun Calendar(
             list = program.days,
             onSelected = { day ->
                 selectedProgram = null
-                trainViewModel.startWorkout(day, program, date = longClickedDate)
+                trainViewModel.startWorkout(day, program.id, date = longClickedDate)
             }) { day ->
             ListItem(headlineContent = { Text(day.name, maxLines = 2, overflow = TextOverflow.Ellipsis) })
         }
@@ -149,13 +149,16 @@ fun Calendar(
         dismissButton = { TextButton(onClick = { showWorkoutDiscardDialog = false }) { Text("Cancel") } },
         list = currentHistoryRecords.filter { it.date == longClickedDate },
         onSelected = { workout -> showWorkoutDiscardDialog = false; historyDao.delete(workout) }) { record ->
-        var text = record.relatedProgram.name
-        if (!(record.relatedProgram corresponds Program.EmptyWorkout)) text += ", " + record.workout.name
+        val relatedProgram by programDao.where(record.relatedProgramId).collectAsStateWithLifecycle(initialValue = null)
+        relatedProgram?.let { relatedProgram ->
+            var text = relatedProgram.name
+            if (relatedProgram correspondsNot Program.EmptyWorkout) text += ", " + record.workout.name
 
-        ListItem(headlineContent = { Text(text, maxLines = 2, overflow = TextOverflow.Ellipsis) }, supportingContent = {
-            val totalSets = record.workout.exercises.sumOf { it.sets.count { it.actualPerfVar != 0f } }
-            if (totalSets != 0) Text(text = "$totalSets performed sets")
-        })
+            ListItem(headlineContent = { Text(text, maxLines = 2, overflow = TextOverflow.Ellipsis) }, supportingContent = {
+                val totalSets = record.workout.exercises.sumOf { it.sets.count { it.actualPerfVar != 0f } }
+                if (totalSets != 0) Text(text = "$totalSets performed sets")
+            })
+        }
     }
 }
 

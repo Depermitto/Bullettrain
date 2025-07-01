@@ -41,7 +41,7 @@ fun ProgramsTab(
     programDao: ProgramDao,
     navController: NavController,
 ) = Box(modifier = modifier.fillMaxSize()) {
-    val programs by programDao.getAlmostAll.collectAsStateWithLifecycle(initialValue = emptyList())
+    val programs by programDao.getUserPrograms.collectAsStateWithLifecycle(initialValue = emptyList())
 
     LazyColumn(
         contentPadding = PaddingValues(start = RegularPadding, end = RegularPadding, bottom = ScrollPadding),

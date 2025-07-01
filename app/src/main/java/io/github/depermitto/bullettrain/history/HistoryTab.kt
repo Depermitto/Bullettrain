@@ -36,9 +36,9 @@ import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.home.HomeViewModel
+import io.github.depermitto.bullettrain.theme.BigSpacing
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.ScrollPadding
-import io.github.depermitto.bullettrain.theme.BigSpacing
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import java.time.LocalDate
@@ -97,31 +97,34 @@ fun HistoryTab(
         )
 
         selectedHistoryRecords.forEach { record ->
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
-                WorkoutTable(
-                    modifier = Modifier.fillMaxWidth(),
-                    workout = record.workout,
-                    program = record.relatedProgram,
-                    headers = Pair("Exercise", "Best Set"),
-                    navController = navController,
-                    trailingContent = {
-                        IconButton(onClick = { trainViewModel.editWorkout(record) }) {
-                            Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit Workout")
-                        }
-                    },
-                    ratio = Ratio.Strict(0.7f),
-                    exstractor = { exercise ->
-                        exercise.getPerformedSets().maxByOrNull { set -> set.weight * set.actualPerfVar }?.let { bestSet ->
-                            val perfVar = bestSet.actualPerfVar.encodeToStringOutput() // is always non-zero
-                            val weight = bestSet.weight.encodeToStringOutput()
-
-                            when {
-                                weight.isBlank() -> "$perfVar ${bestSet.targetPerfVar.category.shortName.lowercase()}"
-                                else -> "$perfVar x $weight ${settings.weightUnit()}"
+            val relatedProgram by programDao.where(record.relatedProgramId).collectAsStateWithLifecycle(initialValue = null)
+            relatedProgram?.let { relatedProgram ->
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
+                    WorkoutTable(
+                        modifier = Modifier.fillMaxWidth(),
+                        workout = record.workout,
+                        program = relatedProgram,
+                        headers = Pair("Exercise", "Best Set"),
+                        navController = navController,
+                        trailingContent = {
+                            IconButton(onClick = { trainViewModel.editWorkout(record) }) {
+                                Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit Workout")
                             }
-                        }
-                    },
-                )
+                        },
+                        ratio = Ratio.Strict(0.7f),
+                        exstractor = { exercise ->
+                            exercise.getPerformedSets().maxByOrNull { set -> set.weight * set.actualPerfVar }?.let { bestSet ->
+                                val perfVar = bestSet.actualPerfVar.encodeToStringOutput() // is always non-zero
+                                val weight = bestSet.weight.encodeToStringOutput()
+
+                                when {
+                                    weight.isBlank() -> "$perfVar ${bestSet.targetPerfVar.category.shortName.lowercase()}"
+                                    else -> "$perfVar x $weight ${settings.weightUnit()}"
+                                }
+                            }
+                        },
+                    )
+                }
             }
         }
     }

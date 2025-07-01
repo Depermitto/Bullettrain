@@ -2,6 +2,7 @@ package io.github.depermitto.bullettrain.train
 
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
@@ -12,9 +13,10 @@ import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.ExerciseSet
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.HistoryRecord
-import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.util.smallListSet
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.LocalDate
@@ -86,12 +88,12 @@ class TrainViewModel(
         setExerciseSet(exerciseIndex, setIndex, set)
     }
 
-    fun startWorkout(day: Day, program: Program, date: LocalDate = LocalDate.now()) {
+    fun startWorkout(day: Day, programId: Int, date: LocalDate = LocalDate.now()) {
         if (workoutState != null) return
 
         val record = HistoryRecord(
             workout = day,
-            relatedProgram = program,
+            relatedProgramId = programId,
             date = date,
             workoutPhase = WorkoutPhase.During,
             workoutStartTs = date.atTimeNow(),
@@ -126,17 +128,21 @@ class TrainViewModel(
         val record = state.copy(
             workoutPhase = WorkoutPhase.Completed, workout = state.workout.copy(exercises = exercises.toList())
         )
-        val nextDayIndex = (record.relatedProgram.days.indexOf(record.workout) + 1) % record.relatedProgram.days.size
+        viewModelScope.launch {
+            val relatedProgram = programDao.where(record.relatedProgramId).firstOrNull()
+            check(relatedProgram != null)
+            val nextDayIndex = (relatedProgram.days.indexOf(record.workout) + 1) % relatedProgram.days.size
 
-        historyDao.upsert(record)
-        programDao.upsert(record.relatedProgram.copy(nextDayIndex = nextDayIndex, mostRecentWorkoutDate = record.date))
+            historyDao.upsert(record)
+            programDao.upsert(relatedProgram.copy(nextDayIndex = nextDayIndex, mostRecentWorkoutDate = record.date))
+        }
     }
 
     fun cancelWorkout() = endWorkout { state ->
         if (isWorkoutEditing()) {
             historyDao.update(state.copy(workoutPhase = WorkoutPhase.Completed))
         } else {
-            historyDao.delete(state) 
+            historyDao.delete(state)
         }
     }
 

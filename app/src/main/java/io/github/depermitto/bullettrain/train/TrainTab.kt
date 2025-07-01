@@ -29,7 +29,7 @@ fun TrainTab(
     modifier: Modifier = Modifier, trainViewModel: TrainViewModel, programDao: ProgramDao, navController: NavController
 ) = Box(modifier.fillMaxSize()) {
     Column(Modifier.padding(horizontal = RegularPadding), horizontalAlignment = Alignment.CenterHorizontally) {
-        val programs by programDao.getAlmostAll.collectAsStateWithLifecycle(initialValue = emptyList())
+        val programs by programDao.getUserPrograms.collectAsStateWithLifecycle(initialValue = emptyList())
         var showChangeDayIndexDialog by rememberSaveable { mutableStateOf(false) }
         var selectedProgramIndex by rememberSaveable { mutableIntStateOf(0) }
 
@@ -61,7 +61,7 @@ fun TrainTab(
                         }
                         Spacer(Modifier.width(2.dp))
                         ElevatedButton(
-                            onClick = { trainViewModel.startWorkout(program.nextDay(), program) },
+                            onClick = { trainViewModel.startWorkout(program.nextDay(), program.id) },
                             colors = ButtonDefaults.elevatedButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
                             shape = RoundedCornerShape(4.dp, 16.dp, 16.dp, 4.dp)
                         ) {
@@ -100,7 +100,6 @@ fun TrainTab(
 
     AnchoredFloatingActionButton(icon = { Icon(painterResource(R.drawable.checkbox_blank), null) },
         text = { Text("Start Empty Workout") }) {
-        trainViewModel.startWorkout(Day(), Program.EmptyWorkout)
+        trainViewModel.startWorkout(Day(), Program.EmptyWorkout.id)
     }
 }
-    

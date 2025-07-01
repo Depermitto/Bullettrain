@@ -197,8 +197,16 @@ class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
 }
 
 class ProgramDao(file: ProgramsFile) : Dao<Program>(file) {
-    val getAlmostAll =
-        getAll.map { it.filterNot { it corresponds Program.EmptyWorkout }.sortedByDescending { it.mostRecentWorkoutDate } }
+    val getUserPrograms = getAll.map {
+        it.filter { it correspondsNot Program.EmptyWorkout && !it.obsolete }.sortedByDescending { it.mostRecentWorkoutDate }
+    }
+    val getPerformable = getAll.map {
+        it.filterNot { it.obsolete }.sortedByDescending { it.mostRecentWorkoutDate }
+    }
+
+    override fun delete(item: Program) {
+        super.update(item.copy(obsolete = true))
+    }
 }
 
 class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {

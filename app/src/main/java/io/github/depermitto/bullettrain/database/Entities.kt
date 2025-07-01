@@ -28,7 +28,7 @@ data class Settings(val unitSystem: UnitSystem = UnitSystem.Metric) {
 @Serializable
 data class HistoryRecord(
     @SerialName("historyRecordId") override val id: Int = 0,
-    val relatedProgram: Program,
+    val relatedProgramId: Int,
     val workout: Day,
     val workoutPhase: WorkoutPhase,
     @Serializable(with = LocalDateSerializer::class) val date: LocalDate,
@@ -41,6 +41,7 @@ data class HistoryRecord(
 @Serializable
 data class Program(
     @SerialName("programId") override val id: Int = 0,
+    val obsolete: Boolean = false,
     val name: String = "",
     val days: List<Day> = listOf(Day()),
     val nextDayIndex: Int = 0,
@@ -51,6 +52,7 @@ data class Program(
     override fun clone(id: Int) = copy(id = id)
 
     infix fun corresponds(other: Program) = this.id == other.id
+    infix fun correspondsNot(other: Program) = this.id != other.id
 
     fun nextDay() = days[nextDayIndex]
 
