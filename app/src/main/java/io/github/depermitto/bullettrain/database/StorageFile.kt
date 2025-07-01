@@ -4,6 +4,7 @@ import android.util.Log
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.io.IOException
 
 abstract class StorageFile<Object>(val file: File) {
     abstract fun read(): Object
@@ -31,11 +32,10 @@ class ExerciseFile(file: File) : StorageFile<List<Exercise>>(file) {
 }
 
 fun <Object> StorageFile<Object>.write(obj: Object, log: Boolean) {
-    val result = runCatching { this.write(obj) }
-    if (!log) return
-    result.fold(onFailure = { err ->
-        Log.wtf(LOG_TAG, err.toString())
-    }, onSuccess = {
-        Log.i(LOG_TAG, "Backed up $obj")
-    })
+    try {
+        this.write(obj)
+        if (log) Log.i(LOG_TAG, "Backed up $obj")
+    } catch (err: IOException) {
+        if (log) Log.wtf(LOG_TAG, err.toString())
+    }
 }

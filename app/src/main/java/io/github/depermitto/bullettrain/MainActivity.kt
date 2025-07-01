@@ -92,11 +92,11 @@ fun App(db: Database) = MaterialTheme {
     val trainViewModel = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController))
     var programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program()))
 
-    val localFocusManager = LocalFocusManager.current
+    val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(modifier = Modifier.pointerInput(Unit) {
         detectTapGestures(onTap = {
-            localFocusManager.clearFocus()
+            focusManager.clearFocus()
         })
     }, snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { paddingValues ->
         var showDiscardDialog by rememberSaveable { mutableStateOf(false) }
@@ -138,7 +138,9 @@ fun App(db: Database) = MaterialTheme {
                 RibbonScaffold(ribbon = {
                     OutlinedCard(modifier = Modifier.padding(start = ItemPadding, end = ItemPadding, bottom = ItemPadding)) {
                         Box(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = ItemPadding)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = ItemPadding)
                         ) {
                             TextButton(
                                 modifier = Modifier.align(Alignment.CenterStart),
@@ -172,6 +174,7 @@ fun App(db: Database) = MaterialTheme {
                         trainViewModel = trainViewModel,
                         settingsDao = db.settingsDao,
                         exerciseDao = db.exerciseDao,
+                        snackbarHostState = snackbarHostState
                     )
                 }
 
@@ -181,8 +184,12 @@ fun App(db: Database) = MaterialTheme {
 
                 if (showFinishDialog) AlertDialog(text = { Text("Do you truly want to conclude the workout?") },
                     onDismissRequest = { showFinishDialog = false },
-                    dismissButton = { TextButton(onClick = { showFinishDialog = false }) { Text("One More Set \uD83D\uDCAA") } },
-                    confirmButton = { TextButton(onClick = { trainViewModel.completeWorkout() }) { Text("Finish") } })
+                    dismissButton = {
+                        TextButton(onClick = { showFinishDialog = false }) { Text("No, One More Set \uD83D\uDCAA") }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { trainViewModel.completeWorkout() }) { Text("Conclude") }
+                    })
             }
 
             composable<Destinations.ProgramCreation> {

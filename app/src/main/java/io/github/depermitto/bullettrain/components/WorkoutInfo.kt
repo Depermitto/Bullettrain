@@ -41,7 +41,7 @@ fun WorkoutInfo(
     ) else ListItem(
         // values taken from https://m3.material.io/components/lists/specs#eeeb78e0-265d-4e81-96ba-c2340c348a90
         headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
-        supportingContent = { Text(text = "${workout.name} Week ${program.weekStreak}") },
+        supportingContent = { Text(text = "${workout.name}, Week ${program.weekStreak}") },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     )
 

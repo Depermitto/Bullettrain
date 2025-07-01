@@ -100,7 +100,7 @@ fun DayExercisesScreen(
             programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises.reorder(fromIndex, toIndex)))
         }) { exerciseIndex, exercise, isDragging ->
         key(exercise.id) {
-            val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
+            val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
 
             Surface(shadowElevation = elevation, shape = MaterialTheme.shapes.medium) {
                 SwipeToDeleteBox(modifier = Modifier.clip(MaterialTheme.shapes.medium), threshold = 0.9f, onDelete = {
