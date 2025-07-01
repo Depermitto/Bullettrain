@@ -3,12 +3,10 @@ package io.github.depermitto.bullettrain.components
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
@@ -45,17 +43,15 @@ fun WorkoutInfo(
     )
 
     // This weird padding is for equalizing padding for ListItem
-    LazyColumn(contentPadding = PaddingValues(CardPadding)) {
-        item {
-            Row {
-                Text(text = "Exercise", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
-                Spacer(modifier = Modifier.weight(1f))
-                Text(text = "Sets", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
-            }
-            HorizontalDivider()
+    Column(modifier = Modifier.padding(CardPadding)) {
+        Row {
+            Text(text = "Exercise", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+            Spacer(modifier = Modifier.weight(1f))
+            Text(text = "Sets", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
         }
+        HorizontalDivider()
 
-        items(workout.exercises) { exercise ->
+        workout.exercises.forEach { exercise ->
             Row {
                 Box(modifier = Modifier.weight(0.5f), contentAlignment = CenterStart) {
                     val scroll = rememberScrollState(0)

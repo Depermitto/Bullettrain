@@ -9,6 +9,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -68,8 +69,11 @@ fun HistoryTab(
             }
         }
     }) { paddingValues ->
+        val scrollState = rememberScrollState(0)
         Column(
-            modifier = Modifier.padding(paddingValues),
+            modifier = Modifier
+                .padding(paddingValues)
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(ItemSpacing),
         ) {
@@ -102,9 +106,7 @@ fun HistoryTab(
                             val scroll = rememberScrollState(0)
                             Text(
                                 modifier = Modifier.horizontalScroll(scroll),
-                                text = exercise.sets
-                                    .groupBy { it.weight }
-                                    .filter { (weight, _) -> weight != 0f }
+                                text = exercise.sets.groupBy { it.weight }.filter { (weight, _) -> weight != 0f }
                                     .map { (weight, sets) -> "${sets.size}x${weight.encodeToStringOutput()}" }
                                     .joinToString(", ") + " " + settingsDao.weightUnit(),
                                 maxLines = 1,
