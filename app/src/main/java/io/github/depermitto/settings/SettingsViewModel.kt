@@ -11,6 +11,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.room.Room
 import io.github.depermitto.data.GymDatabase
+import io.github.depermitto.database.Settings
 import io.github.depermitto.settings.UnitSystem.Imperial
 import io.github.depermitto.settings.UnitSystem.Metric
 import io.github.vinceglb.filekit.core.FileKit
@@ -18,7 +19,6 @@ import io.github.vinceglb.filekit.core.PickerType
 import io.github.vinceglb.filekit.core.pickFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -26,9 +26,6 @@ enum class UnitSystem { Metric, Imperial }
 
 const val SETTINGS_FILENAME = "settings.json"
 const val DB_FILENAME = "firetent.sqlite"
-
-@Serializable
-data class Settings(val unitSystem: UnitSystem = Metric)
 
 class SettingsViewModel(private val data: PersistentData) : ViewModel() {
     var settings by mutableStateOf(Json.decodeFromString<Settings>(data.settingsFile.readText()))
