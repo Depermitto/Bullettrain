@@ -69,10 +69,12 @@ fun HeroTile(
         }
 
         if (trailingContent != null) {
-            Box(Modifier.constrainAs(trailing) {
-                end.linkTo(parent.end)
-                centerVerticallyTo(parent)
-            }) {
+            Box(Modifier
+                .padding(start = 4.dp)
+                .constrainAs(trailing) {
+                    end.linkTo(parent.end)
+                    centerVerticallyTo(parent)
+                }) {
                 trailingContent()
             }
         }

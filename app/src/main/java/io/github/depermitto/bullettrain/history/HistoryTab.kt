@@ -63,7 +63,8 @@ fun HistoryTab(
     Column(
         modifier = Modifier
             .padding(horizontal = Dp.Medium)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = Dp.Medium),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Dp.Small)
     ) {

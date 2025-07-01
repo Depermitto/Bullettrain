@@ -115,6 +115,7 @@ fun WorkoutTable(
         supportingText = null
     }
 
+    // TODO probably drop this Pair shit and just replace it with HeroTile
     BasicTable(
         modifier = modifier,
         headlineContent = { Text(text = header, style = MaterialTheme.typography.titleLarge) },
