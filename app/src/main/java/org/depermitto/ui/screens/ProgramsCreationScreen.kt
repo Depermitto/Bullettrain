@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.depermitto.database.Day
 import org.depermitto.database.ProgramDao
+import org.depermitto.ui.Ribbon
 
 // TODO Biggest road blocker as of this moment,
 //  can't create any plans and the ui is clunky

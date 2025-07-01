@@ -7,9 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.depermitto.database.GymDatabase
-import org.depermitto.ui.BackButton
-import org.depermitto.ui.QuickScaffoldWithTopBar
-import org.depermitto.ui.SettingsGear
+import org.depermitto.ui.Ribbon
+import org.depermitto.ui.Scaffold
 import org.depermitto.ui.screens.*
 import java.io.File
 
@@ -19,45 +18,35 @@ const val DB_FILENAME = "firetent.sqlite"
 fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme {
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
-    val exerciseDao = db.getExerciseDao()
 
-    NavHost(
-        navController = navController, startDestination = Screen.MainScreen.route
-    ) {
+    NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
         composable(Screen.MainScreen.route) {
-            QuickScaffoldWithTopBar(topBar = { SettingsGear(navController = navController) }) {
+            Scaffold(ribbon = { Ribbon(navController = navController, backButton = false) }) {
                 MainScreen(db.getProgramDao(), navController)
             }
         }
 
         composable(Screen.ProgramsCreationScreen.route) {
-            QuickScaffoldWithTopBar(navController) {
+            Scaffold(ribbon = { Ribbon(navController = navController) }) {
                 ProgramsCreationScreen(programDao = db.getProgramDao())
             }
         }
 
         composable(Screen.ExercisesScreen.route) {
-            QuickScaffoldWithTopBar(navController) {
-                ExercisesScreen(exerciseDao = exerciseDao, navController = navController)
+            Scaffold(ribbon = { Ribbon(navController = navController) }) {
+                ExercisesScreen(exerciseDao = db.getExerciseDao(), navController = navController)
             }
         }
 
         composable(Screen.ExercisesCreationScreen.route) {
-            QuickScaffoldWithTopBar(navController) {
-                ExercisesCreationScreen(
-                    exerciseDao = exerciseDao,
-                )
+            Scaffold(ribbon = { Ribbon(navController = navController) }) {
+                ExercisesCreationScreen(exerciseDao = db.getExerciseDao())
             }
         }
 
         composable(Screen.SettingsScreen.route) {
-            QuickScaffoldWithTopBar(topBar = { BackButton(navController = navController) }) {
-                SettingsScreen(
-                    db = db,
-                    dbFile = dbFile,
-                    fallbackBytes = fallbackBytes,
-                    scope = scope,
-                )
+            Scaffold(ribbon = { Ribbon(navController = navController, settingsGear = false) }) {
+                SettingsScreen(db = db, dbFile = dbFile, fallbackBytes = fallbackBytes, scope = scope)
             }
         }
     }
