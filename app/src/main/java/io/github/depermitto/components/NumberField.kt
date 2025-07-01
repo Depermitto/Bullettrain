@@ -22,28 +22,31 @@ fun NumberField(
     readOnly: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(3.dp),
 ) {
-    val textValue = value.encodeToStringOutput()
+    val textValue = value.toString().removeSuffix(".0")
 
     var textFieldValue by remember { mutableStateOf(TextFieldValue(textValue)) }
-    if (textValue != textFieldValue.text) textFieldValue = textFieldValue.copy(text = textValue)
+    if (textFieldValue.text.isNotEmpty() && textFieldValue.text != "-" && value != textFieldValue.text.toFloatOrNull()) {
+        textFieldValue = textFieldValue.copy(text = textValue)
+    }
 
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     LaunchedEffect(isFocused) {
-        val endRange = if (isFocused) textValue.length else 0
-        textFieldValue = textFieldValue.copy(selection = TextRange(0, endRange))
+        if (isFocused) textFieldValue = textFieldValue.copy(selection = TextRange(0, textFieldValue.text.length))
     }
 
     OutlinedTextField(
         modifier = modifier,
         value = textFieldValue,
-        onValueChange = {
-            val validNumber: Float? = it.text.parseFromNumericInput()
-            if (!it.text.contains(" ") && validNumber != null) {
-                textFieldValue = it
-                onValueChange(validNumber)
-            }
+        onValueChange = { it ->
+            if (it.text.contains(" ")) return@OutlinedTextField
+
+            textFieldValue = if (it.text == ".") textFieldValue.copy(text = "0.", selection = TextRange(2))
+            else it
+
+            if (it.text.isBlank()) onValueChange(0f)
+            else it.text.toFloatOrNull()?.let { value -> onValueChange(value) }
         },
         label = label,
         singleLine = singleLine,
@@ -55,10 +58,7 @@ fun NumberField(
 }
 
 
-fun Float.stripTrailingZeros(): Int? = takeIf { it == it.roundToInt().toFloat() }?.roundToInt()
 fun Float.encodeToStringOutput(): String {
     if (this == 0f) return ""
-    return stripTrailingZeros()?.toString() ?: this.toString()
+    return takeIf { it == it.roundToInt().toFloat() }?.roundToInt()?.toString() ?: this.toString()
 }
-
-fun String.parseFromNumericInput(): Float? = if (isBlank()) 0f else runCatching { toFloatOrNull() }.getOrNull()
