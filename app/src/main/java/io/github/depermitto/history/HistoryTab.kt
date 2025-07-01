@@ -15,11 +15,11 @@ import io.github.depermitto.exercises.Exercise
 import io.github.depermitto.theme.ItemPadding
 
 @Composable
-fun HistoryTab(historyDao: HistoryDao) {
+fun HistoryTab(modifier: Modifier = Modifier, historyDao: HistoryDao) {
     val historyRecords by historyDao.getAllFlow().collectAsStateWithLifecycle(initialValue = emptyList())
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {

@@ -11,10 +11,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.times
+import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 
 @Composable
-fun Settings(settingsViewModel: SettingsViewModel) = Box(modifier = Modifier.fillMaxSize()) {
+fun SettingsScreen(
+    modifier: Modifier = Modifier,
+    settingsViewModel: SettingsViewModel,
+) = Box(
+    modifier = modifier
+        .fillMaxSize()
+        .padding(ItemPadding)
+) {
     val context = LocalContext.current
     LaunchedEffect(settingsViewModel.toastMessage) {
         if (settingsViewModel.toastMessage.isNotEmpty()) {

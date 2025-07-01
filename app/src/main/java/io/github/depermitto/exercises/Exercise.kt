@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import io.github.depermitto.components.DropdownButton
 import io.github.depermitto.components.NumberField
-import io.github.depermitto.components.TargetNumberField
 import io.github.depermitto.data.*
 import io.github.depermitto.misc.DuplicateIcon
 import io.github.depermitto.misc.IntensityIcon
@@ -69,18 +68,18 @@ fun Exercise(exercise: Exercise, onExerciseChange: (Exercise?) -> Unit) = Card(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Header(text = exercise.targetCategory.prettyName)
+                    Header(text = exercise.perfVarCategory.prettyName)
                     Icon(Icons.Sharp.KeyboardArrowDown, contentDescription = null)
 
                     DropdownMenu(
                         expanded = showTargetEditDropdown,
                         onDismissRequest = { showTargetEditDropdown = false }) {
-                        ExerciseTargetCategory.entries.forEach { entry ->
+                        PerfVarCategory.entries.forEach { entry ->
                             DropdownMenuItem(text = { Text(entry.prettyName) }, onClick = {
                                 onExerciseChange(
                                     exercise.copy(
-                                        sets = exercise.sets.map { it.copy(target = ExerciseTarget.of(entry)) },
-                                        targetCategory = entry
+                                        sets = exercise.sets.map { it.copy(targetPerfVar = PerfVar.of(entry)) },
+                                        perfVarCategory = entry
                                     )
                                 )
                                 showTargetEditDropdown = false
@@ -106,13 +105,13 @@ fun Exercise(exercise: Exercise, onExerciseChange: (Exercise?) -> Unit) = Card(
                         text = (j + 1).toString(),
                         textAlign = TextAlign.Center
                     )
-                    TargetNumberField(
+                    ExerciseTargetField(
                         Modifier
                             .weight(ExerciseSetWideWeight)
                             .padding(horizontal = ExerciseSetSpacing),
-                        value = set.target,
+                        value = set.targetPerfVar,
                         onValueChange = {
-                            onExerciseChange(exercise.copy(sets = exercise.sets.set(j, set.copy(target = it))))
+                            onExerciseChange(exercise.copy(sets = exercise.sets.set(j, set.copy(targetPerfVar = it))))
                         })
                     if (set.intensity != null) {
                         NumberField(
@@ -140,13 +139,11 @@ fun Exercise(exercise: Exercise, onExerciseChange: (Exercise?) -> Unit) = Card(
                     exercise.copy(
                         sets = exercise.sets + ExerciseSet(
                             intensity = exercise.intensityCategory?.let { 0f },
-                            target = ExerciseTarget.of(exercise.targetCategory)
+                            targetPerfVar = PerfVar.of(exercise.perfVarCategory)
                         )
                     )
                 )
-            }) {
-            Text(text = "Add Set")
-        }
+            }) { Text(text = "Add Set") }
     }
 }
 
@@ -155,3 +152,44 @@ fun Header(
     modifier: Modifier = Modifier,
     text: String,
 ) = Text(modifier = modifier, text = text, style = MaterialTheme.typography.titleSmall, textAlign = TextAlign.Center)
+
+@Composable
+fun ExerciseTargetField(
+    modifier: Modifier = Modifier,
+    value: PerfVar,
+    onValueChange: (PerfVar) -> Unit,
+    readOnly: Boolean = false,
+) = when (value) {
+    is PerfVar.Reps -> NumberField(
+        modifier,
+        value = value.reps,
+        onValueChange = { onValueChange(value.copy(it)) },
+        readOnly = readOnly
+    )
+
+    is PerfVar.Time -> Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        NumberField(
+            modifier = modifier,
+            value = value.time,
+            onValueChange = { onValueChange(value.copy(it)) },
+            readOnly = readOnly
+        )
+        Text(text = "min")
+    }
+
+    is PerfVar.RepRange -> Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        NumberField(
+            modifier = modifier,
+            value = value.min,
+            onValueChange = { onValueChange(value.copy(min = it)) },
+            readOnly = readOnly
+        )
+        Text(text = "-")
+        NumberField(
+            modifier = modifier,
+            value = value.max,
+            onValueChange = { onValueChange(value.copy(max = it)) },
+            readOnly = readOnly
+        )
+    }
+}

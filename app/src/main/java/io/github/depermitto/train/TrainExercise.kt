@@ -12,10 +12,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import io.github.depermitto.components.DropdownButton
 import io.github.depermitto.components.NumberField
-import io.github.depermitto.components.TargetNumberField
 import io.github.depermitto.data.ExerciseDao
 import io.github.depermitto.data.ExerciseSet
-import io.github.depermitto.data.ExerciseTarget
+import io.github.depermitto.data.PerfVar
 import io.github.depermitto.exercises.Header
 import io.github.depermitto.exercises.exerciseChooser
 import io.github.depermitto.misc.SwapIcon
@@ -32,7 +31,6 @@ fun TrainExercise(
     exerciseDao: ExerciseDao,
 ) = Card(colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
     val exercise = trainViewModel.exercises[exerciseIndex]
-    val targetExercise = trainViewModel.targetExercises.getOrNull(exerciseIndex)
 
     var showDropdownButton by remember { mutableStateOf(false) }
     val swapExerciseChooser = exerciseChooser(exerciseDao = exerciseDao, onChoose = {
@@ -63,7 +61,7 @@ fun TrainExercise(
                     text = { Text(text = "Delete") },
                     onClick = { trainViewModel.exercises.removeAt(exerciseIndex) })
                 DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
-                    swapExerciseChooser() // TODO add alternatives here
+                    swapExerciseChooser() // TODO add alternatives here P2
                     showDropdownButton = false
                 })
             }
@@ -72,13 +70,11 @@ fun TrainExercise(
         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2 * ItemSpacing)) {
             Row(modifier = Modifier.offset(y = 2 * ItemSpacing)) {
                 Header(Modifier.weight(ExerciseSetNarrowWeight), "Set")
-                if (targetExercise?.intensityCategory != null) {
-                    Header(Modifier.weight(ExerciseSetNarrowWeight), targetExercise.intensityCategory.name)
+                if (exercise.intensityCategory != null) {
+                    Header(Modifier.weight(ExerciseSetNarrowWeight), exercise.intensityCategory.name)
                 }
-                if (targetExercise?.exerciseId == exercise.exerciseId) {
-                    Header(Modifier.weight(ExerciseSetNarrowWeight + 0.1f), "Target")
-                }
-                Header(Modifier.weight(ExerciseSetWideWeight), exercise.targetCategory.prettyName)
+                Header(Modifier.weight(ExerciseSetNarrowWeight + 0.1f), "Target")
+                Header(Modifier.weight(ExerciseSetWideWeight), exercise.perfVarCategory.prettyName)
                 Header(Modifier.weight(ExerciseSetWideWeight), settingsViewModel.settings.unitSystem.weightUnit())
                 if (trainViewModel.workoutPhase == WorkoutPhase.During) {
                     Header(Modifier.weight(ExerciseSetNarrowWeight), "")
@@ -102,24 +98,23 @@ fun TrainExercise(
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
-                    if (targetExercise?.exerciseId == exercise.exerciseId) {
-                        Text(
-                            modifier = Modifier.weight(ExerciseSetNarrowWeight + 0.1f),
-                            text = targetExercise.sets.getOrNull(setIndex)?.target?.toText() ?: "--",
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                    TargetNumberField(
+                    Text(
+                        modifier = Modifier.weight(ExerciseSetNarrowWeight + 0.1f),
+                        text = exercise.sets.getOrNull(setIndex)?.targetPerfVar?.toText() ?: "--",
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    NumberField(
                         Modifier
                             .weight(ExerciseSetWideWeight)
                             .padding(horizontal = ExerciseSetSpacing),
-                        value = set.target,
+                        value = set.actualPerfVar,
                         onValueChange = {
-                            trainViewModel.exercises[exerciseIndex] =
-                                exercise.copy(sets = exercise.sets.set(setIndex, set.copy(target = it)))
+                            trainViewModel.exercises[exerciseIndex] = exercise.copy(
+                                sets = exercise.sets.set(setIndex, set.copy(actualPerfVar = it))
+                            )
                         },
-                        readOnly = trainViewModel.workoutPhase == WorkoutPhase.NotStartedYet
+                        readOnly = trainViewModel.workoutPhase == WorkoutPhase.NotStartedYet,
                     )
                     NumberField(
                         Modifier
@@ -127,8 +122,9 @@ fun TrainExercise(
                             .padding(horizontal = ExerciseSetSpacing),
                         value = set.weight,
                         onValueChange = {
-                            trainViewModel.exercises[exerciseIndex] =
-                                exercise.copy(sets = exercise.sets.set(setIndex, set.copy(weight = it)))
+                            trainViewModel.exercises[exerciseIndex] = exercise.copy(
+                                sets = exercise.sets.set(setIndex, set.copy(weight = it))
+                            )
                         },
                         readOnly = trainViewModel.workoutPhase == WorkoutPhase.NotStartedYet
                     )
@@ -154,7 +150,7 @@ fun TrainExercise(
                 trainViewModel.exercises[exerciseIndex] = exercise.copy(
                     sets = exercise.sets + ExerciseSet(
                         intensity = exercise.intensityCategory?.let { 0f },
-                        target = ExerciseTarget.of(exercise.targetCategory),
+                        targetPerfVar = PerfVar.of(exercise.perfVarCategory),
                     )
                 )
             }) { Text(text = "Add Set") }

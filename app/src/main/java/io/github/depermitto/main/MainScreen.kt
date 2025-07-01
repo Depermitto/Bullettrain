@@ -1,8 +1,8 @@
-package io.github.depermitto.screen
+package io.github.depermitto.main
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -14,13 +14,12 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import io.github.depermitto.components.Ribbon
-import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.data.ExerciseDao
 import io.github.depermitto.data.HistoryDao
 import io.github.depermitto.data.ProgramDao
 import io.github.depermitto.history.HistoryTab
+import io.github.depermitto.main.Screen.MainScreen
 import io.github.depermitto.programs.ProgramsTab
-import io.github.depermitto.screen.Screen.MainScreen
 import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.adaptiveIconTint
 import io.github.depermitto.theme.filledContainerColor
@@ -49,29 +48,27 @@ fun MainScreen(
                 }, label = { Text(text = tab.name) })
             }
         }
+    }, topBar = {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Ribbon(navController = navController, title = activeBar.name, backButton = false)
+        }
     }) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            when (activeBar) {
-                MainScreen.Tabs.Programs -> {
-                    RibbonScaffold(ribbon = {
-                        Ribbon(navController = navController, title = "Programs", backButton = false)
-                    }) { ProgramsTab(programDao = programDao, navController = navController) }
-                }
+        when (activeBar) {
+            MainScreen.Tabs.Programs -> ProgramsTab(
+                modifier = Modifier.padding(paddingValues), programDao = programDao, navController = navController
+            )
 
-                MainScreen.Tabs.History -> HistoryTab(historyDao = historyDao)
-               
-                MainScreen.Tabs.Train -> TrainTab(
-                    settingsViewModel = settingsViewModel,
-                    programDao = programDao,
-                    historyDao = historyDao,
-                    exerciseDao = exerciseDao,
-                    navController = navController
-                )
-            }
+            MainScreen.Tabs.History -> HistoryTab(
+                modifier = Modifier.padding(paddingValues), historyDao = historyDao
+            )
+
+            MainScreen.Tabs.Train -> TrainTab(
+                modifier = Modifier.padding(paddingValues),
+                settingsViewModel = settingsViewModel,
+                historyDao = historyDao,
+                programDao = programDao,
+                exerciseDao = exerciseDao
+            )
         }
     }
 }

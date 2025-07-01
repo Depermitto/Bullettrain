@@ -1,4 +1,4 @@
-package io.github.depermitto.screen
+package io.github.depermitto.main
 
 import io.github.depermitto.R
 
@@ -21,6 +21,8 @@ sealed class Screen(val route: String) {
             return this.route.replace(oldValue = "{programId}", newValue = id.toString())
         }
     }
+
+    data object TrainingScreen : Screen("training")
 
     data object SettingsScreen : Screen("settings")
 }

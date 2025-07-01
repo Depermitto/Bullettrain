@@ -13,14 +13,14 @@ import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.components.Ribbon
 import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.data.Program
+import io.github.depermitto.main.MainScreen
+import io.github.depermitto.main.Screen
+import io.github.depermitto.main.Screen.MainScreen.Tabs
 import io.github.depermitto.programs.Program
 import io.github.depermitto.programs.ProgramCreation
 import io.github.depermitto.programs.ProgramViewModel
-import io.github.depermitto.screen.MainScreen
-import io.github.depermitto.screen.Screen
-import io.github.depermitto.screen.Screen.MainScreen.Tabs
 import io.github.depermitto.settings.PersistentData
-import io.github.depermitto.settings.Settings
+import io.github.depermitto.settings.SettingsScreen
 import io.github.depermitto.settings.SettingsViewModel
 
 @Composable
@@ -77,7 +77,7 @@ fun App(persistentData: PersistentData) = MaterialTheme {
 
         composable(Screen.SettingsScreen.route) {
             RibbonScaffold(ribbon = { Ribbon(navController, settingsGear = false, title = "Settings") }) {
-                Settings(settingsViewModel)
+                SettingsScreen(settingsViewModel = settingsViewModel)
             }
         }
     }

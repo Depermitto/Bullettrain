@@ -57,7 +57,7 @@ fun TrainingScreen(
     LazyColumn(
         modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
     ) {
-        // TODO add colors for supersets here
+        // TODO add colors for supersets here P2
         itemsIndexed(trainViewModel.exercises) { i, _ ->
             TrainExercise(
                 settingsViewModel = settingsViewModel,

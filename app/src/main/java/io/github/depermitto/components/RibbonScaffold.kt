@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
-import io.github.depermitto.screen.Screen
+import io.github.depermitto.main.Screen
 
 @Composable
 fun BoxScope.SettingsGear(modifier: Modifier = Modifier, navController: NavController) {
@@ -30,6 +30,7 @@ fun BoxScope.BackButton(navController: NavController, modifier: Modifier = Modif
 
 @Composable
 fun RibbonScaffold(
+    modifier: Modifier = Modifier,
     ribbon: @Composable BoxScope.() -> Unit,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -39,7 +40,7 @@ fun RibbonScaffold(
         }
     }) { paddingValues ->
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {

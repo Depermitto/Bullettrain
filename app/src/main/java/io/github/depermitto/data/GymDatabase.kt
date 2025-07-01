@@ -7,7 +7,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.time.Instant
 
-@Database(entities = [Exercise::class, HistoryRecord::class, Program::class], version = 19, exportSchema = true)
+@Database(entities = [Exercise::class, HistoryRecord::class, Program::class], version = 23, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class GymDatabase : RoomDatabase() {
     abstract fun getGymDao(): GymDao
@@ -45,16 +45,16 @@ class Converters {
 // ---------------------------------------Categories---------------------------------------------------
 
     @TypeConverter
-    fun exerciseTargetFromString(value: String?): ExerciseTarget? = value?.let(Json::decodeFromString)
+    fun exerciseTargetFromString(value: String?): PerfVar? = value?.let(Json::decodeFromString)
 
     @TypeConverter
-    fun exerciseTargetToString(value: ExerciseTarget?): String? = value?.let(Json::encodeToString)
+    fun exerciseTargetToString(value: PerfVar?): String? = value?.let(Json::encodeToString)
 
     @TypeConverter
-    fun exerciseTargetCategoryFromString(value: String): ExerciseTargetCategory = ExerciseTargetCategory.valueOf(value)
+    fun exerciseTargetCategoryFromString(value: String): PerfVarCategory = PerfVarCategory.valueOf(value)
 
     @TypeConverter
-    fun exerciseTargetCategoryToString(value: ExerciseTargetCategory): String = value.name
+    fun exerciseTargetCategoryToString(value: PerfVarCategory): String = value.name
 
     @TypeConverter
     fun intensityCategoryFromString(value: String?): IntensityCategory? = value?.let(IntensityCategory::valueOf)

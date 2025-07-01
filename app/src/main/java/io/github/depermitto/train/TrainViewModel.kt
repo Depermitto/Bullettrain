@@ -8,47 +8,29 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import io.github.depermitto.data.*
+import io.github.depermitto.data.Day
+import io.github.depermitto.data.Exercise
+import io.github.depermitto.data.HistoryDao
+import io.github.depermitto.data.HistoryRecord
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.math.min
 
+@Serializable
 enum class WorkoutPhase { NotStartedYet, During, Completed }
 
 class TrainViewModel(day: Day, private val historyDao: HistoryDao) : ViewModel() {
     val name by mutableStateOf(day.name)
-    val targetExercises = mutableStateListOf<Exercise>().apply {
-        viewModelScope.launch {
-            val session = historyDao.getUnfinishedBusiness()
-            addAll(session?.targetDay?.exercises ?: day.exercises)
-        }
-    }
     val exercises = mutableStateListOf<Exercise>().apply {
         viewModelScope.launch {
             val session = historyDao.getUnfinishedBusiness()
-            if (session != null) {
-                addAll(session.day.exercises)
-            } else {
-                addAll(day.exercises.map { exercise ->
-                    val trainingTargetCategory = when (exercise.targetCategory) {
-                        ExerciseTargetCategory.RepRange -> ExerciseTargetCategory.Reps
-                        else -> exercise.targetCategory
-                    }
-
-                    exercise.copy(targetCategory = trainingTargetCategory, sets = exercise.sets.map {
-                        it.copy(
-                            target = ExerciseTarget.of(trainingTargetCategory),
-                            weight = 0f,
-                            date = null,
-                        )
-                    })
-                })
-            }
+            addAll(session?.day?.exercises ?: day.exercises)
         }
     }
 
@@ -100,25 +82,14 @@ class TrainViewModel(day: Day, private val historyDao: HistoryDao) : ViewModel()
 
     private fun saveProgress() = viewModelScope.launch {
         val session = historyDao.getUnfinishedBusiness()
-        if (session != null) {
-            historyDao.upsert(
-                session.copy(
-                    day = Day(name = name, exercises = exercises.toList()),
-                    targetDay = Day(name = name, exercises = targetExercises.toList()),
-                    workoutPhase = workoutPhase,
-                )
+        historyDao.upsert(
+            HistoryRecord(
+                day = Day(name = name, exercises = exercises.toList()),
+                workoutPhase = workoutPhase,
+                date = session?.date ?: Instant.now(),
+                workoutStartTime = session?.workoutStartTime ?: start
             )
-        } else {
-            historyDao.upsert(
-                HistoryRecord(
-                    date = Instant.now(),
-                    day = Day(name = name, exercises = exercises.toList()),
-                    targetDay = Day(name = name, exercises = targetExercises.toList()),
-                    workoutPhase = workoutPhase,
-                    workoutStartTime = start
-                )
-            )
-        }
+        )
     }
 
     companion object {

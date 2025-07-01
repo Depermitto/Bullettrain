@@ -28,7 +28,6 @@ data class HistoryRecord(
     @ColumnInfo(name = "history_entry_id") @PrimaryKey(autoGenerate = true) val historyEntryId: Long = 0,
     @Contextual val date: Instant,
     val day: Day,
-    val targetDay: Day,
     val workoutPhase: WorkoutPhase,
     @Contextual val workoutStartTime: Instant,
 )

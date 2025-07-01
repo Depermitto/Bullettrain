@@ -19,7 +19,7 @@ class ProgramViewModel(program: Program, private val programDao: ProgramDao) : V
         private set
     var days = mutableStateListOf<Day>().apply { addAll(program.days) }
         private set
-    var active by mutableStateOf(program.active)
+    var followed by mutableStateOf(program.followed)
         private set
 
     fun setName(name: String) {
@@ -31,7 +31,7 @@ class ProgramViewModel(program: Program, private val programDao: ProgramDao) : V
     fun removeDayAt(dayIndex: Int) = days.removeAt(dayIndex)
 
     fun upsert() = viewModelScope.launch {
-        programDao.upsert(Program(programId = programId, name = programName, days = days, active = active))
+        programDao.upsert(Program(programId = programId, name = programName, days = days, followed = followed))
         programName = ""
         days.clear()
     }

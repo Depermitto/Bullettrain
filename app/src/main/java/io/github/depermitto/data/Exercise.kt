@@ -24,7 +24,7 @@ interface ExerciseDao {
 data class Exercise(
     @ColumnInfo(name = "exercise_id") @PrimaryKey(autoGenerate = true) val exerciseId: Long = 0,
     val name: String,
-    val targetCategory: ExerciseTargetCategory = ExerciseTargetCategory.Reps,
+    val perfVarCategory: PerfVarCategory = PerfVarCategory.Reps,
     val intensityCategory: IntensityCategory? = null,
     val sets: List<ExerciseSet> = listOf(),
     val superset: List<Int>? = null,
@@ -37,7 +37,9 @@ data class Exercise(
 
 @Serializable
 data class ExerciseSet(
-    val target: ExerciseTarget,
+    val targetPerfVar: PerfVar,
+    val actualPerfVar: Float = 0f,
+    // val targetIntensity
     val intensity: Float? = null,
     val weight: Float = 0f,
     @Contextual val date: Instant? = null,
@@ -47,28 +49,28 @@ data class ExerciseSet(
 enum class IntensityCategory { RPE, AMRAP, RIR }
 
 @Serializable
-enum class ExerciseTargetCategory {
-    Reps, Time, RepRange;
+enum class PerfVarCategory {
+    Reps, RepRange, Time;
 
     val prettyName = name.split(regex = Regex("(?=[A-Z])")).joinToString(" ")
 }
 
 @Serializable
-sealed class ExerciseTarget(val category: ExerciseTargetCategory) {
+sealed class PerfVar(val category: PerfVarCategory) {
     @Serializable
-    data class Reps(val reps: Float = 0f) : ExerciseTarget(ExerciseTargetCategory.Reps)
+    data class Reps(val reps: Float = 0f) : PerfVar(PerfVarCategory.Reps)
 
     @Serializable
-    data class Time(val time: Float = 0f) : ExerciseTarget(ExerciseTargetCategory.Time)
+    data class Time(val time: Float = 0f) : PerfVar(PerfVarCategory.Time)
 
     @Serializable
-    data class RepRange(val min: Float = 0f, val max: Float = 0f) : ExerciseTarget(ExerciseTargetCategory.RepRange)
+    data class RepRange(val min: Float = 0f, val max: Float = 0f) : PerfVar(PerfVarCategory.RepRange)
 
     companion object {
-        fun of(category: ExerciseTargetCategory) = when (category) {
-            ExerciseTargetCategory.Reps -> Reps()
-            ExerciseTargetCategory.Time -> Time()
-            ExerciseTargetCategory.RepRange -> RepRange()
+        fun of(category: PerfVarCategory) = when (category) {
+            PerfVarCategory.Reps -> Reps()
+            PerfVarCategory.Time -> Time()
+            PerfVarCategory.RepRange -> RepRange()
         }
     }
 
