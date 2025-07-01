@@ -28,6 +28,7 @@ fun Calendar(
     modifier: Modifier = Modifier,
     onItemClick: (LocalDate) -> Unit,
     ifHighlightItem: (LocalDate) -> Boolean,
+    ifSuperHighlightItem: (LocalDate) -> Boolean,
 ) = Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
     val today = LocalDate.now()
     val firstDayOfMonth = LocalDate.of(date.year, date.month, 1)
@@ -63,7 +64,7 @@ fun Calendar(
                                 .aspectRatio(1f)
                                 .clickable { onItemClick(day); selectedDay = day }
                                 .background(
-                                    color = if (day == selectedDay) MaterialTheme.colorScheme.tertiaryContainer
+                                    color = if (ifSuperHighlightItem(day)) MaterialTheme.colorScheme.tertiaryContainer
                                     else if (ifHighlightItem(day)) MaterialTheme.colorScheme.primaryContainer
                                     else Color.Transparent
                                 ), underline = day == today, text = dayOfMonth.toString())

@@ -92,6 +92,7 @@ fun HistoryTab(
                     },
                 onItemClick = { homeViewModel.selectedRecord = findWorkout(it) },
                 ifHighlightItem = { findWorkout(it) != null },
+                ifSuperHighlightItem = { homeViewModel.selectedRecord != null && homeViewModel.selectedRecord == findWorkout(it) },
             )
 
             homeViewModel.selectedRecord?.let { record ->
