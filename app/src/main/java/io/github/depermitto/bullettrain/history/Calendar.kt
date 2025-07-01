@@ -141,10 +141,10 @@ fun Calendar(
         ListAlertDialog(onDismissRequest = { selectedProgram = null },
             list = program.days,
             dismissButton = { TextButton(onClick = { selectedProgram = null }) { Text("Cancel") } },
-            confirmButton = {
+            confirmButton = { day ->
                 TextButton(onClick = {
                     selectedProgram = null
-                    trainViewModel.startWorkout(program.nextDay(), program, date = longClickedDate)
+                    trainViewModel.startWorkout(day, program, date = longClickedDate)
                 }) {
                     Text("Confirm")
                 }

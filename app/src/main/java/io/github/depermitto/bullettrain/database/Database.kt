@@ -248,5 +248,5 @@ class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {
     }
 
     private fun Exercise.prep() =
-        this.copy(name = name.trim().split(' ').joinToString(" ") { it.lowercase().replaceFirstChar { it.uppercaseChar() } })
+        this.copy(name = name.trim().split(' ').joinToString(" ") { it.replaceFirstChar { it.uppercaseChar() } })
 }
