@@ -4,15 +4,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.times
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.depermitto.database.ProgramDao
@@ -22,14 +24,15 @@ import org.depermitto.ui.theme.spacingDp
 
 @Composable
 fun ProgramsScreen(programDao: ProgramDao, navController: NavController) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = horizontalDp), horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = horizontalDp)
     ) {
-        val programs by programDao.getAllFlow().collectAsState(emptyList())
+        val scope = rememberCoroutineScope { Dispatchers.IO }
+        val programs by programDao.getAllFlow().collectAsStateWithLifecycle(emptyList())
 
-        LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(spacingDp)) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(spacingDp)) {
             items(programs) { program ->
                 // TODO Navigate to ProgramOverviewScreen, seeing history of the plan and trainingWork
                 OutlinedCard(colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
@@ -48,11 +51,7 @@ fun ProgramsScreen(programDao: ProgramDao, navController: NavController) {
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
-                        IconButton(onClick = {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                programDao.delete(program)
-                            }
-                        }) {
+                        IconButton(onClick = { scope.launch { programDao.delete(program) } }) {
                             Icon(Icons.Filled.Delete, contentDescription = null)
                         }
                     }
@@ -60,8 +59,13 @@ fun ProgramsScreen(programDao: ProgramDao, navController: NavController) {
             }
         }
 
-        Button(onClick = { navController.navigate(Screen.ProgramsCreationScreen.route) }) {
-            Text(text = "Create Program")
+        FloatingActionButton(
+            onClick = { navController.navigate(Screen.ProgramsCreationScreen.route) },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 3 * horizontalDp, end = 2 * horizontalDp)
+        ) {
+            Icon(Icons.Filled.Add, contentDescription = null)
         }
     }
 }

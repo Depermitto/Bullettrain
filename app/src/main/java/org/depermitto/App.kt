@@ -23,7 +23,7 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
 
     val programCreationViewModel: ProgramCreationViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = Screen.ProgramsCreationScreen.route) {
+    NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
         composable(Screen.MainScreen.route) {
             Scaffold(ribbon = { Ribbon(navController = navController, backButton = false) }) {
                 MainScreen(db.getProgramDao(), navController)

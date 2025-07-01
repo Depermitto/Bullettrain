@@ -9,11 +9,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.depermitto.database.Day
@@ -59,8 +59,7 @@ fun ProgramsCreationScreen(
                     day = day, onDayChanged = {
                         if (it != null) viewModel.set(day, it)
                         else viewModel.removeDay(day)
-                    },
-                    exerciseDao = exerciseDao
+                    }, exerciseDao = exerciseDao
                 )
             }
             item {
@@ -73,6 +72,7 @@ fun ProgramsCreationScreen(
             }
         }
 
+        val scope = rememberCoroutineScope { Dispatchers.IO }
         val context = LocalContext.current
         Button(onClick = {
             if (viewModel.state.workoutName.isBlank()) {
@@ -81,13 +81,11 @@ fun ProgramsCreationScreen(
             }
 
             val program = Program(name = viewModel.state.workoutName, trainingWork = viewModel.state.days)
-            CoroutineScope(Dispatchers.IO).launch {
-                programDao.upsert(program)
-            }
-            viewModel.reset()
-
-            navController.popBackStack(Screen.MainScreen.route, false)
+            scope.launch { programDao.upsert(program) }
             Toast.makeText(context, "Successfully Created", Toast.LENGTH_SHORT).show()
+            
+            viewModel.reset()
+            navController.popBackStack(Screen.MainScreen.route, false)
         }) {
             Text(text = "Complete Program")
         }

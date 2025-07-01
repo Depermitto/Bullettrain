@@ -1,9 +1,13 @@
 package org.depermitto.ui.screens
 
+import org.depermitto.R
+
 sealed class Screen(val route: String) {
     data object MainScreen : Screen("main") {
-        enum class Tabs {
-            History, Train, Programs
+        enum class Tabs(val icon: Int) {
+            History(R.drawable.history),
+            Train(R.drawable.weight_lifter),
+            Programs(R.drawable.calendar_month_outline)
         }
     }
 

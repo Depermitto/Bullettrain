@@ -53,7 +53,7 @@ android {
 dependencies {
     // Compose
     implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.4'
+    implementation "androidx.lifecycle:lifecycle-runtime-compose:2.8.4"
     implementation 'androidx.activity:activity-compose:1.9.1'
     implementation platform('androidx.compose:compose-bom:2024.02.01')
     
@@ -79,6 +79,9 @@ dependencies {
     def filekit_version = "0.7.0"
     implementation "io.github.vinceglb:filekit-core:$filekit_version"
     implementation "io.github.vinceglb:filekit-compose:$filekit_version"
+    
+    // Icons
+    // implementation 'androidx.compose.material:material-icons-extended-android:1.6.8'
 
     // Testing
     testImplementation 'junit:junit:4.13.2'

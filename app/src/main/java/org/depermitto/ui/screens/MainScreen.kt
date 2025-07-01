@@ -1,29 +1,38 @@
 package org.depermitto.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import org.depermitto.database.ProgramDao
-
+import org.depermitto.ui.screens.Screen.MainScreen.Tabs
+import org.depermitto.ui.theme.adaptiveIconTint
+import org.depermitto.ui.theme.filledContainerColor
 
 @Composable
 fun MainScreen(programDao: ProgramDao, navController: NavController) {
-    var activeTabIndex by remember { mutableIntStateOf(Screen.MainScreen.Tabs.Programs.ordinal) }
+    var activeBar by remember { mutableStateOf(Tabs.Programs) }
 
     Scaffold(bottomBar = {
-        TabRow(selectedTabIndex = activeTabIndex) {
-            Screen.MainScreen.Tabs.entries.forEach { tab ->
-                Tab(text = { Text(text = tab.name) }, selected = activeTabIndex == tab.ordinal, onClick = {
-                    activeTabIndex = tab.ordinal
-                })
+        NavigationBar(containerColor = filledContainerColor()) {
+            Tabs.entries.forEach { tab ->
+                NavigationBarItem(selected = activeBar == tab, onClick = { activeBar = tab }, icon = {
+                    Image(
+                        painterResource(id = tab.icon),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(adaptiveIconTint())
+                    )
+                }, label = { Text(text = tab.name) })
             }
         }
     }) { paddingValues ->
@@ -32,8 +41,8 @@ fun MainScreen(programDao: ProgramDao, navController: NavController) {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            when (Screen.MainScreen.Tabs.entries[activeTabIndex]) {
-                Screen.MainScreen.Tabs.Programs -> ProgramsScreen(
+            when (activeBar) {
+                Tabs.Programs -> ProgramsScreen(
                     programDao = programDao, navController = navController
                 )
 

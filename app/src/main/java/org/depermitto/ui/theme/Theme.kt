@@ -41,6 +41,9 @@ val horizontalDp = 8.dp
 val spacingDp = 4.dp
 
 @Composable
+fun adaptiveIconTint() = if (isSystemInDarkTheme()) Color.White else Color.Black
+
+@Composable
 fun GymAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
