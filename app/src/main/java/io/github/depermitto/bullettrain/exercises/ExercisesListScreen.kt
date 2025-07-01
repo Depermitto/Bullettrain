@@ -93,6 +93,7 @@ fun ExercisesListScreen(
         var errorMessage by rememberSaveable { mutableStateOf("") }
         TextFieldAlertDialog(
             onDismissRequest = { showDialog = false },
+            label = { Text("Exercise Name") },
             dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } },
             confirmButton = { name ->
                 TextButton(onClick = {

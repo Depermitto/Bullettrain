@@ -15,7 +15,6 @@ import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.RegularPadding
-import io.github.depermitto.bullettrain.theme.SmallPadding
 import io.github.depermitto.bullettrain.theme.focalGround
 
 @Composable
@@ -34,39 +33,31 @@ fun TrainTab(
         modifier = Modifier.heightIn(0.dp, 400.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = SmallPadding)
-        ) {
-            if (programs.isEmpty()) Text(
-                modifier = Modifier
-                    .padding(RegularPadding)
-                    .align(Alignment.Center), text = "No Program Found"
-            )
-
-            programs.getOrNull(selectedProgramIndex)?.let { program ->
-                WorkoutTable(modifier = Modifier.align(Alignment.TopCenter),
-                    program = program,
-                    workout = program.nextDay(),
-                    headers = Pair("Exercise", "Sets"),
-                    exstractor = { exercise -> exercise.sets.size.toString() },
-                    ratio = Ratio.Strict(0.9f),
-                    navController = navController,
-                    overlayingContent = {
-                        ElevatedButton(
-                            modifier = Modifier.align(Alignment.BottomCenter),
-                            onClick = { trainViewModel.startWorkout(program.nextDay(), program) },
-                            colors = ButtonDefaults.elevatedButtonColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        ) {
-                            Text(text = "Start ${program.nextDay().name}")
-                        }
-                    })
+        val program = programs.getOrElse(selectedProgramIndex) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("No Program Found")
             }
+            return@Card
         }
+
+        WorkoutTable(
+            program = program,
+            workout = program.nextDay(),
+            headers = Pair("Exercise", "Sets"),
+            exstractor = { exercise -> exercise.sets.size.toString() },
+            ratio = Ratio.Strict(0.9f),
+            navController = navController,
+            overlayingContent = {
+                ElevatedButton(
+                    onClick = { trainViewModel.startWorkout(program.nextDay(), program) },
+                    colors = ButtonDefaults.elevatedButtonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                ) {
+                    Text(text = "Start ${program.nextDay().name}")
+                }
+            })
     }
 
     Row {

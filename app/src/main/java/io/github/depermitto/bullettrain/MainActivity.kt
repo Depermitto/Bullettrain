@@ -93,6 +93,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             GymAppTheme(dynamicColor = false) {
+                // This is for color flashing during navigating
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     App(Database(application.filesDir, applicationContext))
                 }
@@ -118,6 +119,7 @@ fun App(db: Database) = MaterialTheme {
     val scope = rememberCoroutineScope()
 
     val homeViewModel = viewModel<HomeViewModel>(factory = HomeViewModel.Factory())
+    val homeScreenPager = rememberPagerState(initialPage = Tab.Train.ordinal) { Tab.entries.size }
     val trainViewModel = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController))
     var programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program()))
 
@@ -138,15 +140,14 @@ fun App(db: Database) = MaterialTheme {
         popEnterTransition = { scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS) },
         popExitTransition = { scaleOutOfContainer() }) {
         composable<Destination.Home> {
-            val pager = rememberPagerState(initialPage = Tab.Train.ordinal) { Tab.entries.size }
             Scaffold(topBar = { TopBarWithSettingsButton(navController = navController, title = "Home") }, bottomBar = {
                 NavigationBar(tonalElevation = 8.dp) {
                     Tab.entries.forEachIndexed { tabIndex, tab ->
-                        val isSelected = pager.currentPage == tabIndex
+                        val isSelected = homeScreenPager.currentPage == tabIndex
                         NavigationBarItem(selected = isSelected, onClick = {
                             if (!isSelected) {
                                 scope.launch {
-                                    pager.animateScrollToPage(tabIndex)
+                                    homeScreenPager.animateScrollToPage(tabIndex)
                                 }
                             }
                         }, icon = {
@@ -168,7 +169,7 @@ fun App(db: Database) = MaterialTheme {
                     programDao = db.programDao,
                     historyDao = db.historyDao,
                     settingsDao = db.settingsDao,
-                    pagerState = pager,
+                    pagerState = homeScreenPager,
                     navController = navController
                 )
             }
@@ -379,9 +380,11 @@ fun App(db: Database) = MaterialTheme {
                 // This is a essentially copy from ExercisesListScreen.kt
                 if (showRenameDialog) {
                     var errorMessage by rememberSaveable { mutableStateOf("") }
-                    TextFieldAlertDialog(onDismissRequest = { showRenameDialog = false },
+                    TextFieldAlertDialog(
+                        onDismissRequest = { showRenameDialog = false },
                         startingText = exercise.name,
-                        dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Discard") } },
+                        label = { Text("Exercise Name") },
+                        dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
                         confirmButton = { name ->
                             TextButton(onClick = {
                                 errorMessage = db.exerciseDao.validateName(name) ?: "".also {
