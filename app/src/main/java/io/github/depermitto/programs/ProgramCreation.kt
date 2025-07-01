@@ -11,7 +11,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import io.github.depermitto.Screen
 import io.github.depermitto.components.AnchoredFloatingActionButton
-import io.github.depermitto.data.entities.ExerciseDao
+import io.github.depermitto.database.ExerciseDao
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.notUnderlinedTextFieldColors
 
@@ -43,7 +43,7 @@ fun ProgramCreation(
                     return@AnchoredFloatingActionButton
                 }
 
-                programViewModel.upsert()
+                programViewModel.upload()
                 Toast.makeText(context, "Successfully Created", Toast.LENGTH_SHORT).show()
                 navController.popBackStack(Screen.MainScreen.route, false)
             })

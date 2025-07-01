@@ -3,15 +3,12 @@ package io.github.depermitto
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,19 +20,16 @@ import io.github.depermitto.Screen.TrainingScreen
 import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.components.Ribbon
 import io.github.depermitto.components.RibbonScaffold
-import io.github.depermitto.data.entities.Program
 import io.github.depermitto.database.Database
-import io.github.depermitto.database.Exercise
+import io.github.depermitto.database.Program
 import io.github.depermitto.programs.Program
 import io.github.depermitto.programs.ProgramCreation
 import io.github.depermitto.programs.ProgramViewModel
-import io.github.depermitto.settings.PersistentData
 import io.github.depermitto.settings.SettingsScreen
-import io.github.depermitto.settings.SettingsViewModel
+import io.github.depermitto.theme.GymAppTheme
 import io.github.depermitto.train.TrainViewModel
 import io.github.depermitto.train.TrainingScreen
 import io.github.vinceglb.filekit.core.FileKit
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
@@ -43,65 +37,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FileKit.init(this)
 
-//        setContent {
-//            GymAppTheme {
-//                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-//                    val dbFile = application.getDatabasePath(DB_FILENAME)
-//
-//                    val settingsFile = File(application.filesDir, SETTINGS_FILENAME)
-//                    if (!settingsFile.exists()) {
-//                        application.openFileOutput(SETTINGS_FILENAME, MODE_PRIVATE).use {
-//                            it.write(Json.encodeToString(Settings()).encodeToByteArray())
-//                        }
-//                    }
-//
-//                    val persistentData = PersistentData(
-//                        dbFile = dbFile,
-//                        fallbackBytes = resources.openRawResource(R.raw.firetent).readBytes(),
-//                        db = Room.databaseBuilder<GymDatabase>(context = applicationContext, name = dbFile.absolutePath)
-//                            .openHelperFactory(FrameworkSQLiteOpenHelperFactory()).fallbackToDestructiveMigration(true)
-//                            .setJournalMode(JournalMode.TRUNCATE).build(),
-//                        settingsFile = application.getFileStreamPath(SETTINGS_FILENAME),
-//                    )
-//
-//                    App(persistentData)
-//                }
-//            }
-//        }
-
         setContent {
-            val scope = rememberCoroutineScope()
-            val db = Database(application.filesDir)
-
-            val exercises by db.exerciseDao.getAll.collectAsStateWithLifecycle()
-
-            LazyColumn {
-                items(exercises) { exercise ->
-                    Text((exercise.id to exercise.name).toString())
-                }
-
-                item {
-                    Button(onClick = { println(db.exerciseDao.insert(Exercise(name = "Bench"))) }) { Text("Upsert") }
-                }
-
-                item {
-                    Button(onClick = { db.exerciseDao.delete(exercises.lastOrNull() ?: return@Button) }) { Text("Pop") }
-                }
-
-                item {
-                    Button(onClick = {
-                        db.exerciseDao.update(
-                            exercises.component3().copy(name = exercises.component3().name + " 1 ")
-                        ).let(::println)
-                    }) { Text("Edit") }
-                }
-
-                item {
-                    Button(onClick = { scope.launch { db.exportDatabase() } }) { Text("Export") }
-                }
-
-                item {
-                    Button(onClick = { scope.launch { db.importDatabase() } }) { Text("Import") }
+            GymAppTheme {
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                    App(Database(application.filesDir))
                 }
             }
         }
@@ -110,30 +49,25 @@ class MainActivity : ComponentActivity() {
 
 // TODO P3 make tests and benchmarks, mostly for backend probably
 @Composable
-fun App(persistentData: PersistentData) = MaterialTheme {
-    val programDao = persistentData.db.getProgramDao()
-    val historyDao = persistentData.db.getHistoryDao()
-    val exerciseDao = persistentData.db.getExerciseDao()
-
+fun App(db: Database) = MaterialTheme {
     val navController = rememberNavController()
 
-    val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program(), programDao))
-    val settingsViewModel = viewModel<SettingsViewModel>(factory = SettingsViewModel.Factory(persistentData))
+    val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program(), db.programDao))
     val trainViewModel =
-        viewModel<TrainViewModel>(factory = TrainViewModel.Factory(historyDao, programDao, navController))
+        viewModel<TrainViewModel>(factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController))
 
     NavHost(
         navController = navController,
         startDestination = if (runBlocking { trainViewModel.restoreWorkout() }) TrainingScreen.route else MainScreen.route
     ) {
         composable(MainScreen.route) { navBackStackEntry ->
-            val activeTab = Tabs.valueOf(navBackStackEntry.arguments?.getString("tab") ?: Tabs.Train.name)
+            val activeTab = Tabs.valueOf(navBackStackEntry.arguments?.getString("tab") ?: Tabs.Programs.name)
 
             MainScreen(
                 trainViewModel = trainViewModel,
-                settingsViewModel = settingsViewModel,
-                programDao = programDao,
-                historyDao = historyDao,
+                settingsDao = db.settingsDao,
+                programDao = db.programDao,
+                historyDao = db.historyDao,
                 navController = navController,
                 activeTab = activeTab
             )
@@ -142,32 +76,32 @@ fun App(persistentData: PersistentData) = MaterialTheme {
         composable(TrainingScreen.route) {
             TrainingScreen(
                 trainViewModel = trainViewModel,
-                settingsViewModel = settingsViewModel,
-                exerciseDao = exerciseDao,
+                settingsDao = db.settingsDao,
+                exerciseDao = db.exerciseDao,
             )
         }
 
         composable(ProgramCreationScreen.route) {
             RibbonScaffold(ribbon = { Ribbon(navController = navController, title = "New Program") }) {
                 ProgramCreation(
-                    programViewModel = programViewModel, exerciseDao = exerciseDao, navController = navController
+                    programViewModel = programViewModel, exerciseDao = db.exerciseDao, navController = navController
                 )
             }
         }
 
         composable(ProgramScreen.route) { navBackStackEntry ->
-            val program by programDao.whereIdFlow(
-                (navBackStackEntry.arguments?.getString("programId") ?: return@composable).toLong()
-            ).collectAsStateWithLifecycle(initialValue = null)
+            val programId = (navBackStackEntry.arguments?.getString("programId") ?: return@composable).toInt()
 
-            program?.let {
-                val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(it, programDao))
+            val program = runBlocking { db.programDao.whereId(programId) }
+            if (program != null) {
+                val programViewModel =
+                    viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(program, db.programDao))
 
                 RibbonScaffold(ribbon = { Ribbon(navController, title = programViewModel.programName) }) {
-                    Program(programViewModel, exerciseDao = exerciseDao)
-                    if (programViewModel.days.toList() != it.days.toList()) {
+                    Program(programViewModel, exerciseDao = db.exerciseDao)
+                    if (programViewModel.days.toList() != program.days.toList()) {
                         AnchoredFloatingActionButton(text = { Text("Finish Edit") }, onClick = {
-                            programViewModel.upsert()
+                            programViewModel.upload()
                             navController.popBackStack(MainScreen.route, inclusive = false)
                         })
                     }
@@ -177,7 +111,7 @@ fun App(persistentData: PersistentData) = MaterialTheme {
 
         composable(SettingsScreen.route) {
             RibbonScaffold(ribbon = { Ribbon(navController, settingsGear = false, title = "Settings") }) {
-                SettingsScreen(settingsViewModel = settingsViewModel)
+                SettingsScreen(db = db)
             }
         }
     }

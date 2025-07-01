@@ -6,13 +6,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.components.WorkoutInfo
-import io.github.depermitto.data.entities.ProgramDao
+import io.github.depermitto.database.ProgramDao
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
-import kotlinx.coroutines.runBlocking
 
 // TODO THIS BRANCH empty workout starter
 @Composable
@@ -20,13 +19,12 @@ fun TrainTab(
     modifier: Modifier = Modifier,
     trainViewModel: TrainViewModel,
     programDao: ProgramDao,
-    navController: NavController,
 ): Unit = Column(
     modifier = modifier.padding(horizontal = ItemPadding),
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Center,
 ) {
-    val programs = runBlocking { programDao.getAll() }
+    val programs by programDao.getAll.collectAsStateWithLifecycle()
     var selectedProgramIndex by remember { mutableIntStateOf(0) }
 
     OutlinedCard(
@@ -44,8 +42,7 @@ fun TrainTab(
                 Text(
                     modifier = Modifier
                         .padding(ItemPadding)
-                        .align(Alignment.Center),
-                    text = "No Program Found"
+                        .align(Alignment.Center), text = "No Program Found"
                 )
             }
 

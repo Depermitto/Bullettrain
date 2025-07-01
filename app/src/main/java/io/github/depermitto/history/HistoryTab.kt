@@ -21,25 +21,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.components.WorkoutInfo
 import io.github.depermitto.components.encodeToStringOutput
-import io.github.depermitto.data.entities.HistoryDao
-import io.github.depermitto.settings.SettingsViewModel
+import io.github.depermitto.database.HistoryDao
+import io.github.depermitto.database.SettingsDao
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
-import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun HistoryTab(
-    modifier: Modifier = Modifier, settingsViewModel: SettingsViewModel, historyDao: HistoryDao
+    modifier: Modifier = Modifier, settingsDao: SettingsDao, historyDao: HistoryDao
 ) = Box(modifier = modifier.fillMaxSize()) {
     var date by rememberSaveable { mutableStateOf(LocalDate.now()) }
-    val historyRecords = runBlocking { historyDao.getAll() }
+    val historyRecords by historyDao.getAll.collectAsStateWithLifecycle()
     var selectedRecord by remember { mutableStateOf(historyRecords.lastOrNull()) }
 
     fun findWorkout(calendarDay: LocalDate) = historyRecords.find { record ->
@@ -94,7 +94,7 @@ fun HistoryTab(
                             Text(modifier = Modifier.horizontalScroll(scroll),
                                 text = exercise.sets.groupBy { it.weight }.map { (weight, sets) ->
                                     "${sets.size} x ${weight.encodeToStringOutput().ifBlank { 0 }}"
-                                }.joinToString(", ") + " " + settingsViewModel.weightUnit(),
+                                }.joinToString(", ") + " " + settingsDao.weightUnit(),
                                 maxLines = 1
                             )
                         })

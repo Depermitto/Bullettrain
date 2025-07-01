@@ -20,12 +20,12 @@ import io.github.depermitto.components.Placeholder
 import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.components.SwipeToDeleteBox
 import io.github.depermitto.components.encodeToStringOutput
-import io.github.depermitto.data.entities.ExerciseDao
-import io.github.depermitto.data.entities.ExerciseSet
-import io.github.depermitto.data.entities.PerfVar
+import io.github.depermitto.database.ExerciseDao
+import io.github.depermitto.database.ExerciseSet
+import io.github.depermitto.database.PerfVar
+import io.github.depermitto.database.SettingsDao
 import io.github.depermitto.exercises.AddExerciseButton
 import io.github.depermitto.exercises.exerciseChooser
-import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.*
 import io.github.depermitto.util.SwapIcon
 import java.time.Instant
@@ -33,7 +33,7 @@ import java.time.Instant
 @Composable
 fun TrainingScreen(
     trainViewModel: TrainViewModel,
-    settingsViewModel: SettingsViewModel,
+    settingsDao: SettingsDao,
     exerciseDao: ExerciseDao,
 ) = RibbonScaffold(ribbon = {
     if (trainViewModel.isWorkoutRunning()) {
@@ -76,10 +76,10 @@ fun TrainingScreen(
         // TODO add colors for supersets here
         itemsIndexed(trainViewModel.getExercises()) { i, _ ->
             TrainExercise(
-                settingsViewModel = settingsViewModel,
                 trainViewModel = trainViewModel,
                 exerciseIndex = i,
-                exerciseDao = exerciseDao
+                settingsDao = settingsDao,
+                exerciseDao = exerciseDao,
             )
         }
 
@@ -91,19 +91,19 @@ fun TrainingScreen(
 @Composable
 private fun TrainExercise(
     modifier: Modifier = Modifier,
-    settingsViewModel: SettingsViewModel,
     trainViewModel: TrainViewModel,
     exerciseIndex: Int,
+    settingsDao: SettingsDao,
     exerciseDao: ExerciseDao,
 ) = Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
     val exercise = trainViewModel.getExercise(exerciseIndex)
     var showDropdownButton by remember { mutableStateOf(false) }
-    val swapExerciseChooser = exerciseChooser(exerciseDao = exerciseDao, onChoose = {
-        trainViewModel.setExercise(exerciseIndex, exercise.copy(name = it.name, exerciseId = it.exerciseId))
+    val swapExerciseChooser = exerciseChooser(exerciseDao = exerciseDao, onChoose = { exercise ->
+        trainViewModel.setExercise(exerciseIndex, exercise.copy(name = exercise.name, id = exercise.id))
     })
 
     Column(modifier = Modifier.padding(ItemPadding)) {
-        val lastPerformedSet = exercise.lastPerformedSet()
+        val lastPerformedSet = exercise.lastPerformedSet
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 modifier = Modifier.weight(1f),
@@ -137,8 +137,8 @@ private fun TrainExercise(
                 Header(Modifier.weight(ExerciseSetNarrowWeight), exercise.intensityCategory.name)
             }
             Header(Modifier.weight(ExerciseSetNarrowWeight + 0.1f), "Target")
-            Header(Modifier.weight(ExerciseSetWideWeight), exercise.perfVarCategory.trainName())
-            Header(Modifier.weight(ExerciseSetWideWeight), settingsViewModel.weightUnit())
+            Header(Modifier.weight(ExerciseSetWideWeight), exercise.perfVarCategory.trainName)
+            Header(Modifier.weight(ExerciseSetWideWeight), settingsDao.weightUnit())
             if (trainViewModel.isWorkoutRunning()) {
                 Header(Modifier.weight(ExerciseSetNarrowWeight), "")
             }
@@ -168,7 +168,7 @@ private fun TrainExercise(
                     )
                     Text(
                         modifier = Modifier.weight(ExerciseSetNarrowWeight + 0.1f),
-                        text = set.targetPerfVar.toText().takeUnless(String::isEmpty) ?: "--",
+                        text = set.targetPerfVar.encodeToStringOutput().takeUnless(String::isEmpty) ?: "--",
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium
                     )

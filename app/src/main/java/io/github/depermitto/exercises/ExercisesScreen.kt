@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.components.AnchoredFloatingActionButton
-import io.github.depermitto.data.entities.Exercise
-import io.github.depermitto.data.entities.ExerciseDao
+import io.github.depermitto.database.Exercise
+import io.github.depermitto.database.ExerciseDao
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) {
     val scope = rememberCoroutineScope { Dispatchers.IO }
-    val exercises by exerciseDao.getAllFlow().collectAsStateWithLifecycle(emptyList())
+    val exercises by exerciseDao.getAll.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize()) {
         var searchText by remember { mutableStateOf("") }

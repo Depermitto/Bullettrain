@@ -7,7 +7,13 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import io.github.depermitto.Screen
-import io.github.depermitto.data.entities.*
+import io.github.depermitto.database.Day
+import io.github.depermitto.database.Exercise
+import io.github.depermitto.database.ExerciseSet
+import io.github.depermitto.database.HistoryDao
+import io.github.depermitto.database.HistoryRecord
+import io.github.depermitto.database.Program
+import io.github.depermitto.database.ProgramDao
 import io.github.depermitto.util.set
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -86,7 +92,7 @@ class TrainViewModel(
             workoutPhase = WorkoutPhase.Completed,
             workout = state.historyRecord.workout.copy(exercises = exercises.toList())
         )
-        val program = programDao.whereId(record.relatedProgram.programId) ?: return@endWorkout
+        val program = programDao.whereId(record.relatedProgram.id) ?: return@endWorkout
         val nextDay = (program.nextDay + 1) % program.days.size
 
         historyDao.upsert(record)
@@ -109,7 +115,7 @@ class TrainViewModel(
 
         workoutState = null
         exercises.clear()
-        
+
         if (!navController.popBackStack(Screen.MainScreen.route, false)) {
             navController.navigate(route = Screen.MainScreen.passTab(tab = Screen.MainScreen.Tabs.Train)) {
                 popUpTo(Screen.TrainingScreen.route) { inclusive = true }
@@ -126,8 +132,8 @@ class TrainViewModel(
 
     private fun createState(historyRecord: HistoryRecord) {
         if (workoutState == null) {
-            val newId = runBlocking { historyDao.upsert(historyRecord) }
-            val record = if (newId == -1L) historyRecord else historyRecord.copy(historyEntryId = newId)
+            val newId = historyDao.upsert(historyRecord)
+            val record = if (newId == -1) historyRecord else historyRecord.copy(id = newId)
 
             clock = Instant.now()
             exercises = historyRecord.workout.exercises.toMutableStateList()

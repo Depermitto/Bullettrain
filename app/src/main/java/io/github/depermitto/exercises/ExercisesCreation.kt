@@ -7,7 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.depermitto.data.entities.Exercise
+import io.github.depermitto.database.Exercise
 import io.github.depermitto.theme.ItemPadding
 
 @Composable

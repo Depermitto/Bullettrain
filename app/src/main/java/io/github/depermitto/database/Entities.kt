@@ -1,10 +1,6 @@
 package io.github.depermitto.database
 
-import androidx.room.*
 import io.github.depermitto.components.encodeToStringOutput
-import io.github.depermitto.data.InstantSerializer
-import io.github.depermitto.settings.UnitSystem
-import io.github.depermitto.settings.UnitSystem.Metric
 import io.github.depermitto.train.WorkoutPhase
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -15,12 +11,14 @@ interface Entity {
     fun clone(id: Int): Entity
 }
 
+enum class UnitSystem { Metric, Imperial }
+
 @Serializable
-data class Settings(val unitSystem: UnitSystem = Metric)
+data class Settings(val unitSystem: UnitSystem = UnitSystem.Metric)
 
 @Serializable
 data class HistoryRecord(
-    @SerialName("historyRecordId") @ColumnInfo(name = "historyRecordId") @PrimaryKey(autoGenerate = true) override val id: Int = 0,
+    @SerialName("historyRecordId") override val id: Int = 0,
     val relatedProgram: Program,
     val workout: Day,
     val workoutPhase: WorkoutPhase,
@@ -32,7 +30,7 @@ data class HistoryRecord(
 
 @Serializable
 data class Program(
-    @SerialName("programId") @ColumnInfo(name = "programId") @PrimaryKey(autoGenerate = true) override val id: Int = 0,
+    @SerialName("programId") override val id: Int = 0,
     val name: String = "",
     val days: List<Day> = listOf(Day()),
     val followed: Boolean = false,
@@ -52,7 +50,7 @@ data class Day(
 // TODO TimeRange, Intensity variations?
 @Serializable
 data class Exercise(
-    @SerialName("exerciseId") @ColumnInfo(name = "exerciseId") @PrimaryKey(autoGenerate = true) override val id: Int = 0,
+    @SerialName("exerciseId") override val id: Int = 0,
     val name: String,
     val perfVarCategory: PerfVarCategory = PerfVarCategory.Reps,
     val intensityCategory: IntensityCategory? = null,

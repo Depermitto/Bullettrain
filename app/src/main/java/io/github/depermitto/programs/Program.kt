@@ -23,23 +23,10 @@ import io.github.depermitto.components.ExpandableOutlinedCard
 import io.github.depermitto.components.Header
 import io.github.depermitto.components.NumberField
 import io.github.depermitto.components.SwipeToDeleteBox
-import io.github.depermitto.data.entities.Exercise
-import io.github.depermitto.data.entities.ExerciseDao
-import io.github.depermitto.data.entities.ExerciseSet
-import io.github.depermitto.data.entities.IntensityCategory
-import io.github.depermitto.data.entities.PerfVar
-import io.github.depermitto.data.entities.PerfVarCategory
+import io.github.depermitto.database.*
 import io.github.depermitto.exercises.AddExerciseButton
-import io.github.depermitto.util.DuplicateIcon
-import io.github.depermitto.util.IntensityIcon
-import io.github.depermitto.util.set
-import io.github.depermitto.theme.ExerciseSetNarrowWeight
-import io.github.depermitto.theme.ExerciseSetSpacing
-import io.github.depermitto.theme.ExerciseSetWideWeight
-import io.github.depermitto.theme.ItemPadding
-import io.github.depermitto.theme.ItemSpacing
-import io.github.depermitto.theme.filledContainerColor
-import io.github.depermitto.theme.transparentTextFieldColors
+import io.github.depermitto.theme.*
+import io.github.depermitto.util.*
 
 @Composable
 fun Program(

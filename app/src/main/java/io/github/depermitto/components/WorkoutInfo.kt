@@ -15,9 +15,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.depermitto.data.entities.Day
-import io.github.depermitto.data.entities.Exercise
-import io.github.depermitto.data.entities.Program
+import io.github.depermitto.database.Day
+import io.github.depermitto.database.Exercise
+import io.github.depermitto.database.Program
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.filledContainerColor
 
