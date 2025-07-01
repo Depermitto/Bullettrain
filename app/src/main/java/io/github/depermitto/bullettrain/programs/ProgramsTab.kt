@@ -133,7 +133,7 @@ fun ProgramsTab(
     }
 
     AnchoredFloatingActionButton(
-      icon = { Icon(Icons.Filled.Add, contentDescription = "Create Program") },
+      icon = { Icon(Icons.Filled.Add, contentDescription = "Create program") },
       text = { Text("Create") },
       onClick = {
         programViewModel.revertToDefault()

@@ -27,7 +27,7 @@ class ProgramDao(programs: List<Program>) {
 
   /** @return Boolean indicating if the operation was successful. */
   fun update(program: Program): Boolean {
-    // Normal iteration because the list is small
+    // Naive iteration because the list is small
     val index = items.value.indexOfFirst { it.id == program.id }
     if (index == -1) return false
 

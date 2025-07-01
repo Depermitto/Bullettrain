@@ -243,7 +243,7 @@ fun HistoryTab(
         Icon(
           modifier = Modifier.size(ButtonDefaults.IconSize),
           imageVector = Icons.Filled.Refresh,
-          contentDescription = "Reset Date",
+          contentDescription = "Reset date",
         )
         Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
         Text("Reset Date")

@@ -39,7 +39,7 @@ fun ExercisesListScreen(
   filter: ((Exercise.Descriptor) -> Boolean)?,
   onSelection: (Exercise.Descriptor) -> Unit,
 ) {
-  Box(modifier = modifier.fillMaxSize()) {
+  Box(modifier = modifier) {
     val exerciseFrequencyMap by
       historyDao.getSortedByFrequency.collectAsStateWithLifecycle(emptyMap())
 
@@ -71,7 +71,7 @@ fun ExercisesListScreen(
         maxLines = 1,
         singleLine = true,
         placeholder = { Text("Search Exercises") },
-        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Exercises") },
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search exercises") },
       )
 
       LazyColumn(
@@ -95,7 +95,7 @@ fun ExercisesListScreen(
     var showDialog by rememberSaveable { mutableStateOf(false) }
     AnchoredFloatingActionButton(
       onClick = { showDialog = true },
-      icon = { Icon(Icons.Default.Add, contentDescription = "Add Exercise") },
+      icon = { Icon(Icons.Default.Add, contentDescription = "Add exercise") },
       text = { Text("Add") },
     )
 

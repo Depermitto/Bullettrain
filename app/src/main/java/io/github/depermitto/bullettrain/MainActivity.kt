@@ -317,7 +317,7 @@ fun App(db: Db) = MaterialTheme {
                 Icon(
                   modifier = Modifier.size(ButtonDefaults.IconSize),
                   imageVector = Icons.Filled.Check,
-                  contentDescription = "Finish Program Creation",
+                  contentDescription = "Finish program creation",
                 )
                 Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
                 Text("Complete")
@@ -394,7 +394,7 @@ fun App(db: Db) = MaterialTheme {
                   Icon(
                     modifier = Modifier.size(ButtonDefaults.IconSize),
                     imageVector = Icons.Filled.Check,
-                    contentDescription = "Complete Program Edit",
+                    contentDescription = "Complete program edit",
                   )
                   Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
                   Text("Finish Edit")
@@ -548,7 +548,7 @@ fun App(db: Db) = MaterialTheme {
               ) {
                 Icon(
                   imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                  contentDescription = "Back Button",
+                  contentDescription = "Back button",
                 )
               }
             },
@@ -602,7 +602,7 @@ fun App(db: Db) = MaterialTheme {
                   Icon(
                     modifier = Modifier.size(ButtonDefaults.IconSize),
                     imageVector = Icons.Filled.Check,
-                    contentDescription = "Finish Workout Edit",
+                    contentDescription = "Finish workout edit",
                   )
                   Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
                   Text("Finish Edit")

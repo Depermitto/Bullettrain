@@ -58,7 +58,7 @@ fun TopBarWithBackButton(
       IconButton(
         onClick = { onBackPressedDispatcher?.onBackPressed() ?: navController.navigateUp() }
       ) {
-        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back Button")
+        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back button")
       }
     },
     actions = { endContent?.invoke() },
