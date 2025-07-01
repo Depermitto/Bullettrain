@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destinations
 
@@ -50,9 +52,13 @@ fun BoxScope.Ribbon(
         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back Button")
     }
     if (title != null) Text(
-        modifier = Modifier.align(Alignment.Center),
+        modifier = Modifier
+            .align(Alignment.Center)
+            .widthIn(max = 300.dp),
         text = title,
-        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
     )
     if (settingsGear) IconButton(modifier = Modifier.align(Alignment.TopEnd),
         onClick = { navController.navigate(Destinations.Settings) }) {

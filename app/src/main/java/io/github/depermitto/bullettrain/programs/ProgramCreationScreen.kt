@@ -10,6 +10,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
+import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.notUnderlinedTextFieldColors
@@ -41,15 +42,19 @@ fun ProgramCreationScreen(
             modifier = Modifier.padding(top = ItemPadding), programViewModel = programViewModel, navController = navController
         )
         AnchoredFloatingActionButton(text = { Text(text = "Complete Program") }, onClick = {
-            if (programViewModel.programName.isBlank()) {
+            val program = programViewModel.constructProgram()
+            if (program.name.isBlank()) {
                 scope.launch { snackbarHostState.showSnackbar("Blank Program Name") }
                 return@AnchoredFloatingActionButton
             }
 
-            programDao.insert(programViewModel.constructProgram())
+            navController.navigateUp()
+            programDao.insert(program)
             programViewModel.clear()
-            scope.launch { snackbarHostState.showSnackbar("Successfully Created") }
-            navController.popBackStack()
+
+            BackgroundSlave.enqueue {
+                snackbarHostState.showSnackbar("Successfully Created ${program.name}", withDismissAction = true)
+            }
         })
     }
 }

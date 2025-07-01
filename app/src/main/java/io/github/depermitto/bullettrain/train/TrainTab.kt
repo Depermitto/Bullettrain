@@ -80,7 +80,13 @@ fun TrainTab(
     }
 
     Row {
-        programs.forEachIndexed { i, _ ->
+        val (lo, hi) = when {
+            programs.size < 5 -> 0 to programs.size
+            selectedProgramIndex < 2 -> 0 to 5
+            selectedProgramIndex >= programs.size - 2 -> programs.size - 5 to programs.size
+            else -> selectedProgramIndex - 2 to selectedProgramIndex + 3
+        } 
+        for (i in lo until hi) {
             RadioButton(
                 selected = selectedProgramIndex == i,
                 onClick = { selectedProgramIndex = i },
@@ -88,7 +94,8 @@ fun TrainTab(
         }
     }
 
-    OutlinedButton(modifier = Modifier.fillMaxWidth(),
+    OutlinedButton(
+        modifier = Modifier.fillMaxWidth(),
         onClick = { trainViewModel.startWorkout(Day(), ProgramDao.EmptyWorkout) }) {
         Text(text = "Start Empty Workout")
     }

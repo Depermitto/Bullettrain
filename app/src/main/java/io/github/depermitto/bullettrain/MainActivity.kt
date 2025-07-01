@@ -110,18 +110,10 @@ fun App(db: Database) = MaterialTheme {
             } else {
                 Destinations.Home(Destinations.Home.Tabs.Train)
             },
-            enterTransition = {
-                scaleIntoContainer()
-            },
-            exitTransition = {
-                scaleOutOfContainer(direction = ScaleTransitionDirection.INWARDS)
-            },
-            popEnterTransition = {
-                scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS)
-            },
-            popExitTransition = {
-                scaleOutOfContainer()
-            }) {
+            enterTransition = { scaleIntoContainer() },
+            exitTransition = { scaleOutOfContainer(direction = ScaleTransitionDirection.INWARDS) },
+            popEnterTransition = { scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS) },
+            popExitTransition = { scaleOutOfContainer() }) {
             composable<Destinations.Home> { navBackStackEntry ->
                 val homeViewModel = viewModel<HomeViewModel>(
                     factory = HomeViewModel.Factory(tab = navBackStackEntry.toRoute<Destinations.Home>().tab)
@@ -207,7 +199,7 @@ fun App(db: Database) = MaterialTheme {
             composable<Destinations.ProgramCreation> {
                 RibbonScaffold(ribbon = {
                     Ribbon(
-                        title = programViewModel.programName.ifBlank { "New Program" },
+                        title = if (programViewModel.programName.isBlank()) "New Program" else "New Program: ${programViewModel.programName}",
                         settingsGear = false,
                         navController = navController
                     )

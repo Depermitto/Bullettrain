@@ -1,6 +1,7 @@
 package io.github.depermitto.bullettrain.programs
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -43,7 +44,8 @@ fun ProgramsTab(
     val programs by programDao.getAlmostAll.collectAsStateWithLifecycle(initialValue = emptyList())
 
     LazyColumn(
-        modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(CardSpacing)
+        contentPadding = PaddingValues(start = ItemPadding, end = ItemPadding, bottom = ItemPadding),
+        verticalArrangement = Arrangement.spacedBy(CardSpacing)
     ) {
         items(programs) { program ->
             var showRenameDialog by rememberSaveable { mutableStateOf(false) }
@@ -103,6 +105,7 @@ fun ProgramsTab(
             }
         }
     }
+
 
     AnchoredFloatingActionButton(
         icon = { Icon(Icons.Filled.Add, contentDescription = "Create Program") },

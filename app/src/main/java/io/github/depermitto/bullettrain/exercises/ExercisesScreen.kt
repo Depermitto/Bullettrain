@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -21,9 +22,13 @@ import io.github.depermitto.bullettrain.theme.filledContainerColor
 import io.github.depermitto.bullettrain.theme.notUnderlinedTextFieldColors
 
 @Composable
-fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) = Box(modifier = Modifier.fillMaxSize()) {
+fun ExercisesScreen(
+    modifier: Modifier = Modifier,
+    exerciseDao: ExerciseDao,
+    onSelection: (Exercise) -> Unit,
+) = Box(modifier = modifier.fillMaxSize()) {
     val exercises by exerciseDao.getSortedAlphabetically.collectAsStateWithLifecycle(initialValue = emptyList())
-    var searchText by remember { mutableStateOf("") }
+    var searchText by rememberSaveable { mutableStateOf("") }
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(ItemSpacing), contentPadding = PaddingValues(ItemPadding)
@@ -50,7 +55,7 @@ fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) =
         }
     }
 
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
     AnchoredFloatingActionButton(
         onClick = { showDialog = true },
         icon = { Icon(Icons.Default.Add, contentDescription = "Add Exercise") },
@@ -58,7 +63,7 @@ fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) =
     )
 
     if (showDialog) {
-        var isError by remember { mutableStateOf(false) }
+        var isError by rememberSaveable { mutableStateOf(false) }
         TextFieldAlertDialog(
             onDismissRequest = { showDialog = false },
             dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } },
