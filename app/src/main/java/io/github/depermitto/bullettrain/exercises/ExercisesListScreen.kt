@@ -26,7 +26,10 @@ import io.github.depermitto.bullettrain.protos.ExercisesProto.*
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.unlinedColors
+import io.github.depermitto.bullettrain.util.capwords
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 @Composable
 fun ExercisesListScreen(
@@ -38,12 +41,12 @@ fun ExercisesListScreen(
 ) {
   Box(modifier = modifier.fillMaxSize()) {
     val exerciseFrequencyMap by
-      historyDao.getSortedByFrequency.collectAsStateWithLifecycle(initialValue = emptyMap())
+      historyDao.getSortedByFrequency.collectAsStateWithLifecycle(emptyMap())
 
     var searchText by rememberSaveable { mutableStateOf("") }
     val exercises by
       exerciseDao
-        .where(name = searchText, errorTolerance = 3, ignoreCase = true)
+        .getByName(name = searchText, errorTolerance = 3, ignoreCase = true)
         .map { exercises ->
           if (filter != null) {
               exercises.filter(filter)
@@ -52,7 +55,7 @@ fun ExercisesListScreen(
             }
             .sortedByDescending { exerciseFrequencyMap[it.id] }
         }
-        .collectAsStateWithLifecycle(initialValue = emptyList())
+        .collectAsStateWithLifecycle(emptyList())
 
     Column(modifier = Modifier.align(Alignment.TopCenter)) {
       TextField(
@@ -75,12 +78,12 @@ fun ExercisesListScreen(
         contentPadding = PaddingValues(bottom = Dp.EmptyScrollSpace),
         verticalArrangement = Arrangement.spacedBy(2.dp),
       ) {
-        items(exercises) { exerciseDescriptor ->
-          val count = exerciseFrequencyMap[exerciseDescriptor.id]
+        items(exercises) { descriptor ->
+          val count = exerciseFrequencyMap[descriptor.id]
           ExtendedListItem(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { onSelection(exerciseDescriptor) },
-            headlineContent = { Text(exerciseDescriptor.name) },
+            onClick = { onSelection(descriptor) },
+            headlineContent = { Text(descriptor.name) },
             supportingContent = {
               if (count != null) Text("$count ${if (count == 1) "record" else "records"}")
             },
@@ -97,6 +100,7 @@ fun ExercisesListScreen(
     )
 
     if (showDialog) {
+      val scope = rememberCoroutineScope()
       var errorMessage by rememberSaveable { mutableStateOf("") }
       TextFieldAlertDialog(
         onDismissRequest = { showDialog = false },
@@ -105,17 +109,20 @@ fun ExercisesListScreen(
         confirmButton = { name ->
           TextButton(
             onClick = {
-              errorMessage =
-                exerciseDao
-                  .validateName(name)
-                  .fold(
-                    onSuccess = {
-                      showDialog = false
-                      exerciseDao.insert(Exercise.Descriptor.newBuilder().setName(name).build())
-                      ""
-                    },
-                    onFailure = { throwable -> throwable.message ?: "Invalid exercise name" },
-                  )
+              scope.launch {
+                errorMessage =
+                  if (name.isBlank()) {
+                    "Empty exercise name"
+                  } else if (
+                    exerciseDao.getVisible.first().any { d -> d.name == name.capwords() }
+                  ) {
+                    "Duplicate exercise name"
+                  } else {
+                    showDialog = false
+                    exerciseDao.insert(Exercise.Descriptor.newBuilder().setName(name).build())
+                    ""
+                  }
+              }
             }
           ) {
             Text("Confirm")

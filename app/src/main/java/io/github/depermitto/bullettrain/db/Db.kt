@@ -50,7 +50,7 @@ class Db(dir: File, private val context: Context) {
   fun exportDatabase() {
     val db =
       DbProto.Db.newBuilder()
-        .addAllExerciseDescriptors(exerciseDao.items.value)
+        .addAllDescriptors(exerciseDao.items.value)
         .addAllPrograms(programDao.items.value)
         .addAllRecords(historyDao.items.value)
         .setSettings(settingsDao.item.value)
@@ -61,7 +61,7 @@ class Db(dir: File, private val context: Context) {
   private fun importDatabase(inputStream: InputStream): Result<Unit> {
     try {
       val db = GZIPInputStream(inputStream).use { DbProto.Db.parseFrom(it) }
-      exerciseDao.items.update { db.exerciseDescriptorsList }
+      exerciseDao.items.update { db.descriptorsList }
       programDao.items.update { db.programsList }
       historyDao.items.update { db.recordsList }
       settingsDao.item.update { db.settings }
@@ -107,7 +107,7 @@ class Db(dir: File, private val context: Context) {
       settingsDao = SettingsDao(db.settings)
       historyDao = HistoryDao(db.recordsList)
       programDao = ProgramDao(db.programsList)
-      exerciseDao = ExerciseDao(db.exerciseDescriptorsList)
+      exerciseDao = ExerciseDao(db.descriptorsList)
       this.factoryReset()
       Log.i("DB", "Database initialized.")
     } else {
@@ -115,7 +115,7 @@ class Db(dir: File, private val context: Context) {
       settingsDao = SettingsDao(db.settings)
       historyDao = HistoryDao(db.recordsList)
       programDao = ProgramDao(db.programsList)
-      exerciseDao = ExerciseDao(db.exerciseDescriptorsList)
+      exerciseDao = ExerciseDao(db.descriptorsList)
     }
   }
 }

@@ -98,7 +98,7 @@ import kotlinx.coroutines.launch
 fun ExerciseScreen(
   modifier: Modifier = Modifier,
   historyDao: HistoryDao,
-  exerciseDescriptor: Exercise.Descriptor,
+  descriptor: Exercise.Descriptor,
   settings: Settings,
 ) {
   val scope = rememberCoroutineScope()
@@ -156,11 +156,11 @@ fun ExerciseScreen(
           records
             .sortedBy { r -> r.workoutStartTs.seconds }
             .flatMap { r ->
-              r.workout.exercisesList.filter { e -> e.descriptorId == exerciseDescriptor.id }
+              r.workout.exercisesList.filter { e -> e.descriptorId == descriptor.id }
             }
             .filter { e -> e.setsList.any { s -> s.hasDoneTs() } }
         }
-        .collectAsStateWithLifecycle(initialValue = emptyList())
+        .collectAsStateWithLifecycle(emptyList())
 
     val scroll = rememberScrollState()
     var selectedPeriod by remember { mutableStateOf(Period.Yearly) }

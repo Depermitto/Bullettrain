@@ -24,6 +24,7 @@ import java.util.Timer
 import kotlin.concurrent.timer
 import kotlin.math.max
 import kotlin.properties.Delegates
+import kotlinx.coroutines.flow.first
 
 /**
  * [ViewModel] for creating and editing a [Workout]. When the class is initialized, some of its
@@ -71,14 +72,14 @@ class TrainViewModel(
 
   fun getExercises() = exercises.toList()
 
-  fun addExercise(exerciseDescriptor: Exercise.Descriptor) {
+  fun addExercise(descriptor: Exercise.Descriptor) {
     val targetExercise =
-      targetWorkout.exercisesList.firstOrNull { it.descriptorId == exerciseDescriptor.id }
+      targetWorkout.exercisesList.firstOrNull { it.descriptorId == descriptor.id }
     if (targetExercise != null) exercises.add(targetExercise)
     else
       exercises.add(
         Exercise.newBuilder()
-          .setDescriptorId(exerciseDescriptor.id)
+          .setDescriptorId(descriptor.id)
           .addSets(Exercise.Set.getDefaultInstance())
           .build()
       )

@@ -9,7 +9,7 @@ import "programs.proto";
 import "settings.proto";
 
 message Db {
-  repeated Exercise.Descriptor exerciseDescriptors = 1;
+  repeated Exercise.Descriptor descriptors = 1;
   repeated Program programs = 2;
   repeated HistoryRecord records = 3;
   Settings settings = 4;

@@ -74,7 +74,7 @@ fun HistoryTab(
           .filter { days.first() <= it.date && it.date <= days.last() }
           .sortedByDescending { it.workoutStartTs.seconds }
       }
-      .collectAsStateWithLifecycle(initialValue = emptyList())
+      .collectAsStateWithLifecycle(emptyList())
 
   LaunchedEffect(Unit) { if (homeViewModel.selectedDate == null) homeViewModel.resetDate() }
   Box(modifier = modifier.fillMaxSize()) {
@@ -120,7 +120,7 @@ fun HistoryTab(
         val workoutName: String
         val plannedExercises: List<Exercise>
         if (record.hasRelatedProgramId()) {
-          val relatedProgram = programDao.where(record.relatedProgramId)
+          val relatedProgram by programDao.whereAsState(record.relatedProgramId)
           workoutName = relatedProgram.name
           plannedExercises =
             relatedProgram.workoutsList.first { it.name == record.workout.name }.exercisesList
@@ -208,14 +208,14 @@ fun HistoryTab(
                 }
               }
 
-          val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
+          val descriptor by exerciseDao.whereAsState(exercise.descriptorId)
           ExtendedListItem(
-            headlineContent = { Text(exerciseDescriptor.name, maxLines = 2) },
+            headlineContent = { Text(descriptor.name, maxLines = 2) },
             trailingContent = {
               Text(bestSet ?: notPerformedLabel, overflow = TextOverflow.Ellipsis)
             },
             modifier = Modifier.clip(MaterialTheme.shapes.small),
-            onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },
+            onClick = { navController.navigate(Destination.Exercise(descriptor.id)) },
             contentPadding = PaddingValues(0.dp),
           )
         }

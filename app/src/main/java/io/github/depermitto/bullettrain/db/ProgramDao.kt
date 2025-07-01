@@ -1,5 +1,9 @@
 package io.github.depermitto.bullettrain.db
 
+import android.annotation.SuppressLint
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.protos.ProgramsProto.*
 import io.github.depermitto.bullettrain.util.smallListSet
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,6 +48,13 @@ class ProgramDao(programs: List<Program>) {
   fun upsert(program: Program): Int = if (update(program)) -1 else insert(program)
 
   fun delete(program: Program) = update(program.toBuilder().setObsolete(true).build())
+
+  @SuppressLint("StateFlowValueCalledInComposition")
+  @Composable
+  fun whereAsState(id: Int): State<Program> =
+    items
+      .map { descriptors -> descriptors.first { it.id == id } }
+      .collectAsStateWithLifecycle(items.value.first { it.id == id })
 
   fun where(id: Int): Program = items.value.first { it.id == id }
 }

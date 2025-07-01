@@ -80,8 +80,8 @@ fun DayScreen(
         exercises = programViewModel.getExercises(dayIndex),
         onSettle = { from, to -> programViewModel.reorderExercises(dayIndex, from, to) },
       ) { exerciseIndex, exercise ->
-        val exerciseDescriptor = exerciseDao.where(id = exercise.descriptorId)
-        Text("${exerciseIndex + 1}. ${exerciseDescriptor.name}", maxLines = 2)
+        val descriptor by exerciseDao.whereAsState(id = exercise.descriptorId)
+        Text("${exerciseIndex + 1}. ${descriptor.name}", maxLines = 2)
       }
 
     Column(
@@ -92,7 +92,7 @@ fun DayScreen(
       verticalArrangement = Arrangement.spacedBy(Dp.Medium),
     ) {
       programViewModel.getExercises(dayIndex).forEachIndexed { exerciseIndex, exercise ->
-        val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
+        val descriptor by exerciseDao.whereAsState(exercise.descriptorId)
         var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
 
         SwipeToDeleteBox(
@@ -108,7 +108,7 @@ fun DayScreen(
                 snackbarHostState.showSnackbar(
                   message =
                     (if (exercise.setsCount == 1) "A set" else "${exercise.setsCount} sets") +
-                      " of ${exerciseDescriptor.name} deleted",
+                      " of ${descriptor.name} deleted",
                   actionLabel = "Undo",
                   withDismissAction = true,
                 )
@@ -123,11 +123,11 @@ fun DayScreen(
             onExerciseChange = { programViewModel.setExercise(dayIndex, exerciseIndex, it) },
             headline = {
               ExtendedListItem(
-                onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },
+                onClick = { navController.navigate(Destination.Exercise(descriptor.id)) },
                 contentPadding = PaddingValues(12.dp, 12.dp, 8.dp, 12.dp),
                 headlineContent = {
                   Text(
-                    "${exerciseIndex + 1}. ${exerciseDescriptor.name}",
+                    "${exerciseIndex + 1}. ${descriptor.name}",
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 2,
                   )
@@ -310,7 +310,7 @@ fun DayScreen(
                 DuplicateIcon()
               }
             },
-            exerciseDescriptor = exerciseDescriptor,
+            descriptor = descriptor,
             settings = settings,
             scope = scope,
             snackbarHostState = snackbarHostState,

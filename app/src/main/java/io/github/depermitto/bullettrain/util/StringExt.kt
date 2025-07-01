@@ -6,5 +6,5 @@ fun String.splitOnUppercase(): String =
     .joinToString(" ") { it.lowercase() }
     .replaceFirstChar { it.uppercaseChar() }
 
-fun String.capitalizeWords() =
+fun String.capwords() =
   this.trim().split(' ').joinToString(" ") { it.replaceFirstChar { c -> c.uppercaseChar() } }

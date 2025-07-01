@@ -32,7 +32,7 @@ fun Exercise(
   headline: @Composable () -> Unit,
   headerContent: @Composable RowScope.() -> Unit,
   settings: Settings,
-  exerciseDescriptor: Exercise.Descriptor,
+  descriptor: Exercise.Descriptor,
   scope: CoroutineScope = rememberCoroutineScope(),
   snackbarHostState: SnackbarHostState,
   content: @Composable RowScope.(Int, Exercise.Set) -> Unit,
@@ -52,7 +52,7 @@ fun Exercise(
           scope.launch {
             val snackBarResult =
               snackbarHostState.showSnackbar(
-                message = "Set ${setIndex + 1} of ${exerciseDescriptor.name} removed",
+                message = "Set ${setIndex + 1} of ${descriptor.name} removed",
                 actionLabel = "Undo",
                 withDismissAction = true,
               )

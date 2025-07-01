@@ -52,8 +52,7 @@ fun Calendar(
 ) {
   Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
     val today = LocalDate.now()
-    val programs by
-      programDao.getPerformable.collectAsStateWithLifecycle(initialValue = emptyList())
+    val programs by programDao.getPerformable.collectAsStateWithLifecycle(emptyList())
 
     var longClickedDate by rememberSaveable { mutableStateOf(today) }
     var showProgramListDialog by rememberSaveable { mutableStateOf(false) }

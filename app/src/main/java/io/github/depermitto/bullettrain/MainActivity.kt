@@ -89,9 +89,11 @@ import io.github.depermitto.bullettrain.theme.scaleOutOfContainer
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.train.TrainingScreen
 import io.github.depermitto.bullettrain.util.DateFormatters
+import io.github.depermitto.bullettrain.util.capwords
 import io.github.depermitto.bullettrain.util.date
 import io.github.depermitto.bullettrain.util.toZonedDateTime
 import io.github.vinceglb.filekit.core.FileKit
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -231,7 +233,7 @@ fun App(db: Db) = MaterialTheme {
                     contentColor = MaterialTheme.colorScheme.secondary
                   ),
               ) {
-                Text("Finish")
+                Text("Conclude")
               }
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
@@ -371,7 +373,8 @@ fun App(db: Db) = MaterialTheme {
     }
 
     composable<Destination.Program> { navBackStackEntry ->
-      val program = db.programDao.where(navBackStackEntry.toRoute<Destination.Program>().programId)
+      val program by
+        db.programDao.whereAsState(navBackStackEntry.toRoute<Destination.Program>().programId)
       programViewModel = viewModel(factory = ProgramViewModel.Factory(program))
       val hasChanged = program.workoutsList != programViewModel.getDays()
 
@@ -419,17 +422,16 @@ fun App(db: Db) = MaterialTheme {
     }
 
     composable<Destination.Exercise> { navBackStackEntry ->
-      val exerciseDescriptor =
-        db.exerciseDao.where(navBackStackEntry.toRoute<Destination.Exercise>().descriptorId)
+      val descriptor by
+        db.exerciseDao.whereAsState(navBackStackEntry.toRoute<Destination.Exercise>().descriptorId)
+
       var showDropdown by remember { mutableStateOf(false) }
       var showRenameDialog by rememberSaveable { mutableStateOf(false) }
       Scaffold(
         topBar = {
           TopBarWithBackButton(
             navController = navController,
-            title =
-              if (exerciseDescriptor.obsolete) "${exerciseDescriptor.name} [Archived]"
-              else exerciseDescriptor.name,
+            title = if (descriptor.obsolete) "${descriptor.name} [Archived]" else descriptor.name,
             endContent = {
               DropdownButton(showDropdown, { showDropdown = it }) {
                 DropdownMenuItem(
@@ -440,7 +442,7 @@ fun App(db: Db) = MaterialTheme {
                     showRenameDialog = true
                   },
                 )
-                if (!exerciseDescriptor.obsolete)
+                if (!descriptor.obsolete)
                   DropdownMenuItem(
                     text = { Text("Delete") },
                     leadingIcon = { Icon(Icons.Filled.Delete, "Delete Exercise") },
@@ -457,7 +459,7 @@ fun App(db: Db) = MaterialTheme {
         ExerciseScreen(
           modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
           historyDao = db.historyDao,
-          exerciseDescriptor = exerciseDescriptor,
+          descriptor = descriptor,
           settings = settings,
         )
 
@@ -465,8 +467,8 @@ fun App(db: Db) = MaterialTheme {
         if (showRenameDialog) {
           var errorMessage by rememberSaveable { mutableStateOf("") }
           TextFieldAlertDialog(
+            startingText = descriptor.name,
             onDismissRequest = { showRenameDialog = false },
-            startingText = exerciseDescriptor.name,
             label = { Text("Exercise Name") },
             dismissButton = {
               TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") }
@@ -474,19 +476,20 @@ fun App(db: Db) = MaterialTheme {
             confirmButton = { name ->
               TextButton(
                 onClick = {
-                  errorMessage =
-                    db.exerciseDao
-                      .validateName(name)
-                      .fold(
-                        onSuccess = {
-                          showRenameDialog = false
-                          db.exerciseDao.update(
-                            exerciseDescriptor.toBuilder().setName(name).build()
-                          )
-                          ""
-                        },
-                        onFailure = { throwable -> throwable.message ?: "Invalid exercise name" },
-                      )
+                  scope.launch {
+                    errorMessage =
+                      if (name.isBlank()) {
+                        "Empty exercise name"
+                      } else if (
+                        db.exerciseDao.getVisible.first().any { d -> d.name == name.capwords() }
+                      ) {
+                        "Duplicate exercise name"
+                      } else {
+                        showRenameDialog = false
+                        db.exerciseDao.update(descriptor.toBuilder().setName(name).build())
+                        ""
+                      }
+                  }
                 }
               ) {
                 Text("Confirm")
@@ -505,18 +508,19 @@ fun App(db: Db) = MaterialTheme {
             """
                 Data associated with this exercise will not be lost. Even if you delete it, you can still perform the exercise if it appears in a program, and you can also rename it. However, you will not be able to include the exercise in new Programs.
 
-                Do you really want to remove '${exerciseDescriptor.name}'?
+                Do you really want to remove '${descriptor.name}'?
             """
               .trimIndent(),
           onConfirm = {
-            db.exerciseDao.delete(exerciseDescriptor)
+            db.exerciseDao.delete(descriptor)
             navController.navigateUp()
           },
         )
     }
 
     composable<Destination.Workout> { navBackStackEntry ->
-      val record = db.historyDao.where(navBackStackEntry.toRoute<Destination.Workout>().recordId)
+      val record by
+        db.historyDao.whereAsState(navBackStackEntry.toRoute<Destination.Workout>().recordId)
       Scaffold(
         topBar = {
           val onBackPressedDispatcher =
@@ -524,7 +528,7 @@ fun App(db: Db) = MaterialTheme {
           TopAppBar(
             title = {
               if (record.hasRelatedProgramId()) {
-                val relatedProgram = db.programDao.where(record.relatedProgramId)
+                val relatedProgram by db.programDao.whereAsState(record.relatedProgramId)
                 ExtendedListItem(
                   headlineContent = {
                     Text(relatedProgram.name, style = MaterialTheme.typography.titleLarge)
@@ -555,14 +559,14 @@ fun App(db: Db) = MaterialTheme {
         ExercisesSetsListings(
           modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
           exercises = record.workout.exercisesList,
-          headline = { exercise ->
-            val exerciseDescriptor = db.exerciseDao.where(exercise.descriptorId)
-            Text(exerciseDescriptor.name)
+          headline = { e ->
+            val descriptor by db.exerciseDao.whereAsState(e.descriptorId)
+            Text(descriptor.name)
           },
-          supportingContent = { exercise ->
-            val start = exercise.setsList.first().doneTs.toZonedDateTime()
+          supportingContent = { e ->
+            val start = e.setsList.first().doneTs.toZonedDateTime()
             val startTimeText = DateFormatters.kk_mm.format(start.toOffsetDateTime())
-            Text("${exercise.setsCount} sets, $startTimeText")
+            Text("${e.setsCount} sets, $startTimeText")
           },
           settings = settings,
         )
@@ -570,7 +574,8 @@ fun App(db: Db) = MaterialTheme {
     }
 
     composable<Destination.HistoryRecord> { navBackStackEntry ->
-      val record = db.historyDao.where(navBackStackEntry.toRoute<Destination.Workout>().recordId)
+      val record by
+        db.historyDao.whereAsState(navBackStackEntry.toRoute<Destination.Workout>().recordId)
       val modified = trainViewModel.getRecord()
       val hasChanged =
         record.workout.exercisesCount != modified.workout.exercisesCount ||

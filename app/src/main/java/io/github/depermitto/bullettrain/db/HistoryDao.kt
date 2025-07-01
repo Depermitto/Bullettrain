@@ -1,5 +1,9 @@
 package io.github.depermitto.bullettrain.db
 
+import android.annotation.SuppressLint
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.protos.HistoryProto.HistoryRecord
 import io.github.depermitto.bullettrain.protos.ProgramsProto.Workout
 import io.github.depermitto.bullettrain.util.bigListSet
@@ -62,10 +66,16 @@ class HistoryDao(historyRecords: List<HistoryRecord>) {
       record.workoutPhase != Workout.Phase.Completed
     }
 
-  fun where(id: Int): HistoryRecord {
-    val index = items.value.binarySearch { it.id - id }
-    return items.value[index]
-  }
+  @SuppressLint("StateFlowValueCalledInComposition")
+  @Composable
+  fun whereAsState(id: Int): State<HistoryRecord> =
+    items
+      .map { records -> records[records.binarySearch { it.id - id }] }
+      .collectAsStateWithLifecycle(
+        initialValue = items.value[items.value.binarySearch { it.id - id }]
+      )
+
+  fun where(id: Int): HistoryRecord = items.value[items.value.binarySearch { it.id - id }]
 
   fun <T> map(mapper: (records: List<HistoryRecord>) -> T): Flow<T> =
     items.map { historyRecords -> mapper(historyRecords) }

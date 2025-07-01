@@ -45,8 +45,7 @@ fun ProgramsTab(
   navController: NavController,
 ) {
   Box(modifier = modifier.fillMaxSize()) {
-    val programs by
-      programDao.getUserPrograms.collectAsStateWithLifecycle(initialValue = emptyList())
+    val programs by programDao.getUserPrograms.collectAsStateWithLifecycle(emptyList())
 
     LazyColumn(
       contentPadding =
@@ -55,13 +54,49 @@ fun ProgramsTab(
     ) {
       items(programs) { program ->
         var showRenameDialog by rememberSaveable { mutableStateOf(false) }
+        if (showRenameDialog) {
+          var errorMessage by rememberSaveable { mutableStateOf("") }
+          TextFieldAlertDialog(
+            startingText = program.name,
+            label = { Text("Program Name") },
+            onDismissRequest = { showRenameDialog = false },
+            dismissButton = {
+              TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") }
+            },
+            confirmButton = { name ->
+              TextButton(
+                onClick = {
+                  if (name.isBlank()) {
+                    errorMessage = "Blank program name"
+                    return@TextButton
+                  }
+
+                  programDao.update(program.toBuilder().setName(name).build())
+                  showRenameDialog = false
+                }
+              ) {
+                Text("Confirm")
+              }
+            },
+            errorMessage = errorMessage,
+            isError = errorMessage.isNotEmpty(),
+          )
+        }
+
         var showProgramDeleteDialog by rememberSaveable { mutableStateOf(false) }
+        if (showProgramDeleteDialog)
+          ConfirmationAlertDialog(
+            text = "Do you definitely want to delete ${program.name}?",
+            onDismissRequest = { showProgramDeleteDialog = false },
+            onConfirm = { programDao.delete(program) },
+          )
+
         HoldToShowOptionsBox(
           onClick = { navController.navigate(Destination.Program(program.id)) },
           holdOptions = { closeDropdown ->
             DropdownMenuItem(
               text = { Text("Rename") },
-              leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = "Rename Program") },
+              leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = "Rename program") },
               onClick = {
                 closeDropdown()
                 showRenameDialog = true
@@ -69,7 +104,7 @@ fun ProgramsTab(
             )
             DropdownMenuItem(
               text = { Text("Delete") },
-              leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = "Delete Program") },
+              leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = "Delete program") },
               onClick = {
                 closeDropdown()
                 showProgramDeleteDialog = true
@@ -91,41 +126,6 @@ fun ProgramsTab(
                   )
                 }
               },
-            )
-          }
-
-          if (showProgramDeleteDialog)
-            ConfirmationAlertDialog(
-              text = "Do you definitely want to delete ${program.name}?",
-              onDismissRequest = { showProgramDeleteDialog = false },
-              onConfirm = { programDao.delete(program) },
-            )
-
-          if (showRenameDialog) {
-            var errorMessage by rememberSaveable { mutableStateOf("") }
-            TextFieldAlertDialog(
-              label = { Text("Program Name") },
-              onDismissRequest = { showRenameDialog = false },
-              dismissButton = {
-                TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") }
-              },
-              confirmButton = { name ->
-                TextButton(
-                  onClick = {
-                    if (name.isBlank()) {
-                      errorMessage = "Blank program name"
-                      return@TextButton
-                    }
-
-                    programDao.update(program.toBuilder().setName(name).build())
-                    showRenameDialog = false
-                  }
-                ) {
-                  Text("Confirm")
-                }
-              },
-              errorMessage = errorMessage,
-              isError = errorMessage.isNotEmpty(),
             )
           }
         }

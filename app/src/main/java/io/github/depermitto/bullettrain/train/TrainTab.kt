@@ -55,8 +55,7 @@ fun TrainTab(
       .padding(horizontal = Dp.Medium)
   ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-      val programs by
-        programDao.getUserPrograms.collectAsStateWithLifecycle(initialValue = emptyList())
+      val programs by programDao.getUserPrograms.collectAsStateWithLifecycle(emptyList())
       var showChangeDayIndexDialog by rememberSaveable { mutableStateOf(false) }
       var selectedProgramIndex by rememberSaveable { mutableIntStateOf(0) }
 
@@ -90,14 +89,14 @@ fun TrainTab(
           },
           contentPadding = PaddingValues(horizontal = Dp.Large),
         ) { _, entry ->
-          val exerciseDescriptor = exerciseDao.where(entry.descriptorId)
+          val descriptor by exerciseDao.whereAsState(entry.descriptorId)
           ExtendedListItem(
-            headlineContent = { Text(exerciseDescriptor.name, maxLines = 2) },
+            headlineContent = { Text(descriptor.name, maxLines = 2) },
             trailingContent = {
               Text(entry.setsCount.toString(), overflow = TextOverflow.Ellipsis, maxLines = 2)
             },
             modifier = Modifier.clip(MaterialTheme.shapes.small),
-            onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },
+            onClick = { navController.navigate(Destination.Exercise(descriptor.id)) },
             contentPadding = PaddingValues(0.dp),
           )
         }

@@ -36,7 +36,7 @@ import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
 import io.github.depermitto.bullettrain.theme.focalGround
-import io.github.depermitto.bullettrain.util.capitalizeWords
+import io.github.depermitto.bullettrain.util.capwords
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -72,6 +72,7 @@ fun ProgramScreen(
             if (showRenameDialog) {
               var errorMessage by rememberSaveable { mutableStateOf("") }
               TextFieldAlertDialog(
+                startingText = day.name,
                 label = { Text("Day Name") },
                 onDismissRequest = { showRenameDialog = false },
                 dismissButton = {
@@ -85,14 +86,14 @@ fun ProgramScreen(
                         return@TextButton
                       }
 
-                      if (programViewModel.getDays().any { it.name == dayName.capitalizeWords() }) {
+                      if (programViewModel.getDays().any { it.name == dayName.capwords() }) {
                         errorMessage = "A day with the same name already exists"
                         return@TextButton
                       }
 
                       programViewModel.setDay(
                         dayIndex,
-                        day.toBuilder().setName(dayName.capitalizeWords()).build(),
+                        day.toBuilder().setName(dayName.capwords()).build(),
                       )
                       showRenameDialog = false
                     }

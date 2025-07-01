@@ -86,19 +86,19 @@ fun TrainingScreen(
         exercises = trainViewModel.getExercises(),
         onSettle = { from, to -> trainViewModel.reorderExercises(from, to) },
       ) { exerciseIndex, exercise ->
-        val exerciseDescriptor = exerciseDao.where(id = exercise.descriptorId)
-        Text("${exerciseIndex + 1}. ${exerciseDescriptor.name}", maxLines = 2)
+        val descriptor by exerciseDao.whereAsState(id = exercise.descriptorId)
+        Text("${exerciseIndex + 1}. ${descriptor.name}", maxLines = 2)
       }
 
     Column(verticalArrangement = Arrangement.spacedBy(Dp.Medium)) {
       trainViewModel.getExercises().forEachIndexed { exerciseIndex, exercise ->
-        val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
+        val descriptor by exerciseDao.whereAsState(id = exercise.descriptorId)
         val lastCompletedSet = exercise.lastCompletedSet
 
         var showDeleteExerciseDialog by rememberSaveable { mutableStateOf(false) }
         if (showDeleteExerciseDialog)
           ConfirmationAlertDialog(
-            text = "Do you definitely want to delete the ${exerciseDescriptor.name}?",
+            text = "Do you definitely want to delete the ${descriptor.name}?",
             onDismissRequest = { showDeleteExerciseDialog = false },
             onConfirm = { trainViewModel.removeExerciseAt(exerciseIndex) },
           )
@@ -121,17 +121,17 @@ fun TrainingScreen(
         Exercise(
           exercise = exercise,
           onExerciseChange = { trainViewModel.setExercise(exerciseIndex, it) },
-          exerciseDescriptor = exerciseDescriptor,
+          descriptor = descriptor,
           settings = settings,
           scope = scope,
           snackbarHostState = snackbarHostState,
           headline = {
             ExtendedListItem(
-              onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },
+              onClick = { navController.navigate(Destination.Exercise(descriptor.id)) },
               contentPadding = PaddingValues(12.dp, 12.dp, 8.dp, 12.dp),
               headlineContent = {
                 Text(
-                  "${exerciseIndex + 1}. ${exerciseDescriptor.name}",
+                  "${exerciseIndex + 1}. ${descriptor.name}",
                   style = MaterialTheme.typography.titleMedium,
                   maxLines = 2,
                 )
