@@ -80,8 +80,10 @@ fun HomeScreen(
             Destinations.Home.Tabs.History -> HistoryTab(
                 modifier = Modifier.padding(paddingValues),
                 homeViewModel = homeViewModel,
+                trainViewModel = trainViewModel,
                 settingsDao = settingsDao,
                 historyDao = historyDao,
+                programDao = programDao
             )
 
             Destinations.Home.Tabs.Train -> TrainTab(

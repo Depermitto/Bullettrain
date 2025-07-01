@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -33,21 +34,31 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.WorkoutInfo
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.HistoryDao
+import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.filledContainerColor
+import io.github.depermitto.bullettrain.train.TrainViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun HistoryTab(
-    modifier: Modifier = Modifier, homeViewModel: HomeViewModel, settingsDao: SettingsDao, historyDao: HistoryDao
+    modifier: Modifier = Modifier,
+    homeViewModel: HomeViewModel,
+    trainViewModel: TrainViewModel,
+    settingsDao: SettingsDao,
+    historyDao: HistoryDao,
+    programDao: ProgramDao,
 ) = Box(modifier = modifier.fillMaxSize()) {
     val historyRecords by historyDao.where(homeViewModel.calendarDate.month, homeViewModel.calendarDate.year)
         .collectAsStateWithLifecycle(initialValue = emptyList())
-    LaunchedEffect(historyRecords) { homeViewModel.selectedDate = historyRecords.lastOrNull()?.date }
+    val selectedHistoryRecords = historyRecords.filter { record -> record.date == homeViewModel.selectedDate }
+    LaunchedEffect(historyRecords) {
+        if (homeViewModel.selectedDate == null) homeViewModel.selectedDate = historyRecords.lastOrNull()?.date
+    }
 
     val verticalScrollState = rememberScrollState(0)
     Scaffold(modifier = Modifier.padding(horizontal = ItemPadding), topBar = {
@@ -76,38 +87,41 @@ fun HistoryTab(
         ) {
             var dragDirection by remember { mutableFloatStateOf(0f) }
             Calendar(
-                date = homeViewModel.calendarDate,
+                homeViewModel = homeViewModel,
+                trainViewModel = trainViewModel,
+                currentHistoryRecords = historyRecords,
+                currentDate = homeViewModel.calendarDate,
+                programDao = programDao,
+                historyDao = historyDao,
                 modifier = Modifier
-                    .heightIn(0.dp, 350.dp)
+                    .heightIn(0.dp, 400.dp)
                     .pointerInput(Unit) {
                         detectDragGestures(onDragEnd = {
                             when {
-                                dragDirection > 0 -> homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1)
-                                dragDirection < 0 -> homeViewModel.calendarDate = homeViewModel.calendarDate.plusMonths(1)
+                                dragDirection > 20 -> homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1)
+                                dragDirection < -20 -> homeViewModel.calendarDate = homeViewModel.calendarDate.plusMonths(1)
                             }
                         }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
                     },
-                onItemClick = { calendarDay -> homeViewModel.selectedDate = calendarDay },
-                ifHighlightItem = { calendarDay -> historyRecords.any { it.date == calendarDay } },
-                ifSuperHighlightItem = { calendarDay -> homeViewModel.selectedDate == calendarDay },
             )
 
-            historyRecords.filter { record -> record.date == homeViewModel.selectedDate }.forEach { record ->
+            selectedHistoryRecords.forEach { record ->
                 Card(
                     modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = filledContainerColor())
                 ) {
                     WorkoutInfo(modifier = Modifier.fillMaxWidth(),
                         workout = record.workout,
                         program = record.relatedProgram,
-                        map = { exercises ->
-                            val summaries = exercises.map { exercise ->
-                                val setsGroupedByWeight =
-                                    exercise.sets.groupBy { it.weight }.filter { (weight, _) -> weight != 0f }
-                                if (setsGroupedByWeight.isNotEmpty()) setsGroupedByWeight.map { (weight, sets) -> "${sets.size}x${weight.encodeToStringOutput()}" }
-                                    .joinToString(", ", postfix = " " + settingsDao.weightUnit())
-                                else ""
+                        exstractor = { exercise ->
+                            val setsGroupedByWeight = exercise.sets.groupBy { it.weight }.filter { (weight, _) -> weight != 0f }
+                            if (setsGroupedByWeight.isNotEmpty()) setsGroupedByWeight.map { (weight, sets) -> "${sets.size}x${weight.encodeToStringOutput()}" }
+                                .joinToString(", ", postfix = " " + settingsDao.weightUnit())
+                            else null
+                        },
+                        trailingContent = {
+                            IconButton(onClick = { trainViewModel.editWorkout(record) }) {
+                                Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit Workout")
                             }
-                            summaries.filter { it.isNotBlank() }
                         })
                 }
             }

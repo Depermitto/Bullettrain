@@ -11,6 +11,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import io.github.depermitto.bullettrain.components.WorkoutInfo
 import io.github.depermitto.bullettrain.database.Day
+import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.ItemSpacing
@@ -59,13 +60,15 @@ fun TrainTab(
             )
 
             programs.getOrNull(selectedProgramIndex)?.let { program ->
-                WorkoutInfo(modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopCenter),
+                WorkoutInfo(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter),
                     workout = program.days[program.nextDay],
                     program = program,
-                    map = { exercises -> exercises.map { exercise -> exercise.sets.size.toString() } },
-                    exercisesToSetsRatio = 0.9f)
+                    exstractor = { exercise -> exercise.sets.size.toString() },
+                    exercisesToSetsRatio = 0.9f
+                )
                 ElevatedButton(
                     modifier = Modifier.align(Alignment.BottomCenter),
                     onClick = { trainViewModel.startWorkout(program.days[program.nextDay], program) },
@@ -86,7 +89,7 @@ fun TrainTab(
             selectedProgramIndex < 2 -> 0 to 5
             selectedProgramIndex >= programs.size - 2 -> programs.size - 5 to programs.size
             else -> selectedProgramIndex - 2 to selectedProgramIndex + 3
-        } 
+        }
         for (i in lo until hi) {
             RadioButton(
                 selected = selectedProgramIndex == i,
@@ -97,7 +100,7 @@ fun TrainTab(
 
     OutlinedButton(
         modifier = Modifier.fillMaxWidth(),
-        onClick = { trainViewModel.startWorkout(Day(), ProgramDao.EmptyWorkout) }) {
+        onClick = { trainViewModel.startWorkout(Day(), Program.EmptyWorkout) }) {
         Text(text = "Start Empty Workout")
     }
 }

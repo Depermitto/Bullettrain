@@ -15,8 +15,6 @@ import io.github.depermitto.bullettrain.database.HistoryRecord
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.util.smallListSet
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.LocalDate
@@ -27,7 +25,7 @@ import kotlin.concurrent.timer
 import kotlin.math.max
 
 @Serializable
-enum class WorkoutPhase { During, Completed }
+enum class WorkoutPhase { During, Completed, Editing }
 
 data class WorkoutState(
     val historyRecord: HistoryRecord,
@@ -43,7 +41,8 @@ class TrainViewModel(
     private var exercises = mutableStateListOf<Exercise>()
     private var clock: Instant by mutableStateOf(Instant.ofEpochMilli(0))
 
-    fun isWorkoutRunning(): Boolean = workoutState?.historyRecord?.workoutPhase == WorkoutPhase.During
+    fun isWorkoutRunning(): Boolean = workoutState?.historyRecord?.workoutPhase != WorkoutPhase.Completed
+    fun isWorkoutEditing(): Boolean = workoutState?.historyRecord?.workoutPhase == WorkoutPhase.Editing
 
     fun setExercise(index: Int, exercise: Exercise) = exercises.set(index, exercise)
     fun setExerciseSet(exerciseIndex: Int, setIndex: Int, set: ExerciseSet) = setExercise(
@@ -59,17 +58,28 @@ class TrainViewModel(
         getExercise(exerciseIndex).copy(sets = getExercise(exerciseIndex).sets.filterIndexed { i, _ -> i != setIndex })
     )
 
-    fun startWorkout(day: Day, program: Program) {
+    fun startWorkout(day: Day, program: Program, date: LocalDate = LocalDate.now()) {
         if (workoutState != null) return
 
         val record = HistoryRecord(
             workout = day,
             relatedProgram = program,
+            date = date,
             workoutPhase = WorkoutPhase.During,
-            date = LocalDate.now(),
             workoutStartTs = Instant.now(),
         )
         createState(record)
+
+        navController.navigate(Destinations.Training) {
+            popUpTo(Destinations.Home(Destinations.Home.Tabs.Train)) { inclusive = true }
+            launchSingleTop = true
+        }
+    }
+
+    fun editWorkout(record: HistoryRecord) {
+        if (workoutState != null) return
+
+        createState(record.copy(workoutPhase = WorkoutPhase.Editing))
 
         navController.navigate(Destinations.Training) {
             popUpTo(Destinations.Home(Destinations.Home.Tabs.Train)) { inclusive = true }
@@ -90,22 +100,29 @@ class TrainViewModel(
         val record = state.historyRecord.copy(
             workoutPhase = WorkoutPhase.Completed, workout = state.historyRecord.workout.copy(exercises = exercises.toList())
         )
-        val program = runBlocking { programDao.where(record.relatedProgram.id).firstOrNull() } ?: return@endWorkout
-        val nextDay = (program.nextDay + 1) % program.days.size
+        val nextDay = (record.relatedProgram.nextDay + 1) % record.relatedProgram.days.size
 
         historyDao.upsert(record)
         programDao.upsert(
-            program.copy(
+            record.relatedProgram.copy(
                 nextDay = nextDay,
-                weekStreak = program.weekStreak + if (nextDay == 0) 1 else 0,
+                weekStreak = record.relatedProgram.weekStreak + if (nextDay == 0) 1 else 0,
                 mostRecentWorkoutDate = LocalDate.now()
             )
         )
     }
 
-    fun cancelWorkout() = endWorkout { historyDao.delete(it.historyRecord) }
+    fun cancelWorkout() {
+        if (workoutState?.historyRecord?.workoutPhase == WorkoutPhase.Editing) {
+            endWorkout(Destinations.Home(Destinations.Home.Tabs.History), deinit = {})
+        } else {
+            endWorkout { historyDao.delete(it.historyRecord) }
+        }
+    }
 
-    private fun endWorkout(deinit: (WorkoutState) -> Unit) = workoutState?.let { state ->
+    private fun endWorkout(
+        destination: Destinations = Destinations.Home(Destinations.Home.Tabs.Train), deinit: (WorkoutState) -> Unit
+    ) = workoutState?.let { state ->
         state.timer.cancel()
 
         deinit(state)
@@ -113,8 +130,8 @@ class TrainViewModel(
         workoutState = null
         exercises.clear()
 
-        if (!navController.popBackStack(Destinations.Home(tab = Destinations.Home.Tabs.Train), false)) {
-            navController.navigate(route = Destinations.Home(tab = Destinations.Home.Tabs.Train)) {
+        if (!navController.popBackStack(destination, false)) {
+            navController.navigate(route = destination) {
                 popUpTo(Destinations.Training) { inclusive = true }
                 launchSingleTop = true
             }

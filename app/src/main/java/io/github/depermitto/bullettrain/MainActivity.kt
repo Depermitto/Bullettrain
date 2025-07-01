@@ -191,7 +191,11 @@ fun App(db: Database) = MaterialTheme {
                 }
 
                 if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
-                    text = "All sets will be lost forever. Do you definitely want to discard the workout?",
+                    text = if (trainViewModel.isWorkoutEditing()) {
+                        "Do you definitely want to discard changes made during editing?"
+                    } else {
+                        "All sets will be lost forever. Do you definitely want to discard the workout?"
+                    },
                     onConfirm = { trainViewModel.cancelWorkout(); showDiscardDialog = false })
 
                 if (showFinishDialog) AlertDialog(text = { Text("Do you truly want to conclude the workout?") },

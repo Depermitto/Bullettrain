@@ -40,6 +40,12 @@ data class Program(
     @Serializable(with = LocalDateSerializer::class) val mostRecentWorkoutDate: LocalDate? = null,
 ) : Entity {
     override fun clone(id: Int) = copy(id = id)
+
+    override fun equals(other: Any?): Boolean = other is Program && this.id == other.id
+
+    companion object {
+        val EmptyWorkout = Program(id = -1, name = "Empty Workout")
+    }
 }
 
 @Serializable

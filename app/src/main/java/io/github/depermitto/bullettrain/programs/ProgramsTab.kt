@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destinations
@@ -43,7 +44,7 @@ fun ProgramsTab(
     val programs by programDao.getAlmostAll.collectAsStateWithLifecycle(initialValue = emptyList())
 
     LazyColumn(
-        contentPadding = PaddingValues(start = ItemPadding, end = ItemPadding, bottom = ItemPadding),
+        contentPadding = PaddingValues(start = ItemPadding, end = ItemPadding, bottom = 100.dp),
         verticalArrangement = Arrangement.spacedBy(CardSpacing)
     ) {
         items(programs) { program ->

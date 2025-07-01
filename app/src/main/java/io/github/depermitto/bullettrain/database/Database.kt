@@ -46,7 +46,7 @@ class Database(private val databaseDirectory: File, private val context: Context
         if (backupFiles.any { !it.file.exists() }) {
             settingsFile.write(Settings())
             historyFile.write(emptyList())
-            programsFile.write(listOf(ProgramDao.EmptyWorkout))
+            programsFile.write(listOf(Program.EmptyWorkout))
             exercisesFile.write(emptyList())
         }
     }
@@ -199,11 +199,7 @@ class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
 }
 
 class ProgramDao(file: ProgramsFile) : Dao<Program>(file) {
-    companion object {
-        val EmptyWorkout = Program(id = -1, name = "Empty Workout")
-    }
-
-    val getAlmostAll = getAll.map { it.filterNot { it.id == EmptyWorkout.id && it.name == EmptyWorkout.name } }
+    val getAlmostAll = getAll.map { it.filterNot { it.id == Program.EmptyWorkout.id && it.name == Program.EmptyWorkout.name } }
 }
 
 class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {

@@ -24,32 +24,33 @@ import androidx.compose.ui.unit.dp
 import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.Program
-import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.CardPadding
 import io.github.depermitto.bullettrain.theme.ItemPadding
 
 @Composable
 fun WorkoutInfo(
     modifier: Modifier = Modifier,
-    map: (List<Exercise>) -> List<String>,
     workout: Day,
     program: Program,
+    trailingContent: (@Composable () -> Unit)? = null,
+    exstractor: (Exercise) -> String?,
     exercisesToSetsRatio: Float = 0.5f
 ) = Column(modifier = modifier) {
     assert(exercisesToSetsRatio <= 1f && exercisesToSetsRatio >= 0f)
 
-    if (program == ProgramDao.EmptyWorkout) ListItem(
+    if (program == Program.EmptyWorkout) ListItem(
         headlineContent = { Text(text = "Impromptu Workout", style = MaterialTheme.typography.titleLarge) },
+        trailingContent = trailingContent,
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     ) else ListItem(
-        // values taken from https://m3.material.io/components/lists/specs#eeeb78e0-265d-4e81-96ba-c2340c348a90
         headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
         supportingContent = { Text(text = workout.name) },
+        trailingContent = trailingContent,
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     )
 
-    val processedExercises = map(workout.exercises)
-    if (processedExercises.isEmpty()) {
+    val infos = workout.exercises.mapNotNull { exstractor(it) }
+    if (infos.isEmpty()) {
         Text(
             modifier = Modifier
                 .fillMaxWidth()
@@ -67,7 +68,7 @@ fun WorkoutInfo(
         }
         HorizontalDivider()
 
-        workout.exercises.zip(processedExercises).forEach { (exercise, info) ->
+        workout.exercises.zip(infos).forEach { (exercise, info) ->
             Row {
                 Box(modifier = Modifier.weight(exercisesToSetsRatio), contentAlignment = CenterStart) {
                     val scroll = rememberScrollState(0)
