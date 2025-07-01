@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -58,16 +57,16 @@ import io.github.depermitto.bullettrain.database.IntensityCategory
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.PerfVarCategory
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
-import io.github.depermitto.bullettrain.theme.CardSpacing
+import io.github.depermitto.bullettrain.theme.WideSpacing
 import io.github.depermitto.bullettrain.theme.CompactIconSize
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
-import io.github.depermitto.bullettrain.theme.ExerciseSetNarrowWeight
-import io.github.depermitto.bullettrain.theme.ExerciseSetSpacing
-import io.github.depermitto.bullettrain.theme.ExerciseSetWideWeight
+import io.github.depermitto.bullettrain.theme.NarrowWeight
+import io.github.depermitto.bullettrain.theme.SmallSpacing
+import io.github.depermitto.bullettrain.theme.WideWeight
 import io.github.depermitto.bullettrain.theme.HeartPlusIcon
 import io.github.depermitto.bullettrain.theme.HeartRemoveIcon
-import io.github.depermitto.bullettrain.theme.ItemPadding
-import io.github.depermitto.bullettrain.theme.ItemSpacing
+import io.github.depermitto.bullettrain.theme.RegularPadding
+import io.github.depermitto.bullettrain.theme.RegularSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.SwapIcon
 import io.github.depermitto.bullettrain.theme.focalGround
@@ -91,10 +90,10 @@ fun DayScreen(
     val scope = rememberCoroutineScope()
     val day = programViewModel.getDay(dayIndex)
     ReorderableColumn(modifier = Modifier
-        .padding(horizontal = ItemPadding)
+        .padding(horizontal = RegularPadding)
         .fillMaxSize()
         .verticalScroll(rememberScrollState(0))
-        .padding(bottom = 100.dp), list = day.exercises, verticalArrangement = Arrangement.spacedBy(CardSpacing), onMove = {
+        .padding(bottom = 100.dp), list = day.exercises, verticalArrangement = Arrangement.spacedBy(WideSpacing), onMove = {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
         }
@@ -106,8 +105,7 @@ fun DayScreen(
             programViewModel.setExercise(
                 dayIndex,
                 exerciseIndex,
-                exercise.copy(intensityCategory = cat,
-                    sets = exercise.sets.map { it.copy(intensity = intensity) })
+                exercise.copy(intensityCategory = cat, sets = exercise.sets.map { it.copy(intensity = intensity) })
             )
         }
 
@@ -130,159 +128,162 @@ fun DayScreen(
                         }
                     }
                 }) {
-                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
-                        Column(modifier = Modifier.padding(ItemPadding)) {
-                            var showTargetEditDropdown by remember { mutableStateOf(false) }
-                            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                TextLink(
-                                    exercise.name,
-                                    navController = navController,
-                                    destination = Destination.Exercise(exercise.id),
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                                Spacer(Modifier.weight(1f))
-                                IconButton(modifier = Modifier.size(SqueezableIconSize),
-                                    onClick = { showSwapExerciseChooser = true }) {
-                                    SwapIcon()
-                                }
-
-                                if (!exercise.hasIntensity) IconButton(modifier = Modifier.size(SqueezableIconSize),
-                                    onClick = { setIntensity(IntensityCategory.RPE) }) {
-                                    HeartPlusIcon()
-                                }
-                                else IconButton(modifier = Modifier.size(SqueezableIconSize), onClick = { setIntensity(null) }) {
-                                    HeartRemoveIcon()
-                                }
-
-                                DragButton(this@ReorderableColumn, view)
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)
+                    ) {
+                        var showTargetEditDropdown by remember { mutableStateOf(false) }
+                        Row(modifier = Modifier.padding(RegularPadding), verticalAlignment = Alignment.CenterVertically) {
+                            TextLink(
+                                exercise.name,
+                                navController = navController,
+                                destination = Destination.Exercise(exercise.id),
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                            Spacer(Modifier.weight(1f))
+                            IconButton(
+                                modifier = Modifier.size(SqueezableIconSize),
+                                onClick = { showSwapExerciseChooser = true }) {
+                                SwapIcon()
                             }
 
+                            if (!exercise.hasIntensity) IconButton(
+                                modifier = Modifier.size(SqueezableIconSize),
+                                onClick = { setIntensity(IntensityCategory.RPE) }) {
+                                HeartPlusIcon()
+                            }
+                            else IconButton(modifier = Modifier.size(SqueezableIconSize), onClick = { setIntensity(null) }) {
+                                HeartRemoveIcon()
+                            }
+
+                            DragButton(this@ReorderableColumn, view)
+                        }
+
+                        Row(
+                            modifier = Modifier.padding(top = RegularPadding, bottom = RegularSpacing),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Header(Modifier.weight(NarrowWeight), "Set")
+                            // PerfVarCategory Dropdown with Icon
                             Row(
-                                modifier = Modifier.padding(top = ItemPadding, bottom = ItemSpacing),
+                                modifier = Modifier
+                                    .weight(WideWeight)
+                                    .clickable { showTargetEditDropdown = true },
+                                horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Header(Modifier.weight(ExerciseSetNarrowWeight), "Set")
-                                // PerfVarCategory Dropdown with Icon
+                                Header(text = exercise.perfVarCategory.prettyName)
+                                Icon(Sharp.KeyboardArrowDown, contentDescription = null)
+
+                                DropdownMenu(
+                                    expanded = showTargetEditDropdown,
+                                    onDismissRequest = { showTargetEditDropdown = false }) {
+                                    PerfVarCategory.entries.forEach { entry ->
+                                        DropdownMenuItem(text = { Text(entry.prettyName) }, onClick = {
+                                            programViewModel.setExercise(
+                                                dayIndex, exerciseIndex, exercise.copy(
+                                                    sets = exercise.sets.map { it.copy(targetPerfVar = PerfVar.of(entry)) },
+                                                    perfVarCategory = entry
+                                                )
+                                            )
+                                            showTargetEditDropdown = false
+                                        })
+                                    }
+                                }
+                            }
+                            if (exercise.hasIntensity) {
+                                Header(Modifier.weight(WideWeight), "RPE")
+                            }
+                            Header(Modifier.weight(NarrowWeight), "")
+                        }
+                        HorizontalDivider()
+
+                        exercise.sets.forEachIndexed { setIndex, set ->
+                            SwipeToDeleteBox(onDelete = {
+                                val deletedExercise = exercise
+                                programViewModel.setExercise(
+                                    dayIndex,
+                                    exerciseIndex,
+                                    exercise.copy(sets = exercise.sets.filterIndexed { i, _ -> i != setIndex })
+                                )
+                                scope.launch {
+                                    if (set.targetPerfVar != PerfVar.of(exercise.perfVarCategory)) {
+                                        val snackBarResult = snackbarHostState.showSnackbar(
+                                            message = "${set.targetPerfVar.encodeToStringOutput()} of ${exercise.name} deleted",
+                                            actionLabel = "Undo",
+                                            withDismissAction = true
+                                        )
+                                        if (snackBarResult == SnackbarResult.ActionPerformed) {
+                                            programViewModel.setExercise(dayIndex, exerciseIndex, deletedExercise)
+                                        }
+                                    }
+                                }
+                            }) {
                                 Row(
                                     modifier = Modifier
-                                        .weight(ExerciseSetWideWeight)
-                                        .clickable { showTargetEditDropdown = true },
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
+                                        .fillMaxWidth()
+                                        .background(color = MaterialTheme.colorScheme.focalGround)
+                                        .padding(vertical = RegularPadding), verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Header(text = exercise.perfVarCategory.prettyName)
-                                    Icon(Sharp.KeyboardArrowDown, contentDescription = null)
-
-                                    DropdownMenu(expanded = showTargetEditDropdown,
-                                        onDismissRequest = { showTargetEditDropdown = false }) {
-                                        PerfVarCategory.entries.forEach { entry ->
-                                            DropdownMenuItem(text = { Text(entry.prettyName) }, onClick = {
-                                                programViewModel.setExercise(
-                                                    dayIndex, exerciseIndex, exercise.copy(
-                                                        sets = exercise.sets.map { it.copy(targetPerfVar = PerfVar.of(entry)) },
-                                                        perfVarCategory = entry
-                                                    )
-                                                )
-                                                showTargetEditDropdown = false
-                                            })
-                                        }
-                                    }
-                                }
-                                if (exercise.hasIntensity) {
-                                    Header(Modifier.weight(ExerciseSetWideWeight), "RPE")
-                                }
-                                Header(Modifier.weight(ExerciseSetNarrowWeight), "")
-                            }
-                            HorizontalDivider()
-
-                            exercise.sets.forEachIndexed { setIndex, set ->
-                                SwipeToDeleteBox(onDelete = {
-                                    val deletedExercise = exercise
-                                    programViewModel.setExercise(
-                                        dayIndex,
-                                        exerciseIndex,
-                                        exercise.copy(sets = exercise.sets.filterIndexed { i, _ -> i != setIndex })
+                                    Text(
+                                        modifier = Modifier.weight(NarrowWeight),
+                                        text = (setIndex + 1).toString(),
+                                        textAlign = TextAlign.Center
                                     )
-                                    scope.launch {
-                                        if (set.targetPerfVar != PerfVar.of(exercise.perfVarCategory)) {
-                                            val snackBarResult = snackbarHostState.showSnackbar(
-                                                message = "${set.targetPerfVar.encodeToStringOutput()} of ${exercise.name} deleted",
-                                                actionLabel = "Undo",
-                                                withDismissAction = true
+                                    ExerciseTargetField(Modifier
+                                        .weight(WideWeight)
+                                        .padding(horizontal = SmallSpacing),
+                                        value = set.targetPerfVar,
+                                        onValueChange = {
+                                            programViewModel.setExercise(
+                                                dayIndex, exerciseIndex, exercise.copy(
+                                                    sets = exercise.sets.smallListSet(setIndex, set.copy(targetPerfVar = it))
+                                                )
                                             )
-                                            if (snackBarResult == SnackbarResult.ActionPerformed) {
-                                                programViewModel.setExercise(dayIndex, exerciseIndex, deletedExercise)
-                                            }
-                                        }
-                                    }
-                                }) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(color = MaterialTheme.colorScheme.focalGround)
-                                            .padding(vertical = ItemPadding), verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            modifier = Modifier.weight(ExerciseSetNarrowWeight),
-                                            text = (setIndex + 1).toString(),
-                                            textAlign = TextAlign.Center
-                                        )
-                                        ExerciseTargetField(
-                                            Modifier
-                                                .weight(ExerciseSetWideWeight)
-                                                .padding(horizontal = ExerciseSetSpacing),
-                                            value = set.targetPerfVar,
+                                        })
+                                    if (set.intensity != null) {
+                                        NumberField(modifier = Modifier
+                                            .weight(WideWeight)
+                                            .padding(horizontal = SmallSpacing),
+                                            value = set.intensity,
                                             onValueChange = {
                                                 programViewModel.setExercise(
                                                     dayIndex, exerciseIndex, exercise.copy(
-                                                        sets = exercise.sets.smallListSet(setIndex, set.copy(targetPerfVar = it))
+                                                        sets = exercise.sets.smallListSet(
+                                                            setIndex, set.copy(intensity = max(min(it, 10f), 0f))
+                                                        )
                                                     )
                                                 )
                                             })
-                                        if (set.intensity != null) {
-                                            NumberField(modifier = Modifier
-                                                .weight(ExerciseSetWideWeight)
-                                                .padding(horizontal = ExerciseSetSpacing),
-                                                value = set.intensity,
-                                                onValueChange = {
-                                                    programViewModel.setExercise(
-                                                        dayIndex, exerciseIndex, exercise.copy(
-                                                            sets = exercise.sets.smallListSet(
-                                                                setIndex, set.copy(intensity = max(min(it, 10f), 0f))
-                                                            )
-                                                        )
-                                                    )
-                                                })
-                                        }
-                                        IconButton(modifier = Modifier
+                                    }
+                                    IconButton(
+                                        modifier = Modifier
                                             .size(CompactIconSize)
-                                            .weight(ExerciseSetNarrowWeight),
-                                            onClick = {
-                                                programViewModel.setExercise(
-                                                    dayIndex, exerciseIndex, exercise.copy(sets = exercise.sets + set)
-                                                )
-                                            }) {
-                                            DuplicateIcon()
-                                        }
+                                            .weight(NarrowWeight),
+                                        onClick = {
+                                            programViewModel.setExercise(
+                                                dayIndex, exerciseIndex, exercise.copy(sets = exercise.sets + set)
+                                            )
+                                        }) {
+                                        DuplicateIcon()
                                     }
                                 }
                             }
+                        }
 
-                            OutlinedButton(modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.outlinedButtonColors()
-                                    .copy(contentColor = MaterialTheme.colorScheme.tertiary),
-                                onClick = {
-                                    programViewModel.setExercise(
-                                        dayIndex, exerciseIndex, exercise.copy(
-                                            sets = exercise.sets + ExerciseSet(
-                                                intensity = exercise.intensityCategory?.let { 0f },
-                                                targetPerfVar = PerfVar.of(exercise.perfVarCategory)
-                                            )
+                        OutlinedButton(modifier = Modifier.fillMaxWidth().padding(RegularPadding),
+                            colors = ButtonDefaults.outlinedButtonColors()
+                                .copy(contentColor = MaterialTheme.colorScheme.tertiary),
+                            onClick = {
+                                programViewModel.setExercise(
+                                    dayIndex, exerciseIndex, exercise.copy(
+                                        sets = exercise.sets + ExerciseSet(
+                                            intensity = exercise.intensityCategory?.let { 0f },
+                                            targetPerfVar = PerfVar.of(exercise.perfVarCategory)
                                         )
                                     )
-                                }) {
-                                Text(text = "Add Set")
-                            }
+                                )
+                            }) {
+                            Text(text = "Add Set")
                         }
                     }
                 }

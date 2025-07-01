@@ -18,7 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.depermitto.bullettrain.theme.ItemPadding
+import io.github.depermitto.bullettrain.theme.RegularPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +37,7 @@ fun TextFieldAlertDialog(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(ItemPadding)
+                .padding(RegularPadding)
         ) {
             OutlinedTextField(
                 modifier = Modifier.align(Alignment.TopCenter),

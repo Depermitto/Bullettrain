@@ -15,8 +15,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Database
 import io.github.depermitto.bullettrain.database.UnitSystem
-import io.github.depermitto.bullettrain.theme.ItemPadding
-import io.github.depermitto.bullettrain.theme.ItemSpacing
+import io.github.depermitto.bullettrain.theme.RegularPadding
+import io.github.depermitto.bullettrain.theme.RegularSpacing
 
 @Composable
 fun SettingsScreen(
@@ -28,12 +28,12 @@ fun SettingsScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(ItemPadding)
+            .padding(RegularPadding)
     ) {
         Row(
             modifier = Modifier.align(Alignment.TopCenter),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(2 * ItemSpacing)
+            horizontalArrangement = Arrangement.spacedBy(2 * RegularSpacing)
         ) {
             Text(text = settings.unitSystem.name)
             Switch(checked = settings.unitSystem == UnitSystem.Metric, onCheckedChange = {

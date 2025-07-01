@@ -18,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -26,12 +25,12 @@ import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
+import io.github.depermitto.bullettrain.components.GhostCard
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.theme.CardSpacing
-import io.github.depermitto.bullettrain.theme.ItemPadding
-import io.github.depermitto.bullettrain.theme.focalGround
+import io.github.depermitto.bullettrain.theme.RegularPadding
+import io.github.depermitto.bullettrain.theme.RegularSpacing
 
 @Composable
 fun ProgramsTab(
@@ -43,8 +42,8 @@ fun ProgramsTab(
     val programs by programDao.getAlmostAll.collectAsStateWithLifecycle(initialValue = emptyList())
 
     LazyColumn(
-        contentPadding = PaddingValues(start = ItemPadding, end = ItemPadding, bottom = 100.dp),
-        verticalArrangement = Arrangement.spacedBy(CardSpacing)
+        contentPadding = PaddingValues(start = RegularPadding, end = RegularPadding, bottom = 100.dp),
+        verticalArrangement = Arrangement.spacedBy(RegularSpacing)
     ) {
         items(programs) { program ->
             var showRenameDialog by rememberSaveable { mutableStateOf(false) }
@@ -59,13 +58,7 @@ fun ProgramsTab(
                         onClick = { closeDropdown(); showProgramDeleteDialog = true })
                 }) {
 
-                Card(
-                    modifier = Modifier
-                        .clip(MaterialTheme.shapes.medium)
-                        .fillMaxWidth()
-                        .align(Alignment.Center),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)
-                ) {
+                GhostCard(modifier = Modifier.align(Alignment.Center)) {
                     ListItem(colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
                         supportingContent = {

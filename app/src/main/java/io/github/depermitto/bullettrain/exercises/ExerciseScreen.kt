@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -14,13 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.BasicTable
+import io.github.depermitto.bullettrain.components.GhostCard
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.SettingsDao
-import io.github.depermitto.bullettrain.theme.CardSpacing
-import io.github.depermitto.bullettrain.theme.ItemPadding
-import io.github.depermitto.bullettrain.theme.focalGround
+import io.github.depermitto.bullettrain.theme.RegularPadding
+import io.github.depermitto.bullettrain.theme.RegularSpacing
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -31,13 +29,13 @@ fun ExerciseScreen(modifier: Modifier = Modifier, historyDao: HistoryDao, settin
 
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(start = ItemPadding, end = ItemPadding, bottom = 100.dp),
+        contentPadding = PaddingValues(start = RegularPadding, end = RegularPadding, bottom = 100.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(CardSpacing),
+        verticalArrangement = Arrangement.spacedBy(RegularSpacing),
     ) {
         items(loggedExercises) { exercise ->
             val doneDate = exercise.sets.getOrElse(0) { return@items }.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
+            GhostCard {
                 BasicTable(
                     headers = Pair("Set", "Completed"), list = exercise.sets, separateHeadersAndContent = false,
                     headlineContent = { Text(dateFormatter.format(doneDate), style = MaterialTheme.typography.titleMedium) },

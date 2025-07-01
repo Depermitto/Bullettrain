@@ -14,8 +14,8 @@ import io.github.depermitto.bullettrain.components.WorkoutTable
 import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
-import io.github.depermitto.bullettrain.theme.ItemPadding
-import io.github.depermitto.bullettrain.theme.ItemSpacing
+import io.github.depermitto.bullettrain.theme.RegularPadding
+import io.github.depermitto.bullettrain.theme.RegularSpacing
 import io.github.depermitto.bullettrain.theme.focalGround
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
@@ -28,7 +28,7 @@ fun TrainTab(
     trainViewModel: TrainViewModel,
     programDao: ProgramDao,
 ) = Column(
-    modifier = modifier.padding(horizontal = ItemPadding),
+    modifier = modifier.padding(horizontal = RegularPadding),
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Center,
 ) {
@@ -52,11 +52,11 @@ fun TrainTab(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = ItemSpacing)
+                .padding(bottom = RegularSpacing)
         ) {
             if (programs.isEmpty()) Text(
                 modifier = Modifier
-                    .padding(ItemPadding)
+                    .padding(RegularPadding)
                     .align(Alignment.Center), text = "No Program Found"
             )
 

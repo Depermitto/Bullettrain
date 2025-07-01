@@ -1,13 +1,10 @@
 package io.github.depermitto.bullettrain.components
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -36,11 +33,7 @@ fun TextLink(
     softWrap: Boolean = true,
     maxLines: Int = 2,
     minLines: Int = 1,
-) = Card(
-    modifier = modifier,
-    onClick = { navController.navigate((destination)) },
-    colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-) {
+) = GhostCard(modifier = modifier, onClick = { navController.navigate((destination)) }) {
     Text(
         text = text,
         modifier = Modifier.padding(8.dp),

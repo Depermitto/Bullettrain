@@ -29,9 +29,9 @@ import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.PerfVar
-import io.github.depermitto.bullettrain.theme.CardSpacing
+import io.github.depermitto.bullettrain.theme.WideSpacing
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
-import io.github.depermitto.bullettrain.theme.ItemPadding
+import io.github.depermitto.bullettrain.theme.RegularPadding
 import sh.calvin.reorderable.ReorderableColumn
 
 @Composable
@@ -44,8 +44,8 @@ fun ProgramScreen(
         list = days,
         modifier = Modifier
             .verticalScroll(rememberScrollState(0))
-            .padding(horizontal = ItemPadding),
-        verticalArrangement = Arrangement.spacedBy(CardSpacing),
+            .padding(horizontal = RegularPadding),
+        verticalArrangement = Arrangement.spacedBy(WideSpacing),
         onMove = {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)

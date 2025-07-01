@@ -11,13 +11,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.times
-import io.github.depermitto.bullettrain.theme.ItemPadding
+import io.github.depermitto.bullettrain.theme.RegularPadding
 
 @Composable
 fun BoxScope.AnchoredFloatingActionButton(
     modifier: Modifier = Modifier
         .align(Alignment.BottomEnd)
-        .padding(2 * ItemPadding),
+        .padding(2 * RegularPadding),
     icon: (@Composable () -> Unit)? = { Icon(Icons.Filled.Edit, contentDescription = null) },
     text: (@Composable () -> Unit)? = null,
     onClick: () -> Unit,

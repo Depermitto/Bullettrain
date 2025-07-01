@@ -37,8 +37,8 @@ import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.home.HomeViewModel
-import io.github.depermitto.bullettrain.theme.CardSpacing
-import io.github.depermitto.bullettrain.theme.ItemPadding
+import io.github.depermitto.bullettrain.theme.RegularPadding
+import io.github.depermitto.bullettrain.theme.WideSpacing
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import java.time.LocalDate
@@ -63,11 +63,11 @@ fun HistoryTab(
     val verticalScrollState = rememberScrollState(0)
     Column(
         modifier = Modifier
-            .padding(horizontal = ItemPadding)
+            .padding(horizontal = RegularPadding)
             .verticalScroll(verticalScrollState)
             .padding(bottom = 100.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(CardSpacing)
+        verticalArrangement = Arrangement.spacedBy(WideSpacing)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = { homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1) }) {
@@ -134,7 +134,7 @@ fun HistoryTab(
         exit = slideOutVertically(animationSpec = tween(durationMillis = 600, easing = EaseInCubic), targetOffsetY = { it }),
     ) {
         TextButton(
-            modifier = Modifier.padding(bottom = ItemPadding),
+            modifier = Modifier.padding(bottom = RegularPadding),
             onClick = { homeViewModel.calendarDate = today },
             colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
             elevation = ButtonDefaults.buttonElevation()

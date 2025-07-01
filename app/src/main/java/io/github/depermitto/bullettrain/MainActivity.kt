@@ -75,10 +75,10 @@ import io.github.depermitto.bullettrain.programs.ProgramCreationScreen
 import io.github.depermitto.bullettrain.programs.ProgramScreen
 import io.github.depermitto.bullettrain.programs.ProgramViewModel
 import io.github.depermitto.bullettrain.settings.SettingsScreen
-import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.GymAppTheme
-import io.github.depermitto.bullettrain.theme.ItemPadding
+import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.ScaleTransitionDirection
+import io.github.depermitto.bullettrain.theme.WideSpacing
 import io.github.depermitto.bullettrain.theme.adaptiveIconTint
 import io.github.depermitto.bullettrain.theme.lightFocalGround
 import io.github.depermitto.bullettrain.theme.scaleIntoContainer
@@ -200,7 +200,7 @@ fun App(db: Database) = MaterialTheme {
                 OutlinedCard(
                     modifier = Modifier
                         .windowInsetsPadding(TopAppBarDefaults.windowInsets)
-                        .padding(start = ItemPadding, end = ItemPadding, bottom = CardSpacing)
+                        .padding(start = RegularPadding, end = RegularPadding, bottom = WideSpacing)
                 ) {
                     Box(
                         modifier = Modifier

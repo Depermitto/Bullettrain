@@ -2,12 +2,14 @@ package io.github.depermitto.bullettrain.theme
 
 import androidx.compose.ui.unit.dp
 
-val ItemPadding = 8.dp
-val ItemSpacing = 4.dp
-val CardPadding = 16.dp
-val CardSpacing = 8.dp
-val ExerciseSetSpacing = 2.dp
+val RegularPadding = 8.dp
+
+val SmallSpacing = 2.dp
+val RegularSpacing = 4.dp
+val WideSpacing = 8.dp
+
 val CompactIconSize = 20.dp
 val SqueezableIconSize = 40.dp
-const val ExerciseSetWideWeight = 0.9f
-const val ExerciseSetNarrowWeight = 0.3f
+
+const val NarrowWeight = 0.3f
+const val WideWeight = 0.9f

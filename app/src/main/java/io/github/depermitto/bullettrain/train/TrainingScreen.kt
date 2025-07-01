@@ -51,13 +51,13 @@ import io.github.depermitto.bullettrain.database.ExerciseSet
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
-import io.github.depermitto.bullettrain.theme.CardSpacing
+import io.github.depermitto.bullettrain.theme.WideSpacing
 import io.github.depermitto.bullettrain.theme.CompactIconSize
-import io.github.depermitto.bullettrain.theme.ExerciseSetNarrowWeight
-import io.github.depermitto.bullettrain.theme.ExerciseSetSpacing
-import io.github.depermitto.bullettrain.theme.ExerciseSetWideWeight
-import io.github.depermitto.bullettrain.theme.ItemPadding
-import io.github.depermitto.bullettrain.theme.ItemSpacing
+import io.github.depermitto.bullettrain.theme.NarrowWeight
+import io.github.depermitto.bullettrain.theme.SmallSpacing
+import io.github.depermitto.bullettrain.theme.WideWeight
+import io.github.depermitto.bullettrain.theme.RegularPadding
+import io.github.depermitto.bullettrain.theme.RegularSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.SwapIcon
 import io.github.depermitto.bullettrain.theme.focalGround
@@ -77,165 +77,170 @@ fun TrainingScreen(
     snackbarHostState: SnackbarHostState
 ) = Column(
     modifier = modifier
-        .padding(horizontal = ItemPadding)
+        .padding(horizontal = RegularPadding)
         .verticalScroll(rememberScrollState(0))
         .padding(bottom = 100.dp),
-    verticalArrangement = Arrangement.spacedBy(CardSpacing)
+    verticalArrangement = Arrangement.spacedBy(WideSpacing)
 ) {
     val scope = rememberCoroutineScope()
-    var showExerciseDeleteDialog by remember { mutableStateOf(false) }
     trainViewModel.getExercises().forEachIndexed { exerciseIndex, exercise ->
-        Card(modifier = Modifier, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
+        var showExerciseDeleteDialog by remember { mutableStateOf(false) }
+        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
             var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
             if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
                 onDismissRequest = { showSwapExerciseChooser = false },
                 onChoose = { it -> trainViewModel.setExercise(exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
 
-            Column(modifier = Modifier.padding(ItemPadding)) {
-                val lastPerformedSet = exercise.lastPerformedSet()
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    TextLink(
-                        "${exerciseIndex + 1}. ${exercise.name}",
-                        navController = navController,
-                        destination = Destination.Exercise(exercise.id),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Spacer(Modifier.weight(1f))
-                    if (!trainViewModel.isWorkoutEditing()) lastPerformedSet?.let { exerciseSet ->
-                        Card {
-                            Text(
-                                modifier = Modifier.padding(4.dp),
-                                text = if (exercise.sets.all<ExerciseSet> { it.doneTs != null }) "Done"
-                                else trainViewModel.elapsedSince(exerciseSet.doneTs!!),
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
+            val lastPerformedSet = exercise.lastPerformedSet()
+            Row(
+                modifier = Modifier
+                    .padding(RegularPadding)
+                    .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextLink(
+                    "${exerciseIndex + 1}. ${exercise.name}",
+                    navController = navController,
+                    destination = Destination.Exercise(exercise.id),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Spacer(Modifier.weight(1f))
+                if (!trainViewModel.isWorkoutEditing()) lastPerformedSet?.let { exerciseSet ->
+                    Card {
+                        Text(
+                            modifier = Modifier.padding(4.dp),
+                            text = if (exercise.sets.all<ExerciseSet> { it.doneTs != null }) "Done"
+                            else trainViewModel.elapsedSince(exerciseSet.doneTs!!),
+                            style = MaterialTheme.typography.titleMedium
+                        )
                     }
-                    var showDropdownButton by remember { mutableStateOf(false) }
-                    DropdownButton(modifier = Modifier.size(SqueezableIconSize),
-                        show = showDropdownButton,
-                        onShowChange = { showDropdownButton = it }) {
-                        DropdownMenuItem(leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
-                            text = { Text(text = "Delete") },
-                            onClick = {
-                                showDropdownButton = false
-                                showExerciseDeleteDialog = true
-                            })
-                        DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
+                }
+                var showDropdownButton by remember { mutableStateOf(false) }
+                DropdownButton(modifier = Modifier.size(SqueezableIconSize),
+                    show = showDropdownButton,
+                    onShowChange = { showDropdownButton = it }) {
+                    DropdownMenuItem(leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+                        text = { Text(text = "Delete") },
+                        onClick = {
                             showDropdownButton = false
-                            showSwapExerciseChooser = true
+                            showExerciseDeleteDialog = true
                         })
-                    }
+                    DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
+                        showDropdownButton = false
+                        showSwapExerciseChooser = true
+                    })
                 }
+            }
 
-                Row(modifier = Modifier.padding(top = ItemPadding, bottom = ItemSpacing)) {
-                    Header(Modifier.weight(ExerciseSetNarrowWeight), "Set")
-                    if (exercise.intensityCategory != null) {
-                        Header(Modifier.weight(ExerciseSetNarrowWeight), exercise.intensityCategory.name)
-                    }
-                    Header(Modifier.weight(ExerciseSetNarrowWeight + 0.1f), "Target")
-                    Header(Modifier.weight(ExerciseSetWideWeight), exercise.perfVarCategory.trainName)
-                    Header(Modifier.weight(ExerciseSetWideWeight), settingsDao.weightUnit())
-                    if (trainViewModel.isWorkoutRunning()) {
-                        Header(Modifier.weight(ExerciseSetNarrowWeight), "")
-                    }
+            Row(modifier = Modifier.padding(top = RegularPadding, bottom = RegularSpacing)) {
+                Header(Modifier.weight(NarrowWeight), "Set")
+                if (exercise.intensityCategory != null) {
+                    Header(Modifier.weight(NarrowWeight), exercise.intensityCategory.name)
                 }
-                HorizontalDivider()
+                Header(Modifier.weight(NarrowWeight + 0.1f), "Target")
+                Header(Modifier.weight(WideWeight), exercise.perfVarCategory.trainName)
+                Header(Modifier.weight(WideWeight), settingsDao.weightUnit())
+                if (trainViewModel.isWorkoutRunning()) {
+                    Header(Modifier.weight(NarrowWeight), "")
+                }
+            }
+            HorizontalDivider()
 
-                exercise.sets.forEachIndexed { setIndex, set ->
-                    SwipeToDeleteBox(onDelete = {
-                        val deletedExercise = exercise
-                        trainViewModel.removeExerciseSet(exerciseIndex, setIndex)
-                        if (set.actualPerfVar != 0f) scope.launch {
-                            val snackBarResult = snackbarHostState.showSnackbar(
-                                message = PerfVar.of(exercise.perfVarCategory, set.actualPerfVar)
-                                    .encodeToStringOutput() + " of ${exercise.name} deleted",
-                                actionLabel = "Undo",
-                                withDismissAction = true,
-                            )
-                            if (snackBarResult == SnackbarResult.ActionPerformed) {
-                                trainViewModel.setExercise(exerciseIndex, deletedExercise)
-                            }
-                        }
-                    }) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(color = MaterialTheme.colorScheme.focalGround)
-                                .padding(vertical = ItemPadding), verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                modifier = Modifier.weight(ExerciseSetNarrowWeight),
-                                text = (setIndex + 1).toString(),
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            if (set.intensity != null) Text(
-                                modifier = Modifier.weight(ExerciseSetNarrowWeight),
-                                text = set.intensity.encodeToStringOutput().ifBlank { "0" },
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Text(modifier = Modifier.weight(ExerciseSetNarrowWeight + 0.1f),
-                                text = set.targetPerfVar.encodeToStringOutput()
-                                    .takeIf { it.isNotBlank() && set.targetPerfVar.category == exercise.perfVarCategory } ?: "--",
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.bodyMedium)
-                            CompletableNumberField(modifier = Modifier
-                                .weight(ExerciseSetWideWeight)
-                                .padding(horizontal = ExerciseSetSpacing),
-                                value = set.actualPerfVar,
-                                onValueChange = {
-                                    trainViewModel.setExerciseSet(
-                                        exerciseIndex, setIndex, set.copy(actualPerfVar = it)
-                                    )
-                                },
-                                completed = set.completed,
-                                placeholder = { lastPerformedSet?.let { Placeholder(it.actualPerfVar.encodeToStringOutput()) } })
-                            CompletableNumberField(
-                                modifier = Modifier
-                                    .weight(ExerciseSetWideWeight)
-                                    .padding(horizontal = ExerciseSetSpacing),
-                                value = set.weight,
-                                onValueChange = { trainViewModel.setExerciseSet(exerciseIndex, setIndex, set.copy(weight = it)) },
-                                completed = set.completed,
-                                placeholder = { lastPerformedSet?.let { Placeholder(it.weight.encodeToStringOutput()) } },
-                            )
-                            Checkbox(modifier = Modifier
-                                .size(CompactIconSize)
-                                .weight(ExerciseSetNarrowWeight),
-                                checked = set.doneTs != null,
-                                onCheckedChange = {
-                                    val set = if (it) set.copy(
-                                        doneTs = Instant.now(),
-
-                                        weight = if (set.weight != 0f) set.weight
-                                        else lastPerformedSet?.weight ?: 0f,
-
-                                        actualPerfVar = if (set.actualPerfVar != 0f) set.actualPerfVar
-                                        else lastPerformedSet?.actualPerfVar ?: 0f
-                                    )
-                                    else set.copy(doneTs = null)
-
-                                    trainViewModel.setExerciseSet(exerciseIndex, setIndex, set)
-                                })
+            exercise.sets.forEachIndexed { setIndex, set ->
+                SwipeToDeleteBox(onDelete = {
+                    val deletedExercise = exercise
+                    trainViewModel.removeExerciseSet(exerciseIndex, setIndex)
+                    if (set.actualPerfVar != 0f) scope.launch {
+                        val snackBarResult = snackbarHostState.showSnackbar(
+                            message = PerfVar.of(exercise.perfVarCategory, set.actualPerfVar)
+                                .encodeToStringOutput() + " of ${exercise.name} deleted",
+                            actionLabel = "Undo",
+                            withDismissAction = true,
+                        )
+                        if (snackBarResult == SnackbarResult.ActionPerformed) {
+                            trainViewModel.setExercise(exerciseIndex, deletedExercise)
                         }
                     }
-                }
-
-                OutlinedButton(modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.outlinedButtonColors()
-                        .copy(contentColor = MaterialTheme.colorScheme.tertiary),
-                    onClick = {
-                        trainViewModel.setExercise(
-                            exerciseIndex, exercise.copy(
-                                sets = exercise.sets + ExerciseSet(
-                                    intensity = exercise.intensityCategory?.let { 0f },
-                                    targetPerfVar = PerfVar.of(exercise.perfVarCategory),
+                }) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = MaterialTheme.colorScheme.focalGround)
+                            .padding(vertical = RegularPadding), verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            modifier = Modifier.weight(NarrowWeight),
+                            text = (setIndex + 1).toString(),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        if (set.intensity != null) Text(
+                            modifier = Modifier.weight(NarrowWeight),
+                            text = set.intensity.encodeToStringOutput().ifBlank { "0" },
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(modifier = Modifier.weight(NarrowWeight + 0.1f),
+                            text = set.targetPerfVar.encodeToStringOutput()
+                                .takeIf { it.isNotBlank() && set.targetPerfVar.category == exercise.perfVarCategory } ?: "--",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium)
+                        CompletableNumberField(modifier = Modifier
+                            .weight(WideWeight)
+                            .padding(horizontal = SmallSpacing),
+                            value = set.actualPerfVar,
+                            onValueChange = {
+                                trainViewModel.setExerciseSet(
+                                    exerciseIndex, setIndex, set.copy(actualPerfVar = it)
                                 )
+                            },
+                            completed = set.completed,
+                            placeholder = { lastPerformedSet?.let { Placeholder(it.actualPerfVar.encodeToStringOutput()) } })
+                        CompletableNumberField(
+                            modifier = Modifier
+                                .weight(WideWeight)
+                                .padding(horizontal = SmallSpacing),
+                            value = set.weight,
+                            onValueChange = { trainViewModel.setExerciseSet(exerciseIndex, setIndex, set.copy(weight = it)) },
+                            completed = set.completed,
+                            placeholder = { lastPerformedSet?.let { Placeholder(it.weight.encodeToStringOutput()) } },
+                        )
+                        Checkbox(modifier = Modifier
+                            .size(CompactIconSize)
+                            .weight(NarrowWeight),
+                            checked = set.doneTs != null,
+                            onCheckedChange = {
+                                val set = if (it) set.copy(
+                                    doneTs = Instant.now(),
+
+                                    weight = if (set.weight != 0f) set.weight
+                                    else lastPerformedSet?.weight ?: 0f,
+
+                                    actualPerfVar = if (set.actualPerfVar != 0f) set.actualPerfVar
+                                    else lastPerformedSet?.actualPerfVar ?: 0f
+                                )
+                                else set.copy(doneTs = null)
+
+                                trainViewModel.setExerciseSet(exerciseIndex, setIndex, set)
+                            })
+                    }
+                }
+            }
+
+            OutlinedButton(modifier = Modifier
+                .fillMaxWidth()
+                .padding(RegularPadding),
+                colors = ButtonDefaults.outlinedButtonColors().copy(contentColor = MaterialTheme.colorScheme.tertiary),
+                onClick = {
+                    trainViewModel.setExercise(
+                        exerciseIndex, exercise.copy(
+                            sets = exercise.sets + ExerciseSet(
+                                intensity = exercise.intensityCategory?.let { 0f },
+                                targetPerfVar = PerfVar.of(exercise.perfVarCategory),
                             )
                         )
-                    }) { Text(text = "Add Set") }
+                    )
+                }) {
+                Text(text = "Add Set")
             }
         }
 

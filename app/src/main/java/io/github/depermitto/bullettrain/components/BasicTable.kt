@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.Program
-import io.github.depermitto.bullettrain.theme.ItemPadding
+import io.github.depermitto.bullettrain.theme.RegularPadding
 
 sealed class Ratio {
     data object Unlimited : Ratio()
@@ -58,7 +58,7 @@ fun <T> BasicTable(
         Text(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(ItemPadding), text = emptyMessage, textAlign = TextAlign.Center
+                .padding(RegularPadding), text = emptyMessage, textAlign = TextAlign.Center
         )
         return@Column
     }

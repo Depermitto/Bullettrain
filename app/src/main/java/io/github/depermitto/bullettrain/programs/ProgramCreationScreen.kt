@@ -8,7 +8,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import io.github.depermitto.bullettrain.theme.ItemPadding
+import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.unlinedColors
 
 @Composable
@@ -20,7 +20,7 @@ fun ProgramCreationScreen(
     TextField(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = ItemPadding),
+            .padding(horizontal = RegularPadding),
         value = programViewModel.programName,
         onValueChange = { programViewModel.programName = it },
         maxLines = 1,
@@ -30,7 +30,7 @@ fun ProgramCreationScreen(
         colors = TextFieldDefaults.unlinedColors()
     )
     ProgramScreen(
-        modifier = Modifier.padding(top = ItemPadding),
+        modifier = Modifier.padding(top = RegularPadding),
         programViewModel = programViewModel,
         navController = navController
     )
