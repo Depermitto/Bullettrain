@@ -251,7 +251,6 @@ fun DayScreen(
                   Row(verticalAlignment = Alignment.CenterVertically) {
                     NumberField(
                       modifier = Modifier.weight(0.5F),
-                      floatingPoint = false,
                       value = set.target,
                       onValueChange = {
                         programViewModel.setExercise(
@@ -263,11 +262,11 @@ fun DayScreen(
                             .build(),
                         )
                       },
+                      floatingPoint = false,
                     )
                     Text("-", modifier = Modifier.padding(horizontal = 2.dp))
                     NumberField(
                       modifier = Modifier.weight(0.5F),
-                      floatingPoint = false,
                       value = set.target2,
                       onValueChange = {
                         programViewModel.setExercise(
@@ -279,13 +278,13 @@ fun DayScreen(
                             .build(),
                         )
                       },
+                      floatingPoint = false,
                     )
                   }
                 else
                   Row(verticalAlignment = Alignment.CenterVertically) {
                     NumberField(
                       modifier = Modifier.weight(1F),
-                      floatingPoint = false,
                       value = set.target,
                       onValueChange = {
                         programViewModel.setExercise(
@@ -297,13 +296,13 @@ fun DayScreen(
                             .build(),
                         )
                       },
+                      floatingPoint = false,
                     )
                   }
               }
               if (exercise.hasIntensity)
                 NumberField(
                   modifier = Modifier.weight(0.6F).padding(horizontal = 2.dp),
-                  floatingPoint = false,
                   value = set.intensity.toFloat(),
                   onValueChange = {
                     programViewModel.setExercise(
@@ -318,6 +317,7 @@ fun DayScreen(
                         .build(),
                     )
                   },
+                  floatingPoint = false,
                 )
               IconButton(
                 modifier = Modifier.weight(0.2F).size(20.dp),

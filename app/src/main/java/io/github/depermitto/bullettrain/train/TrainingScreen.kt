@@ -46,7 +46,6 @@ import io.github.depermitto.bullettrain.db.ExerciseDao
 import io.github.depermitto.bullettrain.db.HistoryDao
 import io.github.depermitto.bullettrain.exercises.Exercise
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
-import io.github.depermitto.bullettrain.protos.ExercisesProto.*
 import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.*
 import io.github.depermitto.bullettrain.util.lastCompletedSet
@@ -314,11 +313,11 @@ fun PrettyToggleNumberField(
     modifier = modifier,
     value = value,
     onValueChange = onValueChange,
-    enabled = !completed,
     floatingPoint = floatingPoint,
     placeholder = placeholder,
+    enabled = !completed,
     textStyle = textStyle,
-    unfocusedBorderThickness = unfocusedBorderThickness,
     colors = colors,
+    unfocusedBorderThickness = unfocusedBorderThickness,
   )
 }

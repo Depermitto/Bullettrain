@@ -47,6 +47,7 @@ fun OutlinedTextField(
   BasicTextField(
     state = state,
     modifier = modifier,
+    enabled = enabled,
     readOnly = readOnly,
     textStyle = textStyle,
     inputTransformation = inputTransformation,
