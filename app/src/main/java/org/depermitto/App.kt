@@ -19,7 +19,7 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
+    NavHost(navController = navController, startDestination = Screen.ProgramsCreationScreen.route) {
         composable(Screen.MainScreen.route) {
             Scaffold(ribbon = { Ribbon(navController = navController, backButton = false) }) {
                 MainScreen(db.getProgramDao(), navController)
@@ -28,7 +28,7 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
 
         composable(Screen.ProgramsCreationScreen.route) {
             Scaffold(ribbon = { Ribbon(navController = navController) }) {
-                ProgramsCreationScreen(programDao = db.getProgramDao())
+                ProgramsCreationScreen(programDao = db.getProgramDao(), navController = navController)
             }
         }
 

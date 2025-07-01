@@ -1,14 +1,17 @@
 package org.depermitto.ui.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.depermitto.database.ExerciseDao
 import org.depermitto.database.ExerciseListing
+import org.depermitto.ui.theme.OutlinedCardColumn
+import org.depermitto.ui.theme.transparentTextFieldColors
 
 @Composable
 fun ExercisesCreationScreen(
@@ -16,15 +19,20 @@ fun ExercisesCreationScreen(
 ) {
     val scope = rememberCoroutineScope { Dispatchers.IO }
 
-    Column {
+    OutlinedCardColumn {
         var name by remember { mutableStateOf("") }
-        TextField(value = name, onValueChange = { name = it })
+        TextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = name,
+            onValueChange = { name = it },
+            placeholder = { Text(text = "Exercise Name") },
+            colors = transparentTextFieldColors()
+        )
 
-        Button(onClick = {
-            scope.launch {
-                exerciseDao.upsert(ExerciseListing(name = name))
-            }
-        }) {
+        OutlinedButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { scope.launch { exerciseDao.upsert(ExerciseListing(name = name)) } },
+        ) {
             Text(text = "Create")
         }
     }

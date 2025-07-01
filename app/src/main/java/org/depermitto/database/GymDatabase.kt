@@ -80,7 +80,7 @@ typealias TrainingWork = List<Day>
 @Serializable
 data class Day(
     val name: String,
-    val exercises: List<WorkoutEntry>,
+    val exercises: List<WorkoutEntry>? = null,
 )
 
 @Serializable
