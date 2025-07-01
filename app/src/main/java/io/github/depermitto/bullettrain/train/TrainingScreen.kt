@@ -99,6 +99,7 @@ fun TrainingScreen(
             ) {
                 TextLink(
                     "${exerciseIndex + 1}. ${exercise.name}",
+                    Modifier.widthIn(0.dp, 270.dp),
                     navController = navController,
                     destination = Destination.Exercise(exercise.id),
                     style = MaterialTheme.typography.titleMedium,

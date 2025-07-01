@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -128,13 +129,12 @@ fun DayScreen(
                         }
                     }
                 }) {
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)
-                    ) {
+                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
                         var showTargetEditDropdown by remember { mutableStateOf(false) }
                         Row(modifier = Modifier.padding(RegularPadding), verticalAlignment = Alignment.CenterVertically) {
                             TextLink(
                                 exercise.name,
+                                Modifier.widthIn(0.dp, 220.dp),
                                 navController = navController,
                                 destination = Destination.Exercise(exercise.id),
                                 style = MaterialTheme.typography.titleMedium,
@@ -270,7 +270,9 @@ fun DayScreen(
                             }
                         }
 
-                        OutlinedButton(modifier = Modifier.fillMaxWidth().padding(RegularPadding),
+                        OutlinedButton(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(RegularPadding),
                             colors = ButtonDefaults.outlinedButtonColors()
                                 .copy(contentColor = MaterialTheme.colorScheme.tertiary),
                             onClick = {
