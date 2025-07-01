@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.sharp.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,9 +25,9 @@ import io.github.depermitto.data.entities.ExerciseSet
 import io.github.depermitto.data.entities.PerfVar
 import io.github.depermitto.exercises.AddExerciseButton
 import io.github.depermitto.exercises.exerciseChooser
-import io.github.depermitto.util.SwapIcon
 import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.*
+import io.github.depermitto.util.SwapIcon
 import java.time.Instant
 
 @Composable
@@ -38,14 +38,31 @@ fun TrainingScreen(
 ) = RibbonScaffold(ribbon = {
     if (trainViewModel.isWorkoutRunning()) {
         OutlinedCard(modifier = Modifier.padding(start = ItemPadding, end = ItemPadding, bottom = ItemPadding)) {
-            Row(Modifier.padding(horizontal = ItemPadding), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { trainViewModel.cancelWorkout() }) {
-                    Icon(Icons.Sharp.Close, contentDescription = "Cancel Workout")
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(text = trainViewModel.elapsedSince(), style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.weight(1f))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = ItemPadding)
+            ) {
                 TextButton(
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    onClick = { trainViewModel.cancelWorkout() },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) {
+                    Icon(
+                        Icons.Filled.Close,
+                        contentDescription = "Cancel Workout",
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Text("Stop")
+                }
+                Text(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = trainViewModel.elapsedSince(),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                TextButton(
+                    modifier = Modifier.align(Alignment.CenterEnd),
                     onClick = { trainViewModel.completeWorkout() },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
                 ) { Text(text = "Finish") }
@@ -129,7 +146,7 @@ private fun TrainExercise(
         HorizontalDivider()
 
         exercise.sets.forEachIndexed { setIndex, set ->
-            SwipeToDeleteBox(onDelete = { trainViewModel.removeSet(exerciseIndex, setIndex) }) {
+            SwipeToDeleteBox(onDelete = { trainViewModel.removeExerciseSet(exerciseIndex, setIndex) }) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -161,9 +178,7 @@ private fun TrainExercise(
                             .padding(horizontal = ExerciseSetSpacing),
                         value = set.actualPerfVar,
                         onValueChange = {
-                            trainViewModel.setExerciseSet(
-                                exerciseIndex, setIndex, set.copy(actualPerfVar = it)
-                            )
+                            trainViewModel.setExerciseSet(exerciseIndex, setIndex, set.copy(actualPerfVar = it))
                         },
                         placeholder = { lastPerformedSet?.let { Placeholder(it.actualPerfVar.encodeToStringOutput()) } })
                     NumberField(
@@ -172,9 +187,7 @@ private fun TrainExercise(
                             .padding(horizontal = ExerciseSetSpacing),
                         value = set.weight,
                         onValueChange = {
-                            trainViewModel.setExerciseSet(
-                                exerciseIndex, setIndex, set.copy(weight = it)
-                            )
+                            trainViewModel.setExerciseSet(exerciseIndex, setIndex, set.copy(weight = it))
                         },
                         placeholder = { lastPerformedSet?.let { Placeholder(it.weight.encodeToStringOutput()) } })
                     if (trainViewModel.isWorkoutRunning()) Checkbox(modifier = Modifier
@@ -184,7 +197,7 @@ private fun TrainExercise(
                         onCheckedChange = {
                             val set = if (it) set.copy(
                                 date = Instant.now(),
-                               
+
                                 weight = if (set.weight != 0f) set.weight
                                 else lastPerformedSet?.weight ?: 0f,
 

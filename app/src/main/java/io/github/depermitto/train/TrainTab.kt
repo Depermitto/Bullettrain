@@ -6,7 +6,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.Screen
 import io.github.depermitto.components.WorkoutInfo
@@ -14,8 +13,9 @@ import io.github.depermitto.data.entities.ProgramDao
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
+import kotlinx.coroutines.runBlocking
 
-// TODO THIS BRANCH empty workout starter, training session
+// TODO THIS BRANCH empty workout starter
 @Composable
 fun TrainTab(
     modifier: Modifier = Modifier,
@@ -27,7 +27,7 @@ fun TrainTab(
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Center,
 ) {
-    val programs by programDao.getAll().collectAsStateWithLifecycle(initialValue = emptyList())
+    val programs = runBlocking { programDao.getAll() }
     var selectedProgramIndex by remember { mutableIntStateOf(0) }
 
     OutlinedCard(
@@ -59,8 +59,10 @@ fun TrainTab(
                     exerciseInfo = { Text(text = it.sets.size.toString()) })
                 ElevatedButton(
                     modifier = Modifier.align(Alignment.BottomCenter), onClick = {
-                        navController.navigate(Screen.TrainingScreen.route)
                         trainViewModel.startWorkout(program.days[program.nextDay], program)
+                        navController.navigate(Screen.TrainingScreen.route) {
+                            popUpTo(Screen.MainScreen.route) { inclusive = true }
+                        }
                     }, colors = ButtonDefaults.elevatedButtonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer

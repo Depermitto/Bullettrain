@@ -21,7 +21,10 @@ interface ProgramDao {
     suspend fun whereId(id: Long): Program?
 
     @Query("SELECT * FROM programs ORDER BY mostRecentWorkoutDate DESC")
-    fun getAll(): Flow<List<Program>>
+    fun getAllFlow(): Flow<List<Program>>
+
+    @Query("SELECT * FROM programs ORDER BY mostRecentWorkoutDate DESC")
+    suspend fun getAll(): List<Program>
 
     @Query("SELECT * FROM programs WHERE followed = 1")
     fun getFollowed(): Flow<List<Program>>

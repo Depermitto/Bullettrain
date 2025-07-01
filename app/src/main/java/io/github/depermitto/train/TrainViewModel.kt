@@ -29,7 +29,6 @@ data class WorkoutState(
     val saveTimer: Timer,
 )
 
-// Maybe just do a state machine 
 class TrainViewModel(
     private val historyDao: HistoryDao,
     private val programDao: ProgramDao,
@@ -50,7 +49,7 @@ class TrainViewModel(
     fun getExercises() = exercises
     fun addExercise(exercise: Exercise) = exercises.add(exercise)
     fun removeExercise(index: Int) = exercises.removeAt(index)
-    fun removeSet(exerciseIndex: Int, setIndex: Int) = setExercise(
+    fun removeExerciseSet(exerciseIndex: Int, setIndex: Int) = setExercise(
         exerciseIndex,
         getExercise(exerciseIndex).copy(sets = getExercise(exerciseIndex).sets.filterIndexed { i, _ -> i != setIndex })
     )
@@ -68,13 +67,13 @@ class TrainViewModel(
         createState(record)
     }
 
-    fun restoreWorkout(): Boolean = runBlocking(Dispatchers.IO) {
+    suspend fun restoreWorkout(): Boolean {
         val session = historyDao.getUnfinishedBusiness()
         if (session != null && workoutState == null) {
             createState(session)
-            return@runBlocking true
+            return true
         }
-        return@runBlocking false
+        return false
     }
 
     fun completeWorkout() = endWorkout { state ->
@@ -105,7 +104,11 @@ class TrainViewModel(
 
         workoutState = null
         exercises.clear()
-        navController.popBackStack(Screen.MainScreen.route, false)
+        if (!navController.popBackStack(Screen.MainScreen.route, false)) {
+            navController.navigate(route = Screen.MainScreen.passTab(tab = Screen.MainScreen.Tabs.Train)) {
+                popUpTo(Screen.TrainingScreen.route) { inclusive = true }
+            }
+        }
     }
 
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("m:ss").withZone(ZoneId.systemDefault())

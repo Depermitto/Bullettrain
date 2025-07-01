@@ -8,7 +8,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -18,7 +17,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import io.github.depermitto.Screen.*
+import io.github.depermitto.Screen.MainScreen
 import io.github.depermitto.Screen.MainScreen.Tabs
+import io.github.depermitto.Screen.TrainingScreen
 import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.components.Ribbon
 import io.github.depermitto.components.RibbonScaffold
@@ -37,6 +39,7 @@ import io.github.depermitto.theme.GymAppTheme
 import io.github.depermitto.train.TrainViewModel
 import io.github.depermitto.train.TrainingScreen
 import io.github.vinceglb.filekit.core.FileKit
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -88,13 +91,12 @@ fun App(persistentData: PersistentData) = MaterialTheme {
     val trainViewModel =
         viewModel<TrainViewModel>(factory = TrainViewModel.Factory(historyDao, programDao, navController))
 
-    LaunchedEffect(Unit) {
-        if (trainViewModel.restoreWorkout()) navController.navigate(Screen.TrainingScreen.route)
-    }
-
-    NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
-        composable(Screen.MainScreen.route) { navBackStackEntry ->
-            val activeTab = Tabs.valueOf(navBackStackEntry.arguments?.getString("tab") ?: Tabs.History.name)
+    NavHost(
+        navController = navController,
+        startDestination = if (runBlocking { trainViewModel.restoreWorkout() }) TrainingScreen.route else MainScreen.route
+    ) {
+        composable(MainScreen.route) { navBackStackEntry ->
+            val activeTab = Tabs.valueOf(navBackStackEntry.arguments?.getString("tab") ?: Tabs.Train.name)
 
             MainScreen(
                 trainViewModel = trainViewModel,
@@ -106,7 +108,7 @@ fun App(persistentData: PersistentData) = MaterialTheme {
             )
         }
 
-        composable(Screen.TrainingScreen.route) {
+        composable(TrainingScreen.route) {
             TrainingScreen(
                 trainViewModel = trainViewModel,
                 settingsViewModel = settingsViewModel,
@@ -114,7 +116,7 @@ fun App(persistentData: PersistentData) = MaterialTheme {
             )
         }
 
-        composable(Screen.ProgramCreationScreen.route) {
+        composable(ProgramCreationScreen.route) {
             RibbonScaffold(ribbon = { Ribbon(navController = navController, title = "New Program") }) {
                 ProgramCreation(
                     programViewModel = programViewModel, exerciseDao = exerciseDao, navController = navController
@@ -122,7 +124,7 @@ fun App(persistentData: PersistentData) = MaterialTheme {
             }
         }
 
-        composable(Screen.ProgramScreen.route) { navBackStackEntry ->
+        composable(ProgramScreen.route) { navBackStackEntry ->
             val program by programDao.whereIdFlow(
                 (navBackStackEntry.arguments?.getString("programId") ?: return@composable).toLong()
             ).collectAsStateWithLifecycle(initialValue = null)
@@ -135,14 +137,14 @@ fun App(persistentData: PersistentData) = MaterialTheme {
                     if (programViewModel.days.toList() != it.days.toList()) {
                         AnchoredFloatingActionButton(text = { Text("Finish Edit") }, onClick = {
                             programViewModel.upsert()
-                            navController.popBackStack(Screen.MainScreen.route, inclusive = false)
+                            navController.popBackStack(MainScreen.route, inclusive = false)
                         })
                     }
                 }
             }
         }
 
-        composable(Screen.SettingsScreen.route) {
+        composable(SettingsScreen.route) {
             RibbonScaffold(ribbon = { Ribbon(navController, settingsGear = false, title = "Settings") }) {
                 SettingsScreen(settingsViewModel = settingsViewModel)
             }

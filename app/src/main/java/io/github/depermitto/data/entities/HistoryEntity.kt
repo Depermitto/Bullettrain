@@ -21,6 +21,9 @@ interface HistoryDao {
     @Query("SELECT * FROM history")
     fun getAllFlow(): Flow<List<HistoryRecord>>
 
+    @Query("SELECT * FROM history")
+    suspend fun getAll(): List<HistoryRecord>
+
     @Query("SELECT * FROM history WHERE workoutPhase = 'During' LIMIT 1")
     suspend fun getUnfinishedBusiness(): HistoryRecord?
 }

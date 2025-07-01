@@ -21,16 +21,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.components.WorkoutInfo
 import io.github.depermitto.components.encodeToStringOutput
 import io.github.depermitto.data.entities.HistoryDao
-import io.github.depermitto.data.entities.HistoryRecord
 import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -39,12 +38,8 @@ import java.time.format.DateTimeFormatter
 fun HistoryTab(
     modifier: Modifier = Modifier, settingsViewModel: SettingsViewModel, historyDao: HistoryDao
 ) = Box(modifier = modifier.fillMaxSize()) {
-    val historyRecords by historyDao.getAllFlow().collectAsStateWithLifecycle(initialValue = emptyList())
-    var selectedRecord: HistoryRecord? by remember { mutableStateOf(null) }
-
-    LaunchedEffect(historyRecords) {
-        if (selectedRecord == null) selectedRecord = historyRecords.lastOrNull()
-    }
+    val historyRecords = runBlocking { historyDao.getAll() }
+    var selectedRecord by remember { mutableStateOf(historyRecords.lastOrNull()) }
 
     fun findWorkout(calendarDay: LocalDate) = historyRecords.find { record ->
         val recordDate = record.date.atZone(ZoneId.systemDefault())
