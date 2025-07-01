@@ -24,7 +24,7 @@ import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.train.TrainViewModel
 import io.github.depermitto.train.TrainingScreen
 
-// TODO make tests and benchmarks, mostly for backend probably
+// TODO P3 make tests and benchmarks, mostly for backend probably
 @Composable
 fun App(persistentData: PersistentData) = MaterialTheme {
     val programDao = persistentData.db.getProgramDao()

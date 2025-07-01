@@ -15,14 +15,12 @@ import io.github.depermitto.theme.ItemPadding
 
 @Composable
 fun BoxScope.AnchoredFloatingActionButton(
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.align(Alignment.BottomEnd),
     onClick: () -> Unit,
     icon: (@Composable () -> Unit)? = { Icon(Icons.Filled.Edit, contentDescription = null) },
     text: (@Composable () -> Unit)? = null,
 ) {
-    @Suppress("NAME_SHADOWING") val modifier = modifier
-        .align(Alignment.BottomEnd)
-        .padding(bottom = 2 * ItemPadding, end = 2 * ItemPadding)
+    val modifier = modifier.padding(2 * ItemPadding)
 
     if (icon != null && text != null) {
         ExtendedFloatingActionButton(modifier = modifier, onClick = onClick, text = text, icon = icon)

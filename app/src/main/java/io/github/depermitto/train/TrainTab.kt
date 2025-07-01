@@ -15,9 +15,7 @@ import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
 
-// TODO P2
-//  1*. If there is no workout tracked, big-ass button that lets you choose
-//  2. Empty workout starter
+// TODO P2 empty workout starter
 @Composable
 fun TrainTab(
     modifier: Modifier = Modifier,
@@ -29,8 +27,7 @@ fun TrainTab(
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Center,
 ) {
-    val programs by programDao.getAll()
-        .collectAsStateWithLifecycle(initialValue = emptyList()) // TODO followed programs P2
+    val programs by programDao.getAll().collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedProgramIndex by remember { mutableIntStateOf(0) }
 
     OutlinedCard(
@@ -49,7 +46,7 @@ fun TrainTab(
                     modifier = Modifier
                         .padding(ItemPadding)
                         .align(Alignment.Center),
-                    text = "No Program Found" // TODO maybe some spinning? P3
+                    text = "No Program Found"
                 )
             }
 

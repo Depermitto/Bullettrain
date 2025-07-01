@@ -74,7 +74,7 @@ fun Program(
                 verticalArrangement = Arrangement.spacedBy(ItemSpacing)
             ) {
                 day.exercises.forEachIndexed { exerciseIndex, exercise ->
-                    // TODO reorder exercises, reorder sets maybe?
+                    // TODO P2 reorder exercises, reorder sets maybe?
                     ProgramExercise(
                         exercise = exercise,
                         onExerciseChange = {

@@ -23,20 +23,21 @@ import java.util.*
 
 @Composable
 fun Calendar(
+    date: LocalDate,
     modifier: Modifier = Modifier,
     onItemClick: (LocalDate) -> Unit,
     ifHighlightItem: (LocalDate) -> Boolean,
 ) = OutlinedCard(modifier = modifier) {
     val today = LocalDate.now()
-    val firstDayOfMonth = LocalDate.of(today.year, today.month, 1)
+    val firstDayOfMonth = LocalDate.of(date.year, date.month, 1)
     var days = generateSequence(-firstDayOfMonth.dayOfWeek.value + 2) {
-        if (it < today.month.length(today.isLeapYear)) it + 1
+        if (it < date.month.length(date.isLeapYear)) it + 1
         else null
     }
     var selectedDay: LocalDate? by rememberSaveable { mutableStateOf(null) }
 
     Column {
-        repeat(if (days.count() <= 36) 6 else 7) { i ->
+        repeat(if (days.count() < 36) 6 else 7) { i ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -52,7 +53,7 @@ fun Calendar(
                         if (dayOfMonth == null) {
                             CalendarItem(modifier = Modifier.weight(1f), text = "")
                         } else {
-                            val day = LocalDate.of(today.year, today.month, dayOfMonth)
+                            val day = LocalDate.of(date.year, date.month, dayOfMonth)
 
                             CalendarItem(modifier = Modifier
                                 .weight(1f)

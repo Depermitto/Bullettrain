@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.times
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 
-// TODO classic settings screen (better layout)
+// TODO P3 classic settings screen (better layout)
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,

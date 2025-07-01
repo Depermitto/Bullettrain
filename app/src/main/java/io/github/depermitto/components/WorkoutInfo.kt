@@ -32,7 +32,7 @@ fun WorkoutInfo(
         // values taken from https://m3.material.io/components/lists/specs#eeeb78e0-265d-4e81-96ba-c2340c348a90
         modifier = Modifier.offset(x = (-16).dp, y = (-16).dp),
         headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
-        supportingContent = { Text(text = "Day ${program.nextDay + 1} Week ${program.weekStreak}") },
+        supportingContent = { Text(text = "${workout.name} Week ${program.weekStreak}") },
         colors = ListItemDefaults.colors(containerColor = filledContainerColor())
     )
 

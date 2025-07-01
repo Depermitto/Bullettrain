@@ -55,7 +55,7 @@ fun TrainingScreen(
     LazyColumn(
         modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
     ) {
-        // TODO add colors for supersets here P2
+        // TODO P2 add colors for supersets here
         itemsIndexed(trainViewModel.getExercises()) { i, _ ->
             TrainExercise(
                 settingsViewModel = settingsViewModel,
@@ -108,7 +108,7 @@ private fun TrainExercise(
                     text = { Text(text = "Delete") },
                     onClick = { trainViewModel.removeExercise(exerciseIndex) })
                 DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
-                    swapExerciseChooser() // TODO add alternatives here P2
+                    swapExerciseChooser() // TODO P2 add alternatives here
                     showDropdownButton = false
                 })
             }

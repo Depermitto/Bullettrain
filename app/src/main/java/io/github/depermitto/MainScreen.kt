@@ -4,8 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -51,7 +49,7 @@ fun MainScreen(
             }
         }
     }, topBar = {
-        Box(modifier = Modifier.fillMaxWidth()) {
+        if (activeBar != Screen.MainScreen.Tabs.History) Box(modifier = Modifier.fillMaxWidth()) {
             Ribbon(navController = navController, title = activeBar.name, backButton = false)
         }
     }) { paddingValues ->
@@ -63,7 +61,7 @@ fun MainScreen(
             )
 
             Screen.MainScreen.Tabs.History -> HistoryTab(
-                modifier = Modifier .padding(paddingValues),
+                modifier = Modifier.padding(paddingValues),
                 settingsViewModel = settingsViewModel,
                 historyDao = historyDao,
             )
