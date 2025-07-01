@@ -17,9 +17,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.depermitto.database.ProgramDao
+import org.depermitto.data.ProgramDao
 import org.depermitto.ui.theme.filledContainerColor
-import org.depermitto.ui.theme.horizontalDp
+import org.depermitto.ui.theme.paddingDp
 import org.depermitto.ui.theme.spacingDp
 
 @Composable
@@ -27,7 +27,7 @@ fun ProgramsScreen(programDao: ProgramDao, navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = horizontalDp)
+            .padding(horizontal = paddingDp)
     ) {
         val scope = rememberCoroutineScope { Dispatchers.IO }
         val programs by programDao.getAllFlow().collectAsStateWithLifecycle(emptyList())
@@ -40,7 +40,7 @@ fun ProgramsScreen(programDao: ProgramDao, navController: NavController) {
                         Column(
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(horizontalDp * 2)
+                                .padding(paddingDp * 2)
                         ) {
                             Text(
                                 text = program.name,
@@ -63,7 +63,7 @@ fun ProgramsScreen(programDao: ProgramDao, navController: NavController) {
             onClick = { navController.navigate(Screen.ProgramsCreationScreen.route) },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom = 3 * horizontalDp, end = 2 * horizontalDp)
+                .padding(bottom = 2 * paddingDp, end = paddingDp)
         ) {
             Icon(Icons.Filled.Add, contentDescription = null)
         }

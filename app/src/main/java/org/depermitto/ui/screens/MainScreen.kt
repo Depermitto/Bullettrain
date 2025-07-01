@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
-import org.depermitto.database.ProgramDao
+import org.depermitto.data.ProgramDao
 import org.depermitto.ui.screens.Screen.MainScreen.Tabs
 import org.depermitto.ui.theme.adaptiveIconTint
 import org.depermitto.ui.theme.filledContainerColor

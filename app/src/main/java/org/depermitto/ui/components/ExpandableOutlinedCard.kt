@@ -17,11 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
-import org.depermitto.ui.theme.horizontalDp
+import org.depermitto.ui.theme.paddingDp
 
+// TODO fix title padding
 @Composable
 fun ExpandableOutlinedCard(
     title: @Composable () -> Unit,
+    titlePadding: PaddingValues = PaddingValues(horizontal = paddingDp),
     dropdownItems: (@Composable () -> Unit)? = null,
     startExpanded: Boolean = false,
     content: @Composable () -> Unit,
@@ -30,24 +32,23 @@ fun ExpandableOutlinedCard(
     val rotationState by animateFloatAsState(targetValue = if (expanded) 180f else 0f, label = "")
     OutlinedCard(
         modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize(
-                animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing)
-            )
+            .fillMaxSize()
+            .animateContentSize(animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing))
     ) {
-        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
                         .weight(6f)
-                        .padding(horizontal = horizontalDp)
+                        .padding(titlePadding)
                 ) {
                     title()
                 }
-                IconButton(modifier = Modifier
-                    .alpha(0.5f)
-                    .weight(1f)
-                    .rotate(rotationState),
+                IconButton(
+                    modifier = Modifier
+                        .alpha(0.5f)
+                        .weight(1f)
+                        .rotate(rotationState),
                     onClick = { expanded = !expanded }) {
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown, contentDescription = "Drop-Down Arrow"

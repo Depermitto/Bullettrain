@@ -17,7 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.depermitto.DB_FILENAME
-import org.depermitto.database.GymDatabase
+import org.depermitto.data.GymDatabase
 import java.io.File
 
 @Composable

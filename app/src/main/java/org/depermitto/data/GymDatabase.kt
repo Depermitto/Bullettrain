@@ -1,4 +1,4 @@
-package org.depermitto.database
+package org.depermitto.data
 
 import android.database.Cursor
 import androidx.room.*
@@ -11,7 +11,7 @@ import kotlinx.serialization.json.Json
 import java.util.*
 
 @Database(
-    entities = [ExerciseListing::class, HistoryEntry::class, Program::class], version = 5, exportSchema = true
+    entities = [Exercise::class, HistoryEntry::class, Program::class], version = 6, exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class GymDatabase : RoomDatabase() {
@@ -23,34 +23,39 @@ abstract class GymDatabase : RoomDatabase() {
     fun checkpoint() = getGymDao().rawQuery(SimpleSQLiteQuery("pragma wal_checkpoint(full)"))
 }
 
-@Entity(tableName = "exercises")
-@Serializable
-data class ExerciseListing(
-    @SerialName("exercise-id") @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "exercise_id") val exerciseId: Long = 0,
-    val name: String,
-)
-
 @Dao
 interface GymDao {
     @RawQuery
     fun rawQuery(query: SimpleSQLiteQuery): Cursor
 }
 
+@Entity(tableName = "exercises")
+@Serializable
+data class Exercise(
+    @SerialName("exercise-id") @ColumnInfo(name = "exercise_id") @PrimaryKey(autoGenerate = true) val exerciseId: Long = 0,
+    var name: String,
+    val reps: Float = 0f,
+    val rpe: Float = 0f,
+    val superset: Exercise? = null,
+    val alternatives: List<Exercise>? = null,
+    val notes: String = "",
+)
+
 @Dao
 interface ExerciseDao {
     @Upsert
-    suspend fun upsert(listing: ExerciseListing)
+    suspend fun upsert(listing: Exercise)
 
     @Delete
-    suspend fun delete(listing: ExerciseListing)
+    suspend fun delete(listing: Exercise)
 
     @Query("SELECT * FROM exercises")
-    fun getAllFlow(): Flow<List<ExerciseListing>>
+    fun getAllFlow(): Flow<List<Exercise>>
 }
 
 @Entity(tableName = "history")
 data class HistoryEntry(
-    @SerialName("history-entry-id") @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "history_entry_id") val historyEntryId: Long = 0,
+    @SerialName("history-entry-id") @ColumnInfo(name = "history_entry_id") @PrimaryKey(autoGenerate = true) val historyEntryId: Long = 0,
     val reps: Float,
     val rpe: Float,
     val date: Date,
@@ -72,25 +77,13 @@ interface HistoryDao {
 data class Program(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "program_id") val programId: Long = 0,
     val name: String,
-    val trainingWork: TrainingWork,
+    val trainingWork: List<Day>,
 )
-
-typealias TrainingWork = List<Day>
 
 @Serializable
 data class Day(
     val name: String,
-    val exercises: List<List<WorkoutEntry>> = listOf(),
-)
-
-@Serializable
-data class WorkoutEntry(
-    val exercise: ExerciseListing,
-    @SerialName("target-reps") val reps: Float = 0f,
-    @SerialName("target-rpe") val rpe: Float = 0f,
-    val superset: WorkoutEntry? = null,
-    val alternatives: List<WorkoutEntry>? = null,
-    val notes: String = "",
+    val exercises: List<List<Exercise>> = listOf(),
 )
 
 @Dao
@@ -107,14 +100,26 @@ interface ProgramDao {
 
 class Converters {
     @TypeConverter
-    fun fromTimestamp(value: Long): Date = Date(value)
+    fun dateFromTimestamp(value: Long): Date = Date(value)
 
     @TypeConverter
     fun dateToTimestamp(date: Date): Long = date.time
 
     @TypeConverter
-    fun fromString(value: String): TrainingWork = Json.decodeFromString(value)
+    fun dayFromString(value: String): List<Day> = Json.decodeFromString(value)
 
     @TypeConverter
-    fun daysToString(work: TrainingWork): String = Json.encodeToString(work)
+    fun daysToString(work: List<Day>): String = Json.encodeToString(work)
+
+    @TypeConverter
+    fun exerciseFromString(value: String?): Exercise? = null
+
+    @TypeConverter
+    fun exerciseToString(exercise: Exercise?): String? = null
+
+    @TypeConverter
+    fun listOfExerciseFromString(value: String?): List<Exercise>? = null
+
+    @TypeConverter
+    fun listOfExerciseToString(exercises: List<Exercise>?): String? = null
 }

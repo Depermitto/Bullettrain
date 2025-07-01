@@ -1,4 +1,4 @@
-package org.depermitto.ui.components
+package org.depermitto.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,67 +13,68 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import androidx.core.text.isDigitsOnly
-import org.depermitto.database.WorkoutEntry
+import org.depermitto.data.Exercise
 import org.depermitto.set
-import org.depermitto.ui.theme.horizontalDp
+import org.depermitto.ui.components.ExpandableOutlinedCard
+import org.depermitto.ui.components.OutlinedTextField
+import org.depermitto.ui.theme.paddingDp
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-const val spacerWeight = 0.2f
+const val spacerWeight = 0.1f
 const val textBoxesWeight = 1f
 
-// TODO Remove sets, make supersets
+// TODO Remove sets, make supersets, duplicate exercises, duplicate days, obviously BETTER UI
 @Composable
-fun WorkoutEntriesCreation(
+fun ProgramExercisesCreationScreen(
     title: @Composable () -> Unit,
-    workoutEntries: List<WorkoutEntry>,
-    onWorkoutEntryChange: (List<WorkoutEntry>?) -> Unit,
+    sets: List<Exercise>,
+    onExerciseChange: (List<Exercise>?) -> Unit,
 ) {
     ExpandableOutlinedCard(title = title) {
-        LazyColumn(modifier = Modifier.heightIn(0.dp, 220.dp)) {
-            itemsIndexed(workoutEntries) { i, workoutEntry ->
+        LazyColumn(
+            modifier = Modifier.heightIn(0.dp, 220.dp),
+            contentPadding = PaddingValues(paddingDp),
+            verticalArrangement = Arrangement.spacedBy(paddingDp)
+        ) {
+            itemsIndexed(sets) { setIndex, exercise ->
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontalDp),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Spacer(modifier = Modifier.weight(spacerWeight))
                     OutlinedTextField(
                         modifier = Modifier.weight(textBoxesWeight),
                         label = { Text(text = "Set") },
-                        value = (i + 1).toString(),
-                        onValueChange = { },
+                        value = (setIndex + 1).toString(),
+                        onValueChange = { throw UnsupportedOperationException("Unreachable") },
                         singleLine = true,
                         readOnly = true,
                     )
                     Spacer(modifier = Modifier.weight(spacerWeight))
                     OutlinedTextField(
                         modifier = Modifier.weight(textBoxesWeight),
-                        label = { Text(text = "Reps") },
-                        value = workoutEntry.reps.roundToInt().takeUnless { it == 0 }?.toString() ?: "",
+                        value = exercise.reps.roundToInt().takeUnless { it == 0 }?.toString() ?: "",
                         onValueChange = {
-                            onWorkoutEntryChange(
-                                workoutEntries.set(
-                                    i, workoutEntry.copy(reps = it.ifBlank { "0" }.toFloat())
+                            onExerciseChange(
+                                sets.set(
+                                    setIndex, exercise.copy(reps = it.ifBlank { "0" }.toFloat())
                                 )
                             )
                         },
+                        label = { Text(text = "Reps") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     )
                     Spacer(modifier = Modifier.weight(spacerWeight))
                     OutlinedTextField(
                         modifier = Modifier.weight(textBoxesWeight),
-                        label = { Text(text = "RPE") },
-                        value = workoutEntry.rpe.roundToInt().takeUnless { it == 0 }?.toString() ?: "",
+                        value = exercise.rpe.roundToInt().takeUnless { it == 0 }?.toString() ?: "",
                         onValueChange = {
-                            onWorkoutEntryChange(
-                                workoutEntries.set(
-                                    i,
-                                    workoutEntry.copy(
+                            onExerciseChange(
+                                sets.set(
+                                    setIndex,
+                                    exercise.copy(
                                         rpe = min(
                                             10f, it.takeIf { it.isNotBlank() && it.isDigitsOnly() }?.toFloat() ?: 0f
                                         )
@@ -81,22 +82,23 @@ fun WorkoutEntriesCreation(
                                 )
                             )
                         },
+                        label = { Text(text = "RPE") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     )
-                    Spacer(modifier = Modifier.weight(spacerWeight))
                 }
             }
 
             item {
                 Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 3 * horizontalDp),
+                    modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors().copy(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     ),
-                    onClick = { onWorkoutEntryChange(workoutEntries + WorkoutEntry(exercise = workoutEntries.first().exercise)) },
+                    onClick = {
+                        val firstExercise = sets.firstOrNull() ?: return@Button
+                        onExerciseChange(sets + firstExercise.copy(reps = 0f, rpe = 0f))
+                    },
                 ) {
                     Text(text = "Add Set")
                 }

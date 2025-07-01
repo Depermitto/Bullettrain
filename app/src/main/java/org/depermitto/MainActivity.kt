@@ -11,7 +11,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import io.github.vinceglb.filekit.core.FileKit
-import org.depermitto.database.GymDatabase
+import org.depermitto.data.GymDatabase
 import org.depermitto.ui.theme.GymAppTheme
 
 class MainActivity : ComponentActivity() {

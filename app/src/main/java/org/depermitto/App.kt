@@ -7,7 +7,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import org.depermitto.database.GymDatabase
+import org.depermitto.data.GymDatabase
 import org.depermitto.presentation.ProgramCreationViewModel
 import org.depermitto.ui.components.Ribbon
 import org.depermitto.ui.components.RibbonScaffold
@@ -44,12 +44,6 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
         composable(Screen.ExercisesScreen.route) {
             RibbonScaffold(ribbon = { Ribbon(navController = navController, title = "Exercises") }) {
                 ExercisesScreen(exerciseDao = db.getExerciseDao(), onSelection = { })
-            }
-        }
-
-        composable(Screen.ExercisesCreationScreen.route) {
-            RibbonScaffold(ribbon = { Ribbon(navController = navController) }) {
-                ExercisesCreationScreen(exerciseDao = db.getExerciseDao())
             }
         }
 

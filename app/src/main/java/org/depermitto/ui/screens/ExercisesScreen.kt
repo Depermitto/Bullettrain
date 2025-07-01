@@ -12,54 +12,65 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
-import org.depermitto.database.ExerciseDao
-import org.depermitto.database.WorkoutEntry
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.depermitto.data.Exercise
+import org.depermitto.data.ExerciseDao
 import org.depermitto.ui.theme.filledContainerColor
-import org.depermitto.ui.theme.horizontalDp
 import org.depermitto.ui.theme.notUnderlinedTextFieldColors
+import org.depermitto.ui.theme.paddingDp
 import org.depermitto.ui.theme.spacingDp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (WorkoutEntry) -> Unit) {
-    Box {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = horizontalDp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            val exercises by exerciseDao.getAllFlow().collectAsState(emptyList())
-            var searchText by remember { mutableStateOf("") }
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(spacingDp)) {
-                item {
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = searchText, onValueChange = { searchText = it },
-                        shape = MaterialTheme.shapes.medium,
-                        colors = notUnderlinedTextFieldColors(),
-                        placeholder = { Text(text = "Search Exercises") },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-                    )
-                }
+fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) {
+    val scope = rememberCoroutineScope { Dispatchers.IO }
+    val exercises by exerciseDao.getAllFlow().collectAsState(emptyList())
 
-                items(exercises.filter { it.name.lowercase().contains(searchText.lowercase()) }) { exercise ->
-                    OutlinedCard(colors = CardDefaults.cardColors(containerColor = filledContainerColor()),
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { onSelection(WorkoutEntry(exercise)) }) {
-                        Text(text = exercise.name, modifier = Modifier.padding(10.dp))
-                    }
+    Box(modifier = Modifier.fillMaxSize()) {
+        var searchText by remember { mutableStateOf("") }
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(spacingDp), contentPadding = PaddingValues(paddingDp)) {
+            item {
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = searchText, onValueChange = { searchText = it },
+                    shape = MaterialTheme.shapes.medium,
+                    colors = notUnderlinedTextFieldColors(),
+                    placeholder = { Text(text = "Search Exercises") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                )
+            }
+
+            items(exercises.filter { it.name.lowercase().contains(searchText.lowercase()) }) { exercise ->
+                OutlinedCard(colors = CardDefaults.cardColors(containerColor = filledContainerColor()),
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onSelection(exercise) }) {
+                    Text(text = exercise.name, modifier = Modifier.padding(10.dp))
                 }
             }
         }
 
+        var showDialog by remember { mutableStateOf(false) }
         FloatingActionButton(
             modifier = Modifier
-                .padding(bottom = 3 * horizontalDp, end = 2 * horizontalDp)
+                .padding(bottom = 2 * paddingDp, end = paddingDp)
                 .align(Alignment.BottomEnd),
-            onClick = { TODO() },
+            onClick = { showDialog = true },
             shape = MaterialTheme.shapes.large,
         ) {
             Icon(Icons.Filled.Add, contentDescription = null)
+        }
+
+        if (showDialog) {
+            BasicAlertDialog(
+                modifier = Modifier.align(Alignment.Center),
+                onDismissRequest = { showDialog = false },
+            ) {
+                ExercisesCreationScreen(newExercise = {
+                    if (it != null) scope.launch { exerciseDao.upsert(it) }
+                    showDialog = false
+                })
+            }
         }
     }
 }

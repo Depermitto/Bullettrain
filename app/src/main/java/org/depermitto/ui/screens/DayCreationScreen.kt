@@ -1,4 +1,4 @@
-package org.depermitto.ui.components
+package org.depermitto.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,17 +13,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import org.depermitto.database.Day
-import org.depermitto.database.ExerciseDao
+import org.depermitto.data.Day
+import org.depermitto.data.ExerciseDao
 import org.depermitto.set
-import org.depermitto.ui.screens.ExercisesScreen
-import org.depermitto.ui.theme.horizontalDp
+import org.depermitto.ui.components.ExpandableOutlinedCard
+import org.depermitto.ui.theme.paddingDp
 import org.depermitto.ui.theme.spacingDp
 import org.depermitto.ui.theme.transparentTextFieldColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DayCreation(day: Day, onDayChange: (Day?) -> Unit, exerciseDao: ExerciseDao) {
+fun DayCreationScreen(day: Day, onDayChange: (Day?) -> Unit, exerciseDao: ExerciseDao) {
     ExpandableOutlinedCard(title = {
         TextField(
             value = day.name,
@@ -37,14 +37,16 @@ fun DayCreation(day: Day, onDayChange: (Day?) -> Unit, exerciseDao: ExerciseDao)
             onClick = { onDayChange(null) })
     }, startExpanded = true) {
         Column(
-            modifier = Modifier.padding(horizontal = horizontalDp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(paddingDp),
             verticalArrangement = Arrangement.spacedBy(spacingDp)
         ) {
-            day.exercises.forEachIndexed { i, workoutEntries ->
-                WorkoutEntriesCreation(title = { Text(text = "${i + 1}. ${workoutEntries.firstOrNull()?.exercise?.name ?: "Name Resolution Failed"}") },
-                    workoutEntries = workoutEntries,
-                    onWorkoutEntryChange = {
-                        if (it == null) onDayChange(day.copy(exercises = day.exercises - setOf(workoutEntries)))
+            day.exercises.forEachIndexed { i, exercises ->
+                ProgramExercisesCreationScreen(title = { Text(text = "${i + 1}. ${exercises.firstOrNull()?.name ?: "Name Resolution Failed"}") },
+                    sets = exercises,
+                    onExerciseChange = {
+                        if (it == null) onDayChange(day.copy(exercises = day.exercises - setOf(exercises)))
                         else onDayChange(day.copy(exercises = day.exercises.set(i, it)))
                     })
             }

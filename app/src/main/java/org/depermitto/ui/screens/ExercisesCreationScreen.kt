@@ -1,45 +1,49 @@
 package org.depermitto.ui.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.depermitto.database.ExerciseDao
-import org.depermitto.database.ExerciseListing
-import org.depermitto.ui.theme.horizontalDp
-import org.depermitto.ui.theme.transparentTextFieldColors
+import org.depermitto.data.Exercise
+import org.depermitto.ui.theme.paddingDp
 
 @Composable
-fun ExercisesCreationScreen(
-    exerciseDao: ExerciseDao,
-) {
-    OutlinedCard {
-        Column {
-            var name by remember { mutableStateOf("") }
-            TextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = name,
-                onValueChange = { name = it },
-                placeholder = { Text(text = "Exercise Name") },
-                colors = transparentTextFieldColors()
+fun ExercisesCreationScreen(newExercise: (Exercise?) -> Unit) {
+    var exerciseState by remember { mutableStateOf(Exercise(name = "")) }
+
+    OutlinedCard(
+        modifier = Modifier
+            .height(200.dp)
+            .width(200.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxSize().padding(horizontal = paddingDp)) {
+            OutlinedTextField(
+                modifier = Modifier.align(Alignment.TopCenter),
+                value = exerciseState.name, onValueChange = { exerciseState = exerciseState.copy(name = it) },
+                label = { Text(text = "Exercise Name") },
+                maxLines = 4,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.tertiary,
+                    focusedLabelColor = MaterialTheme.colorScheme.tertiary,
+                    cursorColor = MaterialTheme.colorScheme.tertiary,
+                    selectionColors = TextSelectionColors(
+                        MaterialTheme.colorScheme.tertiary,
+                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.8f),
+                    ),
+                ),
             )
 
-            OutlinedButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontalDp),
-                onClick = { CoroutineScope(Dispatchers.IO).launch { exerciseDao.upsert(ExerciseListing(name = name)) } },
-            ) {
-                Text(text = "Create")
+            Row(modifier = Modifier.align(Alignment.BottomEnd)) {
+                TextButton(onClick = { newExercise(null) }) {
+                    Text(text = "Cancel")
+                }
+
+                TextButton(onClick = { newExercise(exerciseState) }) {
+                    Text(text = "Confirm")
+                }
             }
         }
     }

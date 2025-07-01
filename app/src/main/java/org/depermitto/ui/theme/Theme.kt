@@ -37,7 +37,7 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
-val horizontalDp = 8.dp
+val paddingDp = 8.dp
 val spacingDp = 4.dp
 
 @Composable
