@@ -76,13 +76,13 @@ interface HistoryDao {
 @Entity(tableName = "programs")
 data class Program(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "program_id") val programId: Long = 0,
-    val name: String,
-    val days: List<Day>,
+    val name: String = "",
+    val days: List<Day> = listOf(Day()),
 )
 
 @Serializable
 data class Day(
-    val name: String,
+    val name: String = "Day 1",
     val exercises: List<Sets> = listOf(),
 )
 

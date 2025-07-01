@@ -5,23 +5,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import io.github.depermitto.data.Day
+import io.github.depermitto.data.Program
 import io.github.depermitto.set
 
-data class ProgramCreationState(
-    val workoutName: String = "",
-    val days: List<Day> = listOf(Day("Day 1")),
-)
-
-class ProgramCreationViewModel : ViewModel() {
-    var state by mutableStateOf(ProgramCreationState())
+class ProgramViewModel : ViewModel() {
+    var state by mutableStateOf(Program())
         private set
 
-    fun reset() {
-        state = ProgramCreationState()
+    fun reset(state: Program = Program()): ProgramViewModel {
+        this.state = state
+        return this
     }
 
     fun setWorkoutName(name: String) {
-        state = state.copy(workoutName = name)
+        state = state.copy(name = name)
     }
 
     fun addDay(day: Day) {
