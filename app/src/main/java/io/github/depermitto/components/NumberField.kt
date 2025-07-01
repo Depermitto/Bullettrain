@@ -10,7 +10,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
 
 @Composable
 fun NumberField(
@@ -51,5 +50,5 @@ fun NumberField(
 }
 
 
-fun Float.stringFromNumeric(): String = this.roundToInt().takeUnless { it == 0 }?.toString() ?: ""
+fun Float.stringFromNumeric(): String = this.takeUnless { it == 0f }?.toString() ?: ""
 fun String.parseFromNumericInput(): Float? = if (isBlank()) 0f else runCatching { toFloatOrNull() }.getOrNull()

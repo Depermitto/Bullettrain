@@ -1,4 +1,4 @@
-package io.github.depermitto.data
+package io.github.depermitto.misc
 
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable

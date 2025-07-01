@@ -16,6 +16,7 @@ import androidx.navigation.NavController
 import io.github.depermitto.components.Ribbon
 import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.data.ExerciseDao
+import io.github.depermitto.data.HistoryDao
 import io.github.depermitto.data.ProgramDao
 import io.github.depermitto.history.HistoryTab
 import io.github.depermitto.programs.ProgramsTab
@@ -24,17 +25,17 @@ import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.adaptiveIconTint
 import io.github.depermitto.theme.filledContainerColor
 import io.github.depermitto.train.TrainTab
-import io.github.depermitto.train.TrainViewModel
 
 @Composable
 fun MainScreen(
-    trainViewModel: TrainViewModel,
     settingsViewModel: SettingsViewModel,
     programDao: ProgramDao,
+    historyDao: HistoryDao,
     exerciseDao: ExerciseDao,
     navController: NavController,
+    activeTab: MainScreen.Tabs,
 ) {
-    var activeBar by remember { mutableStateOf(MainScreen.Tabs.Train) }
+    var activeBar by remember { mutableStateOf(activeTab) }
 
     Scaffold(bottomBar = {
         NavigationBar(containerColor = filledContainerColor()) {
@@ -61,9 +62,14 @@ fun MainScreen(
                     }) { ProgramsTab(programDao = programDao, navController = navController) }
                 }
 
-                MainScreen.Tabs.History -> HistoryTab()
+                MainScreen.Tabs.History -> HistoryTab(historyDao = historyDao)
+               
                 MainScreen.Tabs.Train -> TrainTab(
-                    trainViewModel = trainViewModel, settingsViewModel = settingsViewModel, exerciseDao = exerciseDao
+                    settingsViewModel = settingsViewModel,
+                    programDao = programDao,
+                    historyDao = historyDao,
+                    exerciseDao = exerciseDao,
+                    navController = navController
                 )
             }
         }

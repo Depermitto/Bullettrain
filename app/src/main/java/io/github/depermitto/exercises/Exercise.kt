@@ -16,6 +16,9 @@ import io.github.depermitto.components.DropdownButton
 import io.github.depermitto.components.NumberField
 import io.github.depermitto.components.TargetNumberField
 import io.github.depermitto.data.*
+import io.github.depermitto.misc.DuplicateIcon
+import io.github.depermitto.misc.IntensityIcon
+import io.github.depermitto.misc.set
 import io.github.depermitto.theme.*
 
 @Composable

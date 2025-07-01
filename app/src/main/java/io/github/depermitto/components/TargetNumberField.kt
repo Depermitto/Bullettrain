@@ -16,16 +16,16 @@ fun TargetNumberField(
 ) = when (value) {
     is ExerciseTarget.Reps -> NumberField(
         modifier,
-        value = value.reps.toFloat(),
-        onValueChange = { onValueChange(value.copy(it.toInt())) },
+        value = value.reps,
+        onValueChange = { onValueChange(value.copy(it)) },
         readOnly = readOnly
     )
 
     is ExerciseTarget.Time -> Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         NumberField(
             modifier = modifier,
-            value = value.time.toFloat(),
-            onValueChange = { onValueChange(value.copy(it.toLong())) },
+            value = value.time,
+            onValueChange = { onValueChange(value.copy(it)) },
             readOnly = readOnly
         )
         Text(text = "min")
@@ -34,15 +34,15 @@ fun TargetNumberField(
     is ExerciseTarget.RepRange -> Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         NumberField(
             modifier = modifier,
-            value = value.min.toFloat(),
-            onValueChange = { onValueChange(value.copy(min = it.toInt())) },
+            value = value.min,
+            onValueChange = { onValueChange(value.copy(min = it)) },
             readOnly = readOnly
         )
         Text(text = "-")
         NumberField(
             modifier = modifier,
-            value = value.max.toFloat(),
-            onValueChange = { onValueChange(value.copy(max = it.toInt())) },
+            value = value.max,
+            onValueChange = { onValueChange(value.copy(max = it)) },
             readOnly = readOnly
         )
     }

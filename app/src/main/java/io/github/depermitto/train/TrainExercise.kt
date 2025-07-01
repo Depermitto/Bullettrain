@@ -13,9 +13,13 @@ import androidx.compose.ui.unit.times
 import io.github.depermitto.components.DropdownButton
 import io.github.depermitto.components.NumberField
 import io.github.depermitto.components.TargetNumberField
-import io.github.depermitto.data.*
+import io.github.depermitto.data.ExerciseDao
+import io.github.depermitto.data.ExerciseSet
+import io.github.depermitto.data.ExerciseTarget
 import io.github.depermitto.exercises.Header
 import io.github.depermitto.exercises.exerciseChooser
+import io.github.depermitto.misc.SwapIcon
+import io.github.depermitto.misc.set
 import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.*
 import java.time.Instant
@@ -42,7 +46,7 @@ fun TrainExercise(
                 text = "${exerciseIndex + 1}. ${exercise.name}",
                 style = MaterialTheme.typography.titleMedium,
             )
-            if (trainViewModel.workoutState != WorkoutState.NotStartedYet) {
+            if (trainViewModel.workoutPhase != WorkoutPhase.NotStartedYet) {
                 exercise.sets.lastOrNull { it.date != null }?.let { exerciseSet ->
                     Card {
                         Text(
@@ -76,7 +80,7 @@ fun TrainExercise(
                 }
                 Header(Modifier.weight(ExerciseSetWideWeight), exercise.targetCategory.prettyName)
                 Header(Modifier.weight(ExerciseSetWideWeight), settingsViewModel.settings.unitSystem.weightUnit())
-                if (trainViewModel.workoutState == WorkoutState.Started) {
+                if (trainViewModel.workoutPhase == WorkoutPhase.During) {
                     Header(Modifier.weight(ExerciseSetNarrowWeight), "")
                 }
             }
@@ -115,17 +119,20 @@ fun TrainExercise(
                             trainViewModel.exercises[exerciseIndex] =
                                 exercise.copy(sets = exercise.sets.set(setIndex, set.copy(target = it)))
                         },
-                        readOnly = trainViewModel.workoutState == WorkoutState.NotStartedYet
+                        readOnly = trainViewModel.workoutPhase == WorkoutPhase.NotStartedYet
                     )
                     NumberField(
                         Modifier
                             .weight(ExerciseSetWideWeight)
                             .padding(horizontal = ExerciseSetSpacing),
                         value = set.weight,
-                        onValueChange = { exercise.sets[setIndex] = set.copy(weight = it) },
-                        readOnly = trainViewModel.workoutState == WorkoutState.NotStartedYet
+                        onValueChange = {
+                            trainViewModel.exercises[exerciseIndex] =
+                                exercise.copy(sets = exercise.sets.set(setIndex, set.copy(weight = it)))
+                        },
+                        readOnly = trainViewModel.workoutPhase == WorkoutPhase.NotStartedYet
                     )
-                    if (trainViewModel.workoutState == WorkoutState.Started) {
+                    if (trainViewModel.workoutPhase == WorkoutPhase.During) {
                         Checkbox(modifier = Modifier
                             .size(20.dp)
                             .weight(ExerciseSetNarrowWeight),

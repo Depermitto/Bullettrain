@@ -3,12 +3,11 @@ package io.github.depermitto.data
 import android.database.Cursor
 import androidx.room.*
 import androidx.sqlite.db.SimpleSQLiteQuery
-import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.time.Instant
 
-@Database(entities = [Exercise::class, HistoryEntry::class, Program::class], version = 17, exportSchema = true)
+@Database(entities = [Exercise::class, HistoryRecord::class, Program::class], version = 19, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class GymDatabase : RoomDatabase() {
     abstract fun getGymDao(): GymDao
@@ -25,51 +24,23 @@ interface GymDao {
     fun rawQuery(query: SimpleSQLiteQuery): Cursor
 }
 
-@Dao
-interface ExerciseDao {
-    @Upsert
-    suspend fun upsert(exercise: Exercise)
-
-    @Delete
-    suspend fun delete(exercise: Exercise)
-
-    @Query("SELECT * FROM exercises")
-    fun getAllFlow(): Flow<List<Exercise>>
-}
-
-@Dao
-interface HistoryDao {
-    @Upsert
-    suspend fun upsert(entry: HistoryEntry)
-
-    @Delete
-    suspend fun delete(entry: HistoryEntry)
-
-    @Query("SELECT * FROM history")
-    fun getAllFlow(): Flow<List<HistoryEntry>>
-}
-
-@Dao
-interface ProgramDao {
-    @Upsert
-    suspend fun upsert(program: Program)
-
-    @Delete
-    suspend fun delete(program: Program)
-
-    @Query("SELECT * FROM programs WHERE program_id = :id LIMIT 1")
-    fun whereId(id: Long): Flow<Program?>
-
-    @Query("SELECT * FROM programs")
-    fun getAllFlow(): Flow<List<Program>>
-}
-
 class Converters {
+
+// ---------------------------------------Instants-----------------------------------------------------
+
     @TypeConverter
     fun dateFromTimestamp(value: Long): Instant = Instant.ofEpochMilli(value)
 
     @TypeConverter
-    fun dateToTimestamp(date: Instant): Long = date.toEpochMilli()
+    fun dateToTimestamp(value: Instant): Long = value.toEpochMilli()
+
+// ---------------------------------------Custom Types-------------------------------------------------
+
+    @TypeConverter
+    fun dayFromString(value: String): Day = Json.decodeFromString(value)
+
+    @TypeConverter
+    fun dayToString(value: Day): String = Json.encodeToString(value)
 
 // ---------------------------------------Categories---------------------------------------------------
 
@@ -77,19 +48,19 @@ class Converters {
     fun exerciseTargetFromString(value: String?): ExerciseTarget? = value?.let(Json::decodeFromString)
 
     @TypeConverter
-    fun exerciseTargetToString(target: ExerciseTarget?): String? = target?.let(Json::encodeToString)
+    fun exerciseTargetToString(value: ExerciseTarget?): String? = value?.let(Json::encodeToString)
 
     @TypeConverter
     fun exerciseTargetCategoryFromString(value: String): ExerciseTargetCategory = ExerciseTargetCategory.valueOf(value)
 
     @TypeConverter
-    fun exerciseTargetCategoryToString(target: ExerciseTargetCategory): String = target.name
+    fun exerciseTargetCategoryToString(value: ExerciseTargetCategory): String = value.name
 
     @TypeConverter
     fun intensityCategoryFromString(value: String?): IntensityCategory? = value?.let(IntensityCategory::valueOf)
 
     @TypeConverter
-    fun intensityCategoryToString(target: IntensityCategory?): String? = target?.name
+    fun intensityCategoryToString(value: IntensityCategory?): String? = value?.name
 
 // ----------------------------------------Lists-------------------------------------------------------
 

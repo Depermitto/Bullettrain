@@ -1,17 +1,22 @@
 package io.github.depermitto.data
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.time.Instant
 
-operator fun <T> List<T>.set(index: Int, value: T): List<T> {
-    return slice(0 until index) + value + slice(index + 1 until size)
-}
+@Dao
+interface ExerciseDao {
+    @Upsert
+    suspend fun upsert(exercise: Exercise)
 
-// ---------------------------------------Exercises---------------------------------------------------
+    @Delete
+    suspend fun delete(exercise: Exercise)
+
+    @Query("SELECT * FROM exercises")
+    fun getAllFlow(): Flow<List<Exercise>>
+}
 
 @Serializable
 @Entity(tableName = "exercises")
@@ -50,13 +55,13 @@ enum class ExerciseTargetCategory {
 @Serializable
 sealed class ExerciseTarget(val category: ExerciseTargetCategory) {
     @Serializable
-    data class Reps(val reps: Int = 0) : ExerciseTarget(ExerciseTargetCategory.Reps)
+    data class Reps(val reps: Float = 0f) : ExerciseTarget(ExerciseTargetCategory.Reps)
 
     @Serializable
-    data class Time(val time: Long = 0) : ExerciseTarget(ExerciseTargetCategory.Time)
+    data class Time(val time: Float = 0f) : ExerciseTarget(ExerciseTargetCategory.Time)
 
     @Serializable
-    data class RepRange(val min: Int = 0, val max: Int = 0) : ExerciseTarget(ExerciseTargetCategory.RepRange)
+    data class RepRange(val min: Float = 0f, val max: Float = 0f) : ExerciseTarget(ExerciseTargetCategory.RepRange)
 
     companion object {
         fun of(category: ExerciseTargetCategory) = when (category) {
@@ -69,33 +74,6 @@ sealed class ExerciseTarget(val category: ExerciseTargetCategory) {
     fun toText(): String = when (this) {
         is RepRange -> "$min - $max"
         is Reps -> reps.toString()
-        is Time -> "${time / 60}:${time % 60}"
+        is Time -> "%.2f".format(time) + " min"
     }
 }
-
-// ---------------------------------------History----------------------------------------------------
-
-@Serializable
-@Entity(tableName = "history")
-data class HistoryEntry(
-    @ColumnInfo(name = "history_entry_id") @PrimaryKey(autoGenerate = true) val historyEntryId: Long = 0,
-    val target: Float,
-    val intensity: Float?,
-    val weight: Float,
-    @Contextual val date: Instant,
-)
-
-// ---------------------------------------Programs---------------------------------------------------
-
-@Entity(tableName = "programs")
-data class Program(
-    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "program_id") val programId: Long = 0,
-    val name: String = "",
-    val days: List<Day> = listOf(),
-)
-
-@Serializable
-data class Day(
-    val name: String = "Day 1",
-    val exercises: List<Exercise> = listOf(),
-)

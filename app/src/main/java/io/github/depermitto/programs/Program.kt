@@ -11,9 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.github.depermitto.components.ExpandableOutlinedCard
 import io.github.depermitto.data.ExerciseDao
-import io.github.depermitto.data.set
 import io.github.depermitto.exercises.AddExerciseButton
 import io.github.depermitto.exercises.Exercise
+import io.github.depermitto.misc.set
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.transparentTextFieldColors

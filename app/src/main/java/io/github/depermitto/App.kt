@@ -12,57 +12,51 @@ import androidx.navigation.compose.rememberNavController
 import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.components.Ribbon
 import io.github.depermitto.components.RibbonScaffold
-import io.github.depermitto.data.*
+import io.github.depermitto.data.Program
 import io.github.depermitto.programs.Program
 import io.github.depermitto.programs.ProgramCreation
 import io.github.depermitto.programs.ProgramViewModel
 import io.github.depermitto.screen.MainScreen
 import io.github.depermitto.screen.Screen
+import io.github.depermitto.screen.Screen.MainScreen.Tabs
+import io.github.depermitto.settings.PersistentData
 import io.github.depermitto.settings.Settings
 import io.github.depermitto.settings.SettingsViewModel
-import io.github.depermitto.train.TrainViewModel
-import java.io.File
 
 @Composable
-fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray, settingsFile: File) = MaterialTheme {
+fun App(persistentData: PersistentData) = MaterialTheme {
+    val programDao = persistentData.db.getProgramDao()
+    val historyDao = persistentData.db.getHistoryDao()
+    val exerciseDao = persistentData.db.getExerciseDao()
+
+    val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program(), programDao))
+    val settingsViewModel = viewModel<SettingsViewModel>(factory = SettingsViewModel.Factory(persistentData))
+
     val navController = rememberNavController()
-
-    val exerciseDao = db.getExerciseDao()
-    val programDao = db.getProgramDao()
-
-    val premadeTrainingDay = Day(
-        name = "Arms", exercises = listOf(
-            Exercise(name = "Bench", sets = listOf(ExerciseSet(ExerciseTarget.of(ExerciseTargetCategory.Reps)))),
-            Exercise(name = "Squat")
-        )
-    )
-
-    val globalProgramVM = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program(), programDao))
-    val globalTrainVM = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(premadeTrainingDay))
-    val globalSettingsVM =
-        viewModel<SettingsViewModel>(factory = SettingsViewModel.Factory(db, dbFile, fallbackBytes, settingsFile))
-
     NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
-        composable(Screen.MainScreen.route) {
+        composable(Screen.MainScreen.route) { navBackStackEntry ->
+            val activeTab = Tabs.valueOf(navBackStackEntry.arguments?.getString("tab") ?: Tabs.Train.name)
+
             MainScreen(
-                trainViewModel = globalTrainVM,
-                settingsViewModel = globalSettingsVM,
+                settingsViewModel = settingsViewModel,
                 programDao = programDao,
+                historyDao = historyDao,
                 exerciseDao = exerciseDao,
-                navController = navController
+                navController = navController,
+                activeTab = activeTab
             )
         }
 
         composable(Screen.ProgramCreationScreen.route) {
             RibbonScaffold(ribbon = { Ribbon(navController = navController, title = "New Program") }) {
                 ProgramCreation(
-                    programViewModel = globalProgramVM, exerciseDao = exerciseDao, navController = navController
+                    programViewModel = programViewModel, exerciseDao = exerciseDao, navController = navController
                 )
             }
         }
 
         composable(Screen.ProgramScreen.route) { navBackStackEntry ->
-            val program by programDao.whereId(
+            val program by programDao.whereIdIs(
                 (navBackStackEntry.arguments?.getString("programId") ?: return@composable).toLong()
             ).collectAsStateWithLifecycle(initialValue = null)
 
@@ -83,7 +77,7 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray, settingsFile: F
 
         composable(Screen.SettingsScreen.route) {
             RibbonScaffold(ribbon = { Ribbon(navController, settingsGear = false, title = "Settings") }) {
-                Settings(globalSettingsVM)
+                Settings(settingsViewModel)
             }
         }
     }
