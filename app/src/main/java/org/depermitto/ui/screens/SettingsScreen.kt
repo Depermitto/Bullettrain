@@ -1,13 +1,13 @@
-package org.depermitto.ui
+package org.depermitto.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
 import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerType
 import io.github.vinceglb.filekit.core.pickFile
@@ -24,18 +24,10 @@ fun SettingsScreen(
     dbFile: File,
     fallbackBytes: ByteArray,
     scope: CoroutineScope,
-    navController: NavController,
-) = Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-    Column(modifier = Modifier.weight(1.0f)) {
-        Button(onClick = {
-            scope.launch(Dispatchers.IO) {
-                db.checkpoint()
-                dbFile.writeBytes(fallbackBytes)
-            }
-        }) {
-            Text(text = "revert to default")
-        }
-
+) = Box(
+    modifier = Modifier.fillMaxSize(),
+) {
+    Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
         Button(onClick = {
             scope.launch(Dispatchers.IO) {
                 val dbBytes: ByteArray? = FileKit.pickFile(type = PickerType.File())?.readBytes()
@@ -60,10 +52,16 @@ fun SettingsScreen(
         }) {
             Text(text = "Export")
         }
-    } // Import/Export
 
-    Button(onClick = { navController.navigate(Screen.ExercisesScreen.route) }) {
-        Text("Goto exercises")
+    }
+    
+    Button(modifier = Modifier.align(Alignment.BottomCenter), onClick = {
+        scope.launch(Dispatchers.IO) {
+            db.checkpoint()
+            dbFile.writeBytes(fallbackBytes)
+        }
+    }) {
+        Text(text = "Revert To Default")
     }
 }
 

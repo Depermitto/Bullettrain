@@ -1,4 +1,4 @@
-package org.depermitto.ui
+package org.depermitto.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,17 +15,17 @@ import androidx.navigation.NavController
 import org.depermitto.database.ProgramDao
 
 @Composable
-fun PlansScreen(programDao: ProgramDao, navController: NavController) {
-    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+fun ProgramsScreen(modifier: Modifier = Modifier, programDao: ProgramDao, navController: NavController) {
+    Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         val programs by programDao.getAllFlow().collectAsState(emptyList())
 
-        LazyColumn(modifier = Modifier.weight(1.0f)) {
+        LazyColumn(modifier = Modifier.weight(1f)) {
             items(programs) { program ->
                 Text(text = program.name)
             }
         }
 
-        Button(onClick = { navController.navigate(Screen.PlansCreationScreen.route) }) {
+        Button(onClick = { navController.navigate(Screen.ProgramsCreationScreen.route) }) {
             Text(text = "Create Program")
         }
     }

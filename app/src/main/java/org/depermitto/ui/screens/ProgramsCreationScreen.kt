@@ -1,4 +1,4 @@
-package org.depermitto.ui
+package org.depermitto.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -11,8 +11,10 @@ import androidx.compose.ui.unit.dp
 import org.depermitto.database.Day
 import org.depermitto.database.ProgramDao
 
+// TODO Biggest road blocker as of this moment,
+//  can't create any plans and the ui is clunky
 @Composable
-fun PlansCreationScreen(programDao: ProgramDao) = Column(
+fun ProgramsCreationScreen(programDao: ProgramDao) = Column(
     modifier = Modifier
         .fillMaxSize()
         .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally

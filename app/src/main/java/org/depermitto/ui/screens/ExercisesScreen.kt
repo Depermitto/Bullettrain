@@ -1,4 +1,4 @@
-package org.depermitto.ui
+package org.depermitto.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
