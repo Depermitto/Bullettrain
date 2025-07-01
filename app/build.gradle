@@ -4,7 +4,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.compose'
     id 'com.google.devtools.ksp'
     id 'androidx.room'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '2.0.0'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.0.10'
 }
 
 android {
@@ -76,7 +76,7 @@ dependencies {
     ksp "androidx.room:room-compiler:$room_version"
     
     // FileKit
-    def filekit_version = "0.7.0"
+    def filekit_version = '0.8.0'
     implementation "io.github.vinceglb:filekit-core:$filekit_version"
     implementation "io.github.vinceglb:filekit-compose:$filekit_version"
 
