@@ -31,7 +31,6 @@ private const val SETTINGS_FILENAME = "settings"
 private const val HISTORY_FILENAME = "history"
 private const val PROGRAMS_FILENAME = "programs"
 private const val EXERCISES_FILENAME = "exercises"
-internal const val LOG_TAG = "Database-Read/Write"
 
 class Database(private val databaseDirectory: File, private val context: Context) {
 
@@ -176,14 +175,9 @@ class SettingsDao(private val file: SettingsFile) {
     private val item = MutableStateFlow(file.read())
     val getSettings = item.asStateFlow()
 
-    fun setUnitSystem(value: UnitSystem) {
-        val state = item.updateAndGet { state -> state.copy(unitSystem = value) }
+    fun update(function: (Settings) -> Settings) {
+        val state = item.updateAndGet { state -> function(state) }
         BackgroundSlave.enqueue { file.write(state, log = true) }
-    }
-
-    fun weightUnit() = when (item.value.unitSystem) {
-        UnitSystem.Metric -> "kg"
-        UnitSystem.Imperial -> "lbs"
     }
 }
 

@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
@@ -86,6 +87,7 @@ fun TrainingScreen(
         .padding(bottom = ScrollPadding),
     verticalArrangement = Arrangement.spacedBy(WideSpacing)
 ) {
+    val settings by settingsDao.getSettings.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     trainViewModel.getExercises().forEachIndexed { exerciseIndex, exercise ->
         var showExerciseDeleteDialog by remember { mutableStateOf(false) }
@@ -141,7 +143,7 @@ fun TrainingScreen(
                 }
                 Header(Modifier.weight(NarrowWeight + 0.1f), "Target")
                 Header(Modifier.weight(WideWeight), exercise.perfVarCategory.shortName)
-                Header(Modifier.weight(WideWeight), settingsDao.weightUnit())
+                Header(Modifier.weight(WideWeight), settings.weightUnit())
                 if (trainViewModel.isWorkoutRunning()) {
                     Header(Modifier.weight(NarrowWeight), "")
                 }

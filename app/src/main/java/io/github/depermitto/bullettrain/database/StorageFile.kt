@@ -34,8 +34,8 @@ class ExerciseFile(file: File) : StorageFile<List<Exercise>>(file) {
 fun <Object> StorageFile<Object>.write(obj: Object, log: Boolean) {
     try {
         this.write(obj)
-        if (log) Log.i(LOG_TAG, "Backed up $obj")
+        if (log) Log.i("db-${file.name}", "backed up '$obj'")
     } catch (err: IOException) {
-        if (log) Log.wtf(LOG_TAG, err.toString())
+        if (log) Log.wtf("db-${file.name}", err.toString())
     }
 }

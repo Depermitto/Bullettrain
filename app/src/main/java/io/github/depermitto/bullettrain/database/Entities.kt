@@ -17,7 +17,12 @@ enum class UnitSystem { Metric, Imperial }
 
 @Immutable
 @Serializable
-data class Settings(val unitSystem: UnitSystem = UnitSystem.Metric)
+data class Settings(val unitSystem: UnitSystem = UnitSystem.Metric) {
+    fun weightUnit() = when (unitSystem) {
+        UnitSystem.Metric -> "kg"
+        UnitSystem.Imperial -> "lbs"
+    }
+}
 
 @Immutable
 @Serializable

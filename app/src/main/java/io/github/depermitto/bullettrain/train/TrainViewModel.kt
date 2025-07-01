@@ -132,11 +132,11 @@ class TrainViewModel(
         programDao.upsert(record.relatedProgram.copy(nextDayIndex = nextDayIndex, mostRecentWorkoutDate = record.date))
     }
 
-    fun cancelWorkout() {
+    fun cancelWorkout() = endWorkout { state ->
         if (isWorkoutEditing()) {
-            endWorkout(Destination.Home) { state -> historyDao.update(state.copy(workoutPhase = WorkoutPhase.Completed)) }
+            historyDao.update(state.copy(workoutPhase = WorkoutPhase.Completed))
         } else {
-            endWorkout { state -> historyDao.delete(state) }
+            historyDao.delete(state) 
         }
     }
 

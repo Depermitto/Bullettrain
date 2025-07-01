@@ -24,6 +24,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun ExerciseScreen(modifier: Modifier = Modifier, historyDao: HistoryDao, settingsDao: SettingsDao, exercise: Exercise) {
+    val settings by settingsDao.getSettings.collectAsStateWithLifecycle()
     val exercises by historyDao.where(exercise).collectAsStateWithLifecycle(initialValue = emptyList())
     val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMM dd yyyy")
 
@@ -49,7 +50,7 @@ fun ExerciseScreen(modifier: Modifier = Modifier, historyDao: HistoryDao, settin
 
                             when {
                                 weight.isBlank() -> "$perfVar ${set.targetPerfVar.category.shortName.lowercase()}"
-                                else -> "$perfVar x $weight ${settingsDao.weightUnit()}"
+                                else -> "$perfVar x $weight ${settings.weightUnit()}"
                             }
                         }, maxLines = 1, overflow = TextOverflow.Ellipsis
                     )

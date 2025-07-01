@@ -56,6 +56,7 @@ fun HistoryTab(
     programDao: ProgramDao,
     navController: NavController
 ) = Box(modifier = modifier.fillMaxSize()) {
+    val settings by settingsDao.getSettings.collectAsStateWithLifecycle()
     val historyRecords by historyDao.where(homeViewModel.calendarDate.month, homeViewModel.calendarDate.year)
         .collectAsStateWithLifecycle(initialValue = emptyList())
     val selectedHistoryRecords = historyRecords.filter { record -> record.date == homeViewModel.selectedDate }
@@ -128,7 +129,7 @@ fun HistoryTab(
 
                             when {
                                 weight.isBlank() -> "$perfVar ${bestSet.targetPerfVar.category.shortName.lowercase()}"
-                                else -> "$perfVar x $weight ${settingsDao.weightUnit()}"
+                                else -> "$perfVar x $weight ${settings.weightUnit()}"
                             }
                         }
                     },

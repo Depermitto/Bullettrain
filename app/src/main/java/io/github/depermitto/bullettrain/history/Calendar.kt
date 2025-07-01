@@ -117,19 +117,16 @@ fun Calendar(
     val programs by programDao.getAll.collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedProgram: Program? by rememberSaveable { mutableStateOf(null) }
 
-    if (showProgramListDialog) ListAlertDialog(onDismissRequest = { showProgramListDialog = false },
+    if (showProgramListDialog) ListAlertDialog(title = "Select program",
+        onDismissRequest = { showProgramListDialog = false },
         list = programs,
         dismissButton = { TextButton(onClick = { showProgramListDialog = false }) { Text("Cancel") } },
-        confirmButton = {
-            TextButton(onClick = {
-                showProgramListDialog = false
-                if (it corresponds Program.EmptyWorkout) {
-                    trainViewModel.startWorkout(Day(), Program.EmptyWorkout, date = longClickedDate)
-                } else {
-                    selectedProgram = it
-                }
-            }) {
-                Text("Confirm")
+        onSelected = { program ->
+            showProgramListDialog = false
+            if (program corresponds Program.EmptyWorkout) {
+                trainViewModel.startWorkout(Day(), Program.EmptyWorkout, date = longClickedDate)
+            } else {
+                selectedProgram = program
             }
         }) { program ->
         ListItem(headlineContent = {
@@ -138,16 +135,13 @@ fun Calendar(
     }
 
     selectedProgram?.let { program ->
-        ListAlertDialog(onDismissRequest = { selectedProgram = null },
-            list = program.days,
+        ListAlertDialog(title = "Which workout to perform?",
+            onDismissRequest = { selectedProgram = null },
             dismissButton = { TextButton(onClick = { selectedProgram = null }) { Text("Cancel") } },
-            confirmButton = { day ->
-                TextButton(onClick = {
-                    selectedProgram = null
-                    trainViewModel.startWorkout(day, program, date = longClickedDate)
-                }) {
-                    Text("Confirm")
-                }
+            list = program.days,
+            onSelected = { day ->
+                selectedProgram = null
+                trainViewModel.startWorkout(day, program, date = longClickedDate)
             }) { day ->
             ListItem(headlineContent = {
                 Text(day.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -155,16 +149,11 @@ fun Calendar(
         }
     }
 
-    if (showWorkoutDiscardDialog) ListAlertDialog(onDismissRequest = { showWorkoutDiscardDialog = false },
-        list = currentHistoryRecords.filter { it.date == longClickedDate },
+    if (showWorkoutDiscardDialog) ListAlertDialog(title = "Which workout to discard?",
+        onDismissRequest = { showWorkoutDiscardDialog = false },
         dismissButton = { TextButton(onClick = { showWorkoutDiscardDialog = false }) { Text("Cancel") } },
-        confirmButton = {
-            TextButton(onClick = {
-                showWorkoutDiscardDialog = false; historyDao.delete(it)
-            }) {
-                Text("Discard")
-            }
-        }) { record ->
+        list = currentHistoryRecords.filter { it.date == longClickedDate },
+        onSelected = { workout -> showWorkoutDiscardDialog = false; historyDao.delete(workout) }) { record ->
         var text = record.relatedProgram.name
         if (!(record.relatedProgram corresponds Program.EmptyWorkout)) text += ", " + record.workout.name
 

@@ -37,12 +37,14 @@ fun SettingsScreen(
         ) {
             Text(text = settings.unitSystem.name)
             Switch(checked = settings.unitSystem == UnitSystem.Metric, onCheckedChange = {
-                db.settingsDao.setUnitSystem(
-                    when (settings.unitSystem) {
-                        UnitSystem.Metric -> UnitSystem.Imperial
-                        UnitSystem.Imperial -> UnitSystem.Metric
-                    }
-                )
+                db.settingsDao.update { state ->
+                    state.copy(
+                        unitSystem = when (settings.unitSystem) {
+                            UnitSystem.Metric -> UnitSystem.Imperial
+                            UnitSystem.Imperial -> UnitSystem.Metric
+                        }
+                    )
+                }
             })
         }
 
