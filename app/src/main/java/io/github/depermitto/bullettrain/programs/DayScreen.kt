@@ -42,7 +42,6 @@ import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.ReorderingAlertDialog
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
-import io.github.depermitto.bullettrain.components.TextLink
 import io.github.depermitto.bullettrain.db.ExerciseDao
 import io.github.depermitto.bullettrain.db.HistoryDao
 import io.github.depermitto.bullettrain.exercises.Exercise
@@ -128,14 +127,13 @@ fun DayScreen(
             onExerciseChange = { programViewModel.setExercise(dayIndex, exerciseIndex, it) },
             headline = {
               ExtendedListItem(
-                contentPadding = PaddingValues(8.dp, 12.dp, 12.dp, 12.dp),
+                onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },
+                contentPadding = PaddingValues(12.dp),
                 headlineContent = {
-                  TextLink(
+                  Text(
                     "${exerciseIndex + 1}. ${exerciseDescriptor.name}",
-                    navController = navController,
-                    destination = Destination.Exercise(exerciseDescriptor.id),
-                    contentPadding = PaddingValues(Dp.Medium),
                     style = MaterialTheme.typography.titleMedium,
+                    maxLines = 2,
                   )
                 },
                 trailingContent = {
