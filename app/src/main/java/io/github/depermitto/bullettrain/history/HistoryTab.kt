@@ -208,13 +208,9 @@ fun HistoryTab(
 
           val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
           ExtendedListItem(
-            headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
+            headlineContent = { Text(exerciseDescriptor.name, maxLines = 2) },
             trailingContent = {
-              Text(
-                text = bestSet ?: notPerformedLabel,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 2,
-              )
+              Text(text = bestSet ?: notPerformedLabel, overflow = TextOverflow.Ellipsis)
             },
             modifier = Modifier.clip(MaterialTheme.shapes.small),
             onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },

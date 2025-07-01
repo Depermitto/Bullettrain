@@ -52,6 +52,9 @@ fun Calendar(
 ) {
   Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
     val today = LocalDate.now()
+    val programs by
+      programDao.getPerformable.collectAsStateWithLifecycle(initialValue = emptyList())
+
     var longClickedDate by rememberSaveable { mutableStateOf(today) }
     var showProgramListDialog by rememberSaveable { mutableStateOf(false) }
     Column {
@@ -74,8 +77,10 @@ fun Calendar(
               text = day.dayOfMonth.toString(),
               onClick = { homeViewModel.selectedDate = day },
               onLongClick = {
-                longClickedDate = day
-                showProgramListDialog = true
+                if (programs.isNotEmpty()) {
+                  longClickedDate = day
+                  showProgramListDialog = true
+                }
               },
               backgroundColor =
                 when {
@@ -97,8 +102,6 @@ fun Calendar(
       }
     }
 
-    val programs by
-      programDao.getPerformable.collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedProgram: Program? by
       rememberSaveable(
         saver =
@@ -111,7 +114,7 @@ fun Calendar(
 
     if (showProgramListDialog)
       ListAlertDialog(
-        title = "Start a workout on ${longClickedDate.format(DateFormatters.MMMM_d_yyyy)} from",
+        title = "Starting a workout on ${DateFormatters.MMM_dd.format(longClickedDate)}...",
         onDismissRequest = { showProgramListDialog = false },
         list = programs,
         dismissButton = {
