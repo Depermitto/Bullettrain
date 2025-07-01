@@ -96,7 +96,7 @@ fun SettingsScreen(
               db
                 .importDatabaseInteractively()
                 .fold(
-                  onSuccess = { filename -> "Successfully Imported $filename" },
+                  onSuccess = { filename -> "Successfully imported $filename" },
                   onFailure = { err ->
                     err.message ?: "Unknown error occurred while restoring from file"
                   },

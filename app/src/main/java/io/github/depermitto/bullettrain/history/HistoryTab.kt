@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -137,7 +138,7 @@ fun HistoryTab(
               val planned = plannedExercises.any { it.descriptorId == exercise.descriptorId }
               !skipped || planned
             },
-          backgroundColor = focalGround(settings.theme),
+          colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
           headline = {
             ExtendedListItem(
               headlineContent = { Text(workoutName) },

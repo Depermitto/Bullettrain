@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
@@ -39,7 +40,7 @@ fun Exercise(
   DataPanel(
     items = exercise.setsList,
     modifier = modifier,
-    backgroundColor = focalGround(settings.theme),
+    colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
     headerPadding = PaddingValues(horizontal = Dp.Medium),
     headline = headline,
     headerContent = headerContent,

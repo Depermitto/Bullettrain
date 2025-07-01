@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
@@ -16,7 +17,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -30,13 +30,14 @@ fun <T> DataPanel(
   headerTextStyle: TextStyle = MaterialTheme.typography.titleSmall,
   headerPadding: PaddingValues = PaddingValues(horizontal = Dp.Large),
   headerContent: @Composable RowScope.() -> Unit,
-  backgroundColor: Color = MaterialTheme.colorScheme.background,
+  colors: CardColors =
+    CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
   separateHeaderAndContent: Boolean = true,
   textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
   contentPadding: PaddingValues = PaddingValues(0.dp),
   content: @Composable RowScope.(Int, T) -> Unit,
 ) {
-  Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = backgroundColor)) {
+  Card(modifier = modifier, colors = colors) {
     headline.invoke()
 
     if (items.isEmpty()) return@Card

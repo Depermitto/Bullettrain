@@ -88,6 +88,7 @@ import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.train.TrainingScreen
 import io.github.depermitto.bullettrain.util.DateFormatters
 import io.github.depermitto.bullettrain.util.date
+import io.github.depermitto.bullettrain.util.toZonedDateTime
 import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.launch
 
@@ -285,20 +286,20 @@ fun App(db: Db) = MaterialTheme {
         topBar = {
           TopBarWithBackButton(
             navController = navController,
-            title = programViewModel.programName.ifBlank { "New Program" },
+            title = programViewModel.programName.ifBlank { "New program" },
             endContent = {
               TextButton(
                 onClick = {
                   val program = programViewModel.getProgram()
                   if (program.name.isBlank()) {
                     scope.launch {
-                      snackbarHostState.showSnackbar("Blank Program Name", withDismissAction = true)
+                      snackbarHostState.showSnackbar("Blank program name", withDismissAction = true)
                     }
                     return@TextButton
                   }
                   if (program.workoutsCount == 0) {
                     scope.launch {
-                      snackbarHostState.showSnackbar("No Workout Created", withDismissAction = true)
+                      snackbarHostState.showSnackbar("No workout created", withDismissAction = true)
                     }
                     return@TextButton
                   }
@@ -424,9 +425,8 @@ fun App(db: Db) = MaterialTheme {
           TopBarWithBackButton(
             navController = navController,
             title =
-              exerciseDescriptor.name.run {
-                if (exerciseDescriptor.obsolete) "$this [Archived]" else this
-              },
+              if (exerciseDescriptor.obsolete) "${exerciseDescriptor.name} [Archived]"
+              else exerciseDescriptor.name,
             endContent = {
               DropdownButton(showDropdown, { showDropdown = it }) {
                 DropdownMenuItem(
@@ -552,9 +552,14 @@ fun App(db: Db) = MaterialTheme {
         ExercisesSetsListings(
           modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
           exercises = record.workout.exercisesList,
-          exerciseHeadline = { exercise ->
+          headline = { exercise ->
             val exerciseDescriptor = db.exerciseDao.where(exercise.descriptorId)
             Text(exerciseDescriptor.name)
+          },
+          supportingContent = { exercise ->
+            val start = exercise.setsList.first().doneTs.toZonedDateTime()
+            val startTimeText = DateFormatters.kk_mm.format(start.toOffsetDateTime())
+            Text("${exercise.setsCount} sets, $startTimeText")
           },
           settings = settings,
         )

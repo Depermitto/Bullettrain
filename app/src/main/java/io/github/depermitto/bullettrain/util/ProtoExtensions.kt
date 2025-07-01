@@ -12,6 +12,7 @@ import java.time.LocalDate
 import java.time.OffsetTime
 import java.time.YearMonth
 import java.time.ZoneId
+import java.time.ZonedDateTime
 
 /**
  * Computes the last set that has [Exercise.Set.doneTs_] initialized and returns it if it exists.
@@ -37,8 +38,10 @@ val HistoryRecord.yearMonth: YearMonth
 fun Timestamp.toInstant(): Instant = Instant.ofEpochSecond(this.seconds, this.nanos.toLong())
 
 /** Converts [com.google.protobuf.Timestamp] to [java.time.LocalDate]. */
-fun Timestamp.toLocalDate(): LocalDate =
-  this.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+fun Timestamp.toZonedDateTime(): ZonedDateTime = this.toInstant().atZone(ZoneId.systemDefault())
+
+/** Converts [com.google.protobuf.Timestamp] to [java.time.LocalDate]. */
+fun Timestamp.toLocalDate(): LocalDate = this.toZonedDateTime().toLocalDate()
 
 /** Converts [java.time.Instant] to [com.google.protobuf.Timestamp]. */
 fun Instant.toTimestamp(): Timestamp =

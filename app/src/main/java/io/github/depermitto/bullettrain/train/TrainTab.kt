@@ -74,7 +74,7 @@ fun TrainTab(
 
         DataPanel(
           items = program.getWorkouts(program.nextDayIndex).exercisesList,
-          backgroundColor = Color.Transparent,
+          colors = CardDefaults.cardColors(containerColor = Color.Transparent),
           headline = {
             ExtendedListItem(
               headlineContent = { Text(program.name) },

@@ -1,12 +1,14 @@
 package io.github.depermitto.bullettrain.exercises
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -19,8 +21,9 @@ import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.format
 import io.github.depermitto.bullettrain.protos.ExercisesProto.Exercise
 import io.github.depermitto.bullettrain.protos.SettingsProto.*
+import io.github.depermitto.bullettrain.theme.Large
 import io.github.depermitto.bullettrain.theme.Medium
-import io.github.depermitto.bullettrain.theme.Small
+import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.util.weightUnit
 
 /**
@@ -31,36 +34,38 @@ import io.github.depermitto.bullettrain.util.weightUnit
 fun ExercisesSetsListings(
   modifier: Modifier = Modifier,
   exercises: List<Exercise>,
-  exerciseHeadline: @Composable (Exercise) -> Unit,
+  headline: @Composable (Exercise) -> Unit,
+  supportingContent: @Composable (Exercise) -> Unit,
   settings: Settings,
-  lazyListState: LazyListState = rememberLazyListState(),
+  scroll: ScrollState = rememberScrollState(),
 ) {
-  LazyColumn(
-    modifier = modifier,
-    state = lazyListState,
-    contentPadding = PaddingValues(horizontal = Dp.Medium),
+  Column(
+    modifier = modifier.verticalScroll(scroll).padding(horizontal = Dp.Medium),
     horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.spacedBy(Dp.Small),
+    verticalArrangement = Arrangement.spacedBy(Dp.Medium),
   ) {
-    items(exercises) { exercise ->
+    for (exercise in exercises) {
       val sets = exercise.setsList.filter { s -> s.hasDoneTs() }
-      if (sets.isEmpty()) return@items
+      if (sets.isEmpty()) continue
       DataPanel(
         items = sets,
         separateHeaderAndContent = false,
+        colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
         headline = {
           ExtendedListItem(
-            headlineContent = { exerciseHeadline(exercise) },
+            headlineContent = { headline(exercise) },
             headlineTextStyle = MaterialTheme.typography.titleMedium,
-            contentPadding = PaddingValues(Dp.Medium),
+            supportingContent = { supportingContent(exercise) },
+            contentPadding = PaddingValues(Dp.Large),
           )
         },
-        headerPadding = PaddingValues(horizontal = Dp.Medium),
+        headerPadding = PaddingValues(horizontal = Dp.Large),
         headerContent = {
           Text("Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5F))
           Spacer(Modifier.weight(1F))
           Text("Completed", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
         },
+        contentPadding = PaddingValues(horizontal = Dp.Medium),
       ) { setIndex, set ->
         ExtendedListItem(
           headlineContent = {

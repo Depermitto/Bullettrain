@@ -11,7 +11,7 @@ object DateFormatters {
   val MMM_d_yyyy: DateTimeFormatter = ofPattern("MMM d yyyy")
   val yyyy: DateTimeFormatter = ofPattern("yyyy")
   val MMM_dd: DateTimeFormatter = ofPattern("MMM dd")
-  val EEEE_MMMM_d_yyyy: DateTimeFormatter = ofPattern("EEEE, MMMM d yyyy")
+  val EEEE: DateTimeFormatter = ofPattern("EEEE")
   val yyyy_MM_dd: DateTimeFormatter = ofPattern("yyy-MM-dd")
 
   val m_ss: DateTimeFormatter = ofPattern("m:ss").withZone(ZoneId.systemDefault())

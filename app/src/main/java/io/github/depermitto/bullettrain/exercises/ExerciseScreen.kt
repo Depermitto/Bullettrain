@@ -12,13 +12,14 @@ import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -87,9 +88,8 @@ import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.util.DateFormatters
 import io.github.depermitto.bullettrain.util.lastCompletedSet
 import io.github.depermitto.bullettrain.util.splitOnUppercase
-import io.github.depermitto.bullettrain.util.toInstant
 import io.github.depermitto.bullettrain.util.toLocalDate
-import java.time.ZoneId
+import io.github.depermitto.bullettrain.util.toZonedDateTime
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlinx.coroutines.launch
@@ -130,7 +130,7 @@ fun ExerciseScreen(
       )
   }
 
-  Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(Dp.Medium)) {
+  Column(modifier = modifier) {
     TabRow(selectedTabIndex = pager.currentPage, containerColor = Color.Transparent) {
       Tab.entries.forEachIndexed { tabIndex, tab ->
         val isSelected = pager.currentPage == tabIndex
@@ -148,6 +148,8 @@ fun ExerciseScreen(
       }
     }
 
+    Spacer(Modifier.height(Dp.Medium))
+
     val exercises by
       historyDao
         .map { records ->
@@ -160,7 +162,7 @@ fun ExerciseScreen(
         }
         .collectAsStateWithLifecycle(initialValue = emptyList())
 
-    val lazyListState = rememberLazyListState()
+    val scroll = rememberScrollState()
     var selectedPeriod by remember { mutableStateOf(Period.Yearly) }
     var selectedMetric by remember { mutableStateOf(Metric.OneRepMax) }
     HorizontalPager(state = pager, userScrollEnabled = false) { page ->
@@ -168,14 +170,19 @@ fun ExerciseScreen(
         ExercisesSetsListings(
           modifier = Modifier.pager(),
           exercises = exercises.asReversed(),
-          exerciseHeadline = { exercise ->
-            val start = exercise.setsList.first().doneTs.toInstant().atZone(ZoneId.systemDefault())
-            val startDateText = DateFormatters.EEEE_MMMM_d_yyyy.format(start.toLocalDate())
-            val startTimeText = DateFormatters.kk_mm.format(start.toLocalTime())
-            Text("$startDateText ($startTimeText)", maxLines = 2, overflow = TextOverflow.Ellipsis)
+          headline = { exercise ->
+            val start = exercise.setsList.first().doneTs.toZonedDateTime()
+            val startDateText = DateFormatters.MMMM_d_yyyy.format(start.toLocalDate())
+            Text(startDateText, maxLines = 2, overflow = TextOverflow.Ellipsis)
+          },
+          supportingContent = { exercise ->
+            val start = exercise.setsList.first().doneTs.toZonedDateTime()
+            val startTimeText = DateFormatters.kk_mm.format(start.toOffsetDateTime())
+            val weekday = DateFormatters.EEEE.format(start.toLocalDate())
+            Text("$weekday, $startTimeText")
           },
           settings = settings,
-          lazyListState = lazyListState,
+          scroll = scroll,
         )
       else if (page == Tab.Chart.ordinal && exercises.isNotEmpty())
         Column(verticalArrangement = Arrangement.spacedBy(Dp.Large)) {

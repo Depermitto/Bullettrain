@@ -1,5 +1,6 @@
 package io.github.depermitto.bullettrain.programs
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,6 +33,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -236,8 +238,15 @@ fun DayScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
               ) {
+                val rotationDegrees by
+                  animateFloatAsState(if (showExerciseTypeDropdown) 90F else 0F)
+
                 Text(exercise.type.name, textAlign = TextAlign.Center)
-                Icon(Icons.Sharp.KeyboardArrowDown, contentDescription = "Choose Exercise Type")
+                Icon(
+                  Icons.Sharp.KeyboardArrowDown,
+                  contentDescription = "Choose Exercise Type",
+                  modifier = Modifier.rotate(rotationDegrees),
+                )
                 DropdownMenu(
                   expanded = showExerciseTypeDropdown,
                   onDismissRequest = { showExerciseTypeDropdown = false },
