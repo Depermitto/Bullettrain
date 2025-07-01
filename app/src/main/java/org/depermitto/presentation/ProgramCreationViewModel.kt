@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import org.depermitto.database.Day
+import org.depermitto.set
 
 data class ProgramCreationState(
     val workoutName: String = "",
@@ -31,10 +32,7 @@ class ProgramCreationViewModel : ViewModel() {
         state = state.copy(days = state.days - day)
     }
 
-    fun set(old: Day, new: Day) {
-        val index = state.days.indexOf(old)
-        state = state.copy(
-            days = state.days.slice(0 until index) + new + state.days.slice(index + 1 until state.days.size)
-        )
+    fun setDayAt(index: Int, new: Day) {
+        state = state.copy(days = state.days.set(index, new))
     }
 }

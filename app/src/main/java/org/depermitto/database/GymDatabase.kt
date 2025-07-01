@@ -80,14 +80,14 @@ typealias TrainingWork = List<Day>
 @Serializable
 data class Day(
     val name: String,
-    val exercises: List<WorkoutEntry> = listOf(),
+    val exercises: List<List<WorkoutEntry>> = listOf(),
 )
 
 @Serializable
 data class WorkoutEntry(
     val exercise: ExerciseListing,
-    @SerialName("target-reps") val targetReps: Float? = null,
-    @SerialName("target-rpe") val targetRPE: Float? = null,
+    @SerialName("target-reps") val reps: Float = 0f,
+    @SerialName("target-rpe") val rpe: Float = 0f,
     val superset: WorkoutEntry? = null,
     val alternatives: List<WorkoutEntry>? = null,
     val notes: String = "",

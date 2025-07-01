@@ -1,4 +1,4 @@
-package org.depermitto.ui
+package org.depermitto.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import org.depermitto.database.Day
 import org.depermitto.database.ExerciseDao
+import org.depermitto.set
 import org.depermitto.ui.screens.ExercisesScreen
 import org.depermitto.ui.theme.horizontalDp
 import org.depermitto.ui.theme.spacingDp
@@ -22,28 +23,30 @@ import org.depermitto.ui.theme.transparentTextFieldColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DayCreation(day: Day, onDayChanged: (Day?) -> Unit, exerciseDao: ExerciseDao) {
+fun DayCreation(day: Day, onDayChange: (Day?) -> Unit, exerciseDao: ExerciseDao) {
     ExpandableOutlinedCard(title = {
         TextField(
             value = day.name,
-            onValueChange = { onDayChanged(day.copy(name = it)) },
+            onValueChange = { onDayChange(day.copy(name = it)) },
             textStyle = MaterialTheme.typography.titleMedium,
             colors = transparentTextFieldColors()
         )
     }, dropdownItems = {
         DropdownMenuItem(text = { Text(text = "Delete") },
             leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
-            onClick = { onDayChanged(null) })
-    }) {
+            onClick = { onDayChange(null) })
+    }, startExpanded = true) {
         Column(
             modifier = Modifier.padding(horizontal = horizontalDp),
             verticalArrangement = Arrangement.spacedBy(spacingDp)
         ) {
-            day.exercises.forEachIndexed { i, workoutEntry ->
-                // TODO Set reps, sets and supersets, maybe extract to some composable
-                OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                    Text(modifier = Modifier.padding(horizontalDp), text = "${i + 1}. ${workoutEntry.exercise.name}")
-                }
+            day.exercises.forEachIndexed { i, workoutEntries ->
+                WorkoutEntriesCreation(title = { Text(text = "${i + 1}. ${workoutEntries.firstOrNull()?.exercise?.name ?: "Name Resolution Failed"}") },
+                    workoutEntries = workoutEntries,
+                    onWorkoutEntryChange = {
+                        if (it == null) onDayChange(day.copy(exercises = day.exercises - setOf(workoutEntries)))
+                        else onDayChange(day.copy(exercises = day.exercises.set(i, it)))
+                    })
             }
 
             var showBottomSheet by rememberSaveable { mutableStateOf(false) }
@@ -56,7 +59,7 @@ fun DayCreation(day: Day, onDayChanged: (Day?) -> Unit, exerciseDao: ExerciseDao
                 onDismissRequest = { showBottomSheet = false }, sheetState = sheetState
             ) {
                 ExercisesScreen(exerciseDao = exerciseDao, onSelection = {
-                    onDayChanged(day.copy(exercises = day.exercises + it))
+                    onDayChange(day.copy(exercises = day.exercises + setOf(listOf(it))))
                     showBottomSheet = false
                 })
             }

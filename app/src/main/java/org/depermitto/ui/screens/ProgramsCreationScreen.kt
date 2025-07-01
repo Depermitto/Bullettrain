@@ -3,7 +3,7 @@ package org.depermitto.ui.screens
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,7 +21,7 @@ import org.depermitto.database.ExerciseDao
 import org.depermitto.database.Program
 import org.depermitto.database.ProgramDao
 import org.depermitto.presentation.ProgramCreationViewModel
-import org.depermitto.ui.DayCreation
+import org.depermitto.ui.components.DayCreation
 import org.depermitto.ui.theme.horizontalDp
 import org.depermitto.ui.theme.notUnderlinedTextFieldColors
 import org.depermitto.ui.theme.spacingDp
@@ -54,10 +54,10 @@ fun ProgramsCreationScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(spacingDp)
         ) {
-            items(viewModel.state.days) { day ->
+            itemsIndexed(viewModel.state.days) { i, day ->
                 DayCreation(
-                    day = day, onDayChanged = {
-                        if (it != null) viewModel.set(day, it)
+                    day = day, onDayChange = {
+                        if (it != null) viewModel.setDayAt(i, it)
                         else viewModel.removeDay(day)
                     }, exerciseDao = exerciseDao
                 )
@@ -83,7 +83,7 @@ fun ProgramsCreationScreen(
             val program = Program(name = viewModel.state.workoutName, trainingWork = viewModel.state.days)
             scope.launch { programDao.upsert(program) }
             Toast.makeText(context, "Successfully Created", Toast.LENGTH_SHORT).show()
-            
+
             viewModel.reset()
             navController.popBackStack(Screen.MainScreen.route, false)
         }) {

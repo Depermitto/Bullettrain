@@ -1,13 +1,10 @@
-package org.depermitto.ui
+package org.depermitto.ui.components
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.MoreVert
@@ -20,14 +17,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
+import org.depermitto.ui.theme.horizontalDp
 
 @Composable
 fun ExpandableOutlinedCard(
     title: @Composable () -> Unit,
     dropdownItems: (@Composable () -> Unit)? = null,
+    startExpanded: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(true) }
+    var expanded by remember { mutableStateOf(startExpanded) }
     val rotationState by animateFloatAsState(targetValue = if (expanded) 180f else 0f, label = "")
     OutlinedCard(
         modifier = Modifier
@@ -36,14 +35,19 @@ fun ExpandableOutlinedCard(
                 animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing)
             )
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                title()
-                IconButton(
+        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
                     modifier = Modifier
-                        .alpha(0.5f)
-                        .weight(1f)
-                        .rotate(rotationState),
+                        .weight(6f)
+                        .padding(horizontal = horizontalDp)
+                ) {
+                    title()
+                }
+                IconButton(modifier = Modifier
+                    .alpha(0.5f)
+                    .weight(1f)
+                    .rotate(rotationState),
                     onClick = { expanded = !expanded }) {
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown, contentDescription = "Drop-Down Arrow"
