@@ -28,8 +28,6 @@ import io.github.depermitto.bullettrain.theme.RegularSpacing
 import io.github.depermitto.bullettrain.theme.ScrollPadding
 import io.github.depermitto.bullettrain.theme.unlinedColors
 import kotlinx.coroutines.flow.map
-import kotlin.collections.map
-import kotlin.collections.sortedByDescending
 
 @Composable
 fun ExercisesListScreen(
@@ -38,12 +36,14 @@ fun ExercisesListScreen(
     modifier: Modifier = Modifier,
     onSelection: (Exercise) -> Unit,
 ) = Box(modifier = modifier.fillMaxSize()) {
+    val exerciseFrequencyMap by historyDao.getAll.map { records ->
+        records.flatMap { record -> record.workout.exercises.filter { it.sets.any { it.completed } } }.groupingBy { it.id }
+            .eachCount()
+    }.collectAsStateWithLifecycle(initialValue = emptyMap())
+
     var searchText by rememberSaveable { mutableStateOf("") }
-    val exercises by exerciseDao.where(name = searchText, errorTolerance = 3, ignoreCase = true)
-        .collectAsStateWithLifecycle(initialValue = emptyList())
-    val exercisesGrouped by historyDao.getAll.map { records ->
-        exercises.map { exercise -> exercise to records.sumOf { record -> record.workout.exercises.count { it.id == exercise.id && it.sets.any { it.completed } } } }
-            .sortedByDescending { (_, count) -> count }
+    val exercises by exerciseDao.where(name = searchText, errorTolerance = 3, ignoreCase = true).map {
+        it.sortedByDescending { exerciseFrequencyMap[it.id] }
     }.collectAsStateWithLifecycle(initialValue = emptyList())
 
     Column(
@@ -69,11 +69,12 @@ fun ExercisesListScreen(
         LazyColumn(
             contentPadding = PaddingValues(bottom = ScrollPadding), verticalArrangement = Arrangement.spacedBy(RegularSpacing)
         ) {
-            items(exercisesGrouped) { (exercise, count) ->
+            items(exercises) { exercise ->
+                val count = exerciseFrequencyMap[exercise.id]
                 TransparentCard(modifier = Modifier.fillMaxWidth(), onClick = { onSelection(exercise) }) {
                     ListItem(
                         headlineContent = { Text(exercise.name) },
-                        supportingContent = { if (count != 0) Text("$count ${if (count == 1) "record" else "records"}") },
+                        supportingContent = { if (count != null) Text("$count ${if (count == 1) "record" else "records"}") },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                     )
                 }

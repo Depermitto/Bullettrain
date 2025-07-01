@@ -58,17 +58,13 @@ fun ProgramsTab(
                         leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
                         onClick = { closeDropdown(); showProgramDeleteDialog = true })
                 }) {
-
                 TransparentCard(modifier = Modifier.align(Alignment.Center)) {
                     ListItem(colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
                         supportingContent = {
                             Column {
-                                Text(text = "${program.days.size} day program", style = MaterialTheme.typography.bodyMedium)
-                                Text(
-                                    text = "${program.days.sumOf { day -> day.exercises.sumOf { it.sets.size } }} total sets",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
+                                Text(text = "${program.days.size} day program")
+                                Text(text = "${program.days.sumOf { day -> day.exercises.sumOf { it.sets.size } }} total sets")
 //                                program.mostRecentWorkoutDate?.let { date ->
 //                                    val formatter = DateTimeFormatter.ofPattern("d MMM yyyy")
 //                                    Text(
@@ -95,8 +91,7 @@ fun ProgramsTab(
 
                 if (showRenameDialog) {
                     var errorMessage by rememberSaveable { mutableStateOf("") }
-                    TextFieldAlertDialog(
-                        label = { Text("Program Name") },
+                    TextFieldAlertDialog(label = { Text("Program Name") },
                         onDismissRequest = { showRenameDialog = false },
                         dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
                         confirmButton = { name ->
@@ -105,7 +100,7 @@ fun ProgramsTab(
                                     errorMessage = "Black Program Name"
                                     return@TextButton
                                 }
-                               
+
                                 programDao.update(program.copy(name = name))
                                 showRenameDialog = false
                             }) {

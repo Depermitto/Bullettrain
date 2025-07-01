@@ -24,7 +24,7 @@ fun SettingsScreen(
     db: Database,
     snackbarHostState: SnackbarHostState,
 ) {
-    val settings by db.settingsDao.settings.collectAsStateWithLifecycle()
+    val settings by db.settingsDao.getSettings.collectAsStateWithLifecycle()
     Box(
         modifier = modifier
             .fillMaxSize()

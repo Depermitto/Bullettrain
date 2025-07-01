@@ -173,15 +173,15 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
 }
 
 class SettingsDao(private val file: SettingsFile) {
-    private val items = MutableStateFlow(file.read())
-    var settings = items.asStateFlow()
+    private val item = MutableStateFlow(file.read())
+    val getSettings = item.asStateFlow()
 
     fun setUnitSystem(value: UnitSystem) {
-        val state = items.updateAndGet { state -> state.copy(unitSystem = value) }
+        val state = item.updateAndGet { state -> state.copy(unitSystem = value) }
         BackgroundSlave.enqueue { file.write(state, log = true) }
     }
 
-    fun weightUnit() = when (items.value.unitSystem) {
+    fun weightUnit() = when (item.value.unitSystem) {
         UnitSystem.Metric -> "kg"
         UnitSystem.Imperial -> "lbs"
     }
@@ -203,7 +203,8 @@ class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
 }
 
 class ProgramDao(file: ProgramsFile) : Dao<Program>(file) {
-    val getAlmostAll = getAll.map { it.filterNot { it corresponds Program.EmptyWorkout }.sortedByDescending { it.mostRecentWorkoutDate } }
+    val getAlmostAll =
+        getAll.map { it.filterNot { it corresponds Program.EmptyWorkout }.sortedByDescending { it.mostRecentWorkoutDate } }
 }
 
 class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {
