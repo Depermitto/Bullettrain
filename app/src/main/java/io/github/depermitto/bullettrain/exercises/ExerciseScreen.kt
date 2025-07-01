@@ -216,7 +216,7 @@ fun ExerciseScreen(
           val modelProducer = remember { CartesianChartModelProducer() }
           LaunchedEffect(values) { modelProducer.runTransaction { lineSeries { series(values) } } }
 
-          val lineColor = MaterialTheme.colorScheme.primary
+          val lineColor = MaterialTheme.colorScheme.secondary
           CartesianChartHost(
             modifier = Modifier.height(250.dp),
             modelProducer = modelProducer,

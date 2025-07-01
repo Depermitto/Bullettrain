@@ -1,5 +1,6 @@
 package io.github.depermitto.bullettrain
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -7,6 +8,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -93,6 +95,7 @@ import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+  @RequiresApi(Build.VERSION_CODES.S)
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
     super.onCreate(savedInstanceState)
@@ -114,7 +117,7 @@ class MainActivity : ComponentActivity() {
       }
 
       val settings by db.settingsDao.get.collectAsStateWithLifecycle()
-      BullettrainTheme(settings) {
+      BullettrainTheme(applicationContext, settings) {
         // this is for color flashing during navigating
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
           App(db)
