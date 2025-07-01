@@ -4,7 +4,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.delete
 import androidx.compose.foundation.text.input.placeCursorAtEnd
@@ -96,7 +95,6 @@ fun NumberField(
     textStyle = textStyle,
     label = label,
     placeholder = placeholder,
-    lineLimits = TextFieldLineLimits.MultiLine(1, 2),
     readOnly = false,
     enabled = enabled,
     colors = colors,

@@ -70,12 +70,12 @@ fun Calendar(
 
           val day = days.next()
 
-          val alpha = if (day.month == date.month) 1F else 0.3F
+          val alpha = if (day.month == date.month) 1F else 0.5F
           val (backgroundColor, textColor) =
             when {
               homeViewModel.selectedDate == day ->
                 Pair(
-                  MaterialTheme.colorScheme.primary.copy(alpha = alpha + 0.2F),
+                  MaterialTheme.colorScheme.primary.copy(alpha = alpha + 0.3F),
                   MaterialTheme.colorScheme.onPrimary,
                 )
 

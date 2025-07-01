@@ -8,7 +8,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.KeyboardActionHandler
-import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +34,6 @@ fun OutlinedTextField(
   textStyle: TextStyle = TextStyle.numeric(),
   inputTransformation: InputTransformation? = null,
   visualTransformation: VisualTransformation = VisualTransformation.None,
-  lineLimits: TextFieldLineLimits = TextFieldLineLimits.Default,
   enabled: Boolean = true,
   readOnly: Boolean = false,
   label: @Composable (() -> Unit)? = null,
@@ -54,7 +52,6 @@ fun OutlinedTextField(
     modifier = modifier,
     enabled = enabled,
     readOnly = readOnly,
-    lineLimits = lineLimits,
     textStyle = textStyle,
     inputTransformation = inputTransformation,
     keyboardOptions = keyboardOptions,
