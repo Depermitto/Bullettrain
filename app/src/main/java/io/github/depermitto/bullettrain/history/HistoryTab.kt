@@ -119,6 +119,8 @@ fun HistoryTab(
       )
 
       for (record in selectedHistoryRecords) {
+        if (record.yearMonth != homeViewModel.calendarPage) continue
+
         val workoutName: String
         val plannedExercises: List<Exercise>
         if (record.hasRelatedProgramId()) {

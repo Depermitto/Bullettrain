@@ -72,12 +72,12 @@ fun Calendar(
             val day =
               when {
                 dayOfMonth <= 0 -> {
-                  val month = date.month - 1
-                  LocalDate.of(date.year, month, month.length(date.isLeapYear) + dayOfMonth)
+                  val ym = date.minusMonths(1)
+                  LocalDate.of(ym.year, ym.month, ym.month.length(date.isLeapYear) + dayOfMonth)
                 }
                 dayOfMonth > date.month.length(date.isLeapYear) -> {
-                  val month = date.month + 1
-                  LocalDate.of(date.year, month, dayOfMonth - date.month.length(date.isLeapYear))
+                  val ym = date.plusMonths(1)
+                  LocalDate.of(ym.year, ym.month, dayOfMonth - date.month.length(date.isLeapYear))
                 }
                 else -> LocalDate.of(date.year, date.month, dayOfMonth)
               }
