@@ -1,5 +1,6 @@
 package io.github.depermitto.programs
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,11 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import io.github.depermitto.components.DropdownButton
 import io.github.depermitto.components.ExpandableOutlinedCard
 import io.github.depermitto.components.Header
 import io.github.depermitto.components.NumberField
+import io.github.depermitto.components.SwipeToDeleteBox
 import io.github.depermitto.data.entities.Exercise
 import io.github.depermitto.data.entities.ExerciseDao
 import io.github.depermitto.data.entities.ExerciseSet
@@ -98,13 +99,15 @@ fun Program(
 }
 
 @Composable
-fun ProgramExercise(exercise: Exercise, onExerciseChange: (Exercise?) -> Unit) = Card(
-    colors = CardDefaults.cardColors(containerColor = filledContainerColor())
-) {
+fun ProgramExercise(
+    modifier: Modifier = Modifier,
+    exercise: Exercise,
+    onExerciseChange: (Exercise?) -> Unit,
+) = Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
     var showSetEditDropdown by remember { mutableStateOf(false) }
     var showTargetEditDropdown by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.padding(ItemPadding), verticalArrangement = Arrangement.spacedBy(2 * ItemSpacing)) {
+    Column(modifier = Modifier.padding(ItemPadding)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 modifier = Modifier.weight(1f),
@@ -130,56 +133,53 @@ fun ProgramExercise(exercise: Exercise, onExerciseChange: (Exercise?) -> Unit) =
             }
         }
 
-        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2 * ItemSpacing)) {
+        Row(modifier = Modifier.padding(top = ItemPadding, bottom = ItemSpacing)) {
+            Header(Modifier.weight(ExerciseSetNarrowWeight), "Set")
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .offset(y = 2 * ItemSpacing),
-                horizontalArrangement = Arrangement.Center
+                    .weight(ExerciseSetWideWeight)
+                    .clickable { showTargetEditDropdown = true },
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Header(Modifier.weight(ExerciseSetNarrowWeight), "Set")
-                Row(
-                    modifier = Modifier
-                        .weight(ExerciseSetWideWeight)
-                        .clickable { showTargetEditDropdown = true },
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Header(text = exercise.perfVarCategory.prettyName)
-                    Icon(Icons.Sharp.KeyboardArrowDown, contentDescription = null)
+                Header(text = exercise.perfVarCategory.prettyName)
+                Icon(Icons.Sharp.KeyboardArrowDown, contentDescription = null)
 
-                    DropdownMenu(
-                        expanded = showTargetEditDropdown,
-                        onDismissRequest = { showTargetEditDropdown = false }) {
-                        PerfVarCategory.entries.forEach { entry ->
-                            DropdownMenuItem(text = { Text(entry.prettyName) }, onClick = {
-                                onExerciseChange(
-                                    exercise.copy(
-                                        sets = exercise.sets.map { it.copy(targetPerfVar = PerfVar.of(entry)) },
-                                        perfVarCategory = entry
-                                    )
+                DropdownMenu(
+                    expanded = showTargetEditDropdown,
+                    onDismissRequest = { showTargetEditDropdown = false }) {
+                    PerfVarCategory.entries.forEach { entry ->
+                        DropdownMenuItem(text = { Text(entry.prettyName) }, onClick = {
+                            onExerciseChange(
+                                exercise.copy(
+                                    sets = exercise.sets.map { it.copy(targetPerfVar = PerfVar.of(entry)) },
+                                    perfVarCategory = entry
                                 )
-                                showTargetEditDropdown = false
-                            })
-                        }
+                            )
+                            showTargetEditDropdown = false
+                        })
                     }
                 }
-                if (exercise.hasIntensity) {
-                    Header(Modifier.weight(ExerciseSetWideWeight), "RPE")
-                }
-                Header(Modifier.weight(ExerciseSetNarrowWeight), "")
             }
-            HorizontalDivider()
+            if (exercise.hasIntensity) {
+                Header(Modifier.weight(ExerciseSetWideWeight), "RPE")
+            }
+            Header(Modifier.weight(ExerciseSetNarrowWeight), "")
+        }
+        HorizontalDivider()
 
-            exercise.sets.forEachIndexed { j, set ->
+        exercise.sets.forEachIndexed { setIndex, set ->
+            SwipeToDeleteBox(onDelete = { onExerciseChange(exercise.copy(sets = exercise.sets.filterIndexed { i, _ -> i != setIndex })) }) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(color = filledContainerColor())
+                        .padding(ItemPadding),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         modifier = Modifier.weight(ExerciseSetNarrowWeight),
-                        text = (j + 1).toString(),
+                        text = (setIndex + 1).toString(),
                         textAlign = TextAlign.Center
                     )
                     ExerciseTargetField(
@@ -188,7 +188,14 @@ fun ProgramExercise(exercise: Exercise, onExerciseChange: (Exercise?) -> Unit) =
                             .padding(horizontal = ExerciseSetSpacing),
                         value = set.targetPerfVar,
                         onValueChange = {
-                            onExerciseChange(exercise.copy(sets = exercise.sets.set(j, set.copy(targetPerfVar = it))))
+                            onExerciseChange(
+                                exercise.copy(
+                                    sets = exercise.sets.set(
+                                        setIndex,
+                                        set.copy(targetPerfVar = it)
+                                    )
+                                )
+                            )
                         })
                     if (set.intensity != null) {
                         NumberField(
@@ -197,7 +204,14 @@ fun ProgramExercise(exercise: Exercise, onExerciseChange: (Exercise?) -> Unit) =
                                 .padding(horizontal = ExerciseSetSpacing),
                             value = set.intensity,
                             onValueChange = {
-                                onExerciseChange(exercise.copy(sets = exercise.sets.set(j, set.copy(intensity = it))))
+                                onExerciseChange(
+                                    exercise.copy(
+                                        sets = exercise.sets.set(
+                                            setIndex,
+                                            set.copy(intensity = it)
+                                        )
+                                    )
+                                )
                             })
                     }
                     IconButton(modifier = Modifier

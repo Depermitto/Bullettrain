@@ -1,5 +1,6 @@
 package io.github.depermitto.train
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -12,11 +13,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import io.github.depermitto.components.DropdownButton
 import io.github.depermitto.components.Header
 import io.github.depermitto.components.NumberField
 import io.github.depermitto.components.RibbonScaffold
+import io.github.depermitto.components.SwipeToDeleteBox
 import io.github.depermitto.data.entities.ExerciseDao
 import io.github.depermitto.data.entities.ExerciseSet
 import io.github.depermitto.data.entities.PerfVar
@@ -68,21 +69,22 @@ fun TrainingScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TrainExercise(
+private fun TrainExercise(
+    modifier: Modifier = Modifier,
     settingsViewModel: SettingsViewModel,
     trainViewModel: TrainViewModel,
     exerciseIndex: Int,
     exerciseDao: ExerciseDao,
-) = Card(colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
+) = Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
     val exercise = trainViewModel.getExercise(exerciseIndex)
-
     var showDropdownButton by remember { mutableStateOf(false) }
     val swapExerciseChooser = exerciseChooser(exerciseDao = exerciseDao, onChoose = {
         trainViewModel.setExercise(exerciseIndex, exercise.copy(name = it.name, exerciseId = it.exerciseId))
     })
 
-    Column(modifier = Modifier.padding(ItemPadding), verticalArrangement = Arrangement.spacedBy(2 * ItemSpacing)) {
+    Column(modifier = Modifier.padding(ItemPadding)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 modifier = Modifier.weight(1f),
@@ -112,24 +114,29 @@ fun TrainExercise(
             }
         }
 
-        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2 * ItemSpacing)) {
-            Row(modifier = Modifier.offset(y = 2 * ItemSpacing)) {
-                Header(Modifier.weight(ExerciseSetNarrowWeight), "Set")
-                if (exercise.intensityCategory != null) {
-                    Header(Modifier.weight(ExerciseSetNarrowWeight), exercise.intensityCategory.name)
-                }
-                Header(Modifier.weight(ExerciseSetNarrowWeight + 0.1f), "Target")
-                Header(Modifier.weight(ExerciseSetWideWeight), exercise.perfVarCategory.trainName())
-                Header(Modifier.weight(ExerciseSetWideWeight), settingsViewModel.weightUnit())
-                if (trainViewModel.isWorkoutRunning()) {
-                    Header(Modifier.weight(ExerciseSetNarrowWeight), "")
-                }
+        Row(modifier = Modifier.padding(top = ItemPadding, bottom = ItemSpacing)) {
+            Header(Modifier.weight(ExerciseSetNarrowWeight), "Set")
+            if (exercise.intensityCategory != null) {
+                Header(Modifier.weight(ExerciseSetNarrowWeight), exercise.intensityCategory.name)
             }
-            HorizontalDivider()
+            Header(Modifier.weight(ExerciseSetNarrowWeight + 0.1f), "Target")
+            Header(Modifier.weight(ExerciseSetWideWeight), exercise.perfVarCategory.trainName())
+            Header(Modifier.weight(ExerciseSetWideWeight), settingsViewModel.weightUnit())
+            if (trainViewModel.isWorkoutRunning()) {
+                Header(Modifier.weight(ExerciseSetNarrowWeight), "")
+            }
+        }
+        HorizontalDivider()
 
-            exercise.sets.forEachIndexed { setIndex, set ->
-//                SwipeToDismissBox() { }
-                Row(verticalAlignment = Alignment.CenterVertically) {
+        exercise.sets.forEachIndexed { setIndex, set ->
+            SwipeToDeleteBox(onDelete = { trainViewModel.removeSet(exerciseIndex, setIndex) }) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(color = filledContainerColor())
+                        .padding(ItemPadding),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         modifier = Modifier.weight(ExerciseSetNarrowWeight),
                         text = (setIndex + 1).toString(),
@@ -146,8 +153,7 @@ fun TrainExercise(
                     }
                     Text(
                         modifier = Modifier.weight(ExerciseSetNarrowWeight + 0.1f),
-                        text = exercise.sets.getOrNull(setIndex)?.targetPerfVar?.toText()?.takeUnless(String::isEmpty)
-                            ?: "--",
+                        text = set.targetPerfVar.toText().takeUnless(String::isEmpty) ?: "--",
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium
                     )

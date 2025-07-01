@@ -22,20 +22,24 @@ fun NumberField(
     readOnly: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(3.dp),
 ) {
-    var textFieldValue by remember { mutableStateOf(TextFieldValue(value.encodeToStringOutput())) }
+    val textValue = value.encodeToStringOutput()
+
+    var textFieldValue by remember { mutableStateOf(TextFieldValue(textValue)) }
+    if (textValue != textFieldValue.text) textFieldValue = textFieldValue.copy(text = textValue)
+
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     LaunchedEffect(isFocused) {
-        val endRange = if (isFocused) textFieldValue.text.length else 0
-        textFieldValue = textFieldValue.copy(selection = TextRange(start = 0, end = endRange))
+        val endRange = if (isFocused) textValue.length else 0
+        textFieldValue = textFieldValue.copy(selection = TextRange(0, endRange))
     }
 
     OutlinedTextField(
         modifier = modifier,
         value = textFieldValue,
         onValueChange = {
-            val validNumber = it.text.parseFromNumericInput()
+            val validNumber: Float? = it.text.parseFromNumericInput()
             if (!it.text.contains(" ") && validNumber != null) {
                 textFieldValue = it
                 onValueChange(validNumber)
@@ -56,4 +60,5 @@ fun Float.encodeToStringOutput(): String {
     if (this == 0f) return ""
     return stripTrailingZeros()?.toString() ?: this.toString()
 }
+
 fun String.parseFromNumericInput(): Float? = if (isBlank()) 0f else runCatching { toFloatOrNull() }.getOrNull()

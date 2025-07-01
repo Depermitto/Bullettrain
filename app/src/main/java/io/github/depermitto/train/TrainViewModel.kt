@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
-import io.github.depermitto.data.entities.*
 import io.github.depermitto.Screen
+import io.github.depermitto.data.entities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -45,6 +45,10 @@ class TrainViewModel(
     fun getExercises() = exercises
     fun addExercise(exercise: Exercise) = exercises.add(exercise)
     fun removeExercise(index: Int) = exercises.removeAt(index)
+    fun removeSet(exerciseIndex: Int, setIndex: Int) = setExercise(
+        exerciseIndex,
+        getExercise(exerciseIndex).copy(sets = getExercise(exerciseIndex).sets.filterIndexed { i, _ -> i != setIndex })
+    )
 
     fun startWorkout(day: Day, program: Program) {
         if (workoutState != null) return
@@ -70,7 +74,8 @@ class TrainViewModel(
 
     fun completeWorkout() = endWorkout { state ->
         val record = state.historyRecord.copy(
-            workoutPhase = WorkoutPhase.Completed, workout = state.historyRecord.workout.copy(exercises = exercises.toList())
+            workoutPhase = WorkoutPhase.Completed,
+            workout = state.historyRecord.workout.copy(exercises = exercises.toList())
         )
         val program = programDao.whereId(record.relatedProgram.programId) ?: return@endWorkout
         val nextDay = (program.nextDay + 1) % program.days.size
