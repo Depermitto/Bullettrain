@@ -68,11 +68,10 @@ fun HistoryTab(
             }
         }
     }) { paddingValues ->
-        val scrollState = rememberScrollState(0)
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .verticalScroll(scrollState),
+                .verticalScroll(rememberScrollState(0)),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(ItemSpacing),
         ) {
