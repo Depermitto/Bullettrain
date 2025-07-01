@@ -19,7 +19,7 @@ import org.depermitto.database.GymDatabase
 import java.io.File
 
 @Composable
-fun Settings(
+fun SettingsScreen(
     db: GymDatabase,
     dbFile: File,
     fallbackBytes: ByteArray,

@@ -1,4 +1,4 @@
-package org.depermitto.ui.creation
+package org.depermitto.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
@@ -7,14 +7,13 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.depermitto.database.ExerciseDao
 import org.depermitto.database.ExerciseListing
 
 @Composable
-fun ExerciseCreationWizard(
+fun ExercisesCreationScreen(
     modifier: Modifier,
     exerciseDao: ExerciseDao,
     navController: NavController,
