@@ -25,6 +25,7 @@ import java.util.Timer
 import kotlin.concurrent.timer
 import kotlin.math.max
 
+@Immutable
 @Serializable
 enum class WorkoutPhase { During, Completed, Editing }
 

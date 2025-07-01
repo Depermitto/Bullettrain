@@ -1,5 +1,6 @@
 package io.github.depermitto.bullettrain.database
 
+import androidx.compose.runtime.Immutable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.train.WorkoutPhase
 import kotlinx.serialization.SerialName
@@ -14,9 +15,11 @@ interface Entity {
 
 enum class UnitSystem { Metric, Imperial }
 
+@Immutable
 @Serializable
 data class Settings(val unitSystem: UnitSystem = UnitSystem.Metric)
 
+@Immutable
 @Serializable
 data class HistoryRecord(
     @SerialName("historyRecordId") override val id: Int = 0,
@@ -29,6 +32,7 @@ data class HistoryRecord(
     override fun clone(id: Int) = copy(id = id)
 }
 
+@Immutable
 @Serializable
 data class Program(
     @SerialName("programId") override val id: Int = 0,
@@ -50,12 +54,14 @@ data class Program(
     }
 }
 
+@Immutable
 @Serializable
 data class Day(
     val name: String = "Day 1",
     val exercises: List<Exercise> = listOf(),
 )
 
+@Immutable
 @Serializable
 data class Exercise(
     @SerialName("exerciseId") override val id: Int = 0,
@@ -75,6 +81,7 @@ data class Exercise(
     override fun clone(id: Int) = copy(id = id)
 }
 
+@Immutable
 @Serializable
 data class ExerciseSet(
     @SerialName("targetPerformanceVariable") val targetPerfVar: PerfVar,
@@ -88,9 +95,11 @@ data class ExerciseSet(
 }
 
 // TODO implement these as choices
+@Immutable
 @Serializable
 enum class Intensity { RPE, RIR, PercentOf1RM }
 
+@Immutable
 @Serializable
 enum class PerfVarCategory {
     Reps, RepRange, Time, TimeRange;
@@ -105,17 +114,22 @@ enum class PerfVarCategory {
         }
 }
 
+@Immutable
 @Serializable
 sealed class PerfVar(val category: PerfVarCategory) {
+    @Immutable
     @Serializable
     data class Reps(val reps: Float = 0f) : PerfVar(PerfVarCategory.Reps)
 
+    @Immutable
     @Serializable
     data class Time(val time: Float = 0f) : PerfVar(PerfVarCategory.Time)
 
+    @Immutable
     @Serializable
     data class RepRange(val min: Float = 0f, val max: Float = 0f) : PerfVar(PerfVarCategory.RepRange)
 
+    @Immutable
     @Serializable
     data class TimeRange(val min: Float = 0f, val max: Float = 0f) : PerfVar(PerfVarCategory.TimeRange)
 
