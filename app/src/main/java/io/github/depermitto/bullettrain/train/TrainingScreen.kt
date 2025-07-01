@@ -68,9 +68,10 @@ fun TrainingScreen(
     trainViewModel: TrainViewModel,
     settingsDao: SettingsDao,
     exerciseDao: ExerciseDao,
+    modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState
 ) = Column(
-    modifier = Modifier
+    modifier = modifier
         .padding(horizontal = ItemPadding)
         .verticalScroll(rememberScrollState(0)),
     verticalArrangement = Arrangement.spacedBy(CardSpacing)

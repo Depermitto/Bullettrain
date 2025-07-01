@@ -3,11 +3,14 @@ package io.github.depermitto.bullettrain.components
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -48,6 +51,7 @@ fun NumberField(
     }
     if (!enabled) textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
 
+    val focusManager = LocalFocusManager.current
     OutlinedTextField(
         modifier = modifier,
         value = textFieldValue,
@@ -69,6 +73,7 @@ fun NumberField(
         colors = colors,
         contentPadding = contentPadding,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardActions = KeyboardActions(onDone = { focusManager.moveFocus(FocusDirection.Next) }),
         interactionSource = interactionSource,
         focusedBorderThickness = focusedBorderThickness,
         unfocusedBorderThickness = unfocusedBorderThickness,
