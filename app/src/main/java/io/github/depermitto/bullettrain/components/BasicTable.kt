@@ -97,13 +97,13 @@ fun <T> BasicTable(
 }
 
 @Composable
-fun WorkoutBasicTable(
+fun WorkoutTable(
     modifier: Modifier = Modifier,
     workout: Day,
     program: Program,
     trailingContent: (@Composable () -> Unit)? = null,
     exstractor: (Exercise) -> String?,
-    ratio: Ratio
+    ratio: Ratio = Ratio.Unlimited
 ) {
     var header = program.name
     var supportingText: String? = workout.name

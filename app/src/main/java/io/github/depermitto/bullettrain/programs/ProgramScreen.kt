@@ -35,7 +35,7 @@ import io.github.depermitto.bullettrain.theme.ItemPadding
 import sh.calvin.reorderable.ReorderableColumn
 
 @Composable
-fun ProgramDaysScreen(
+fun ProgramScreen(
     modifier: Modifier = Modifier, programViewModel: ProgramViewModel, navController: NavController
 ) = Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
     val view = LocalView.current

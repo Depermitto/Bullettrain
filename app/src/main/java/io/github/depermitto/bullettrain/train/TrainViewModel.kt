@@ -72,8 +72,7 @@ class TrainViewModel(
         createState(record)
 
         navController.navigate(Destination.Training) {
-            popUpTo(Destination.Home(Tab.Train)) { inclusive = true }
-            launchSingleTop = true
+            popUpTo(0)
         }
     }
 
@@ -83,8 +82,7 @@ class TrainViewModel(
         createState(record.copy(workoutPhase = WorkoutPhase.Editing))
 
         navController.navigate(Destination.Training) {
-            popUpTo(Destination.Home(Tab.History)) { inclusive = true }
-            launchSingleTop = true
+            popUpTo(0)
         }
     }
 
@@ -108,7 +106,7 @@ class TrainViewModel(
     }
 
     fun cancelWorkout() {
-        if (workoutState?.historyRecord?.workoutPhase == WorkoutPhase.Editing) {
+        if (isWorkoutEditing()) {
             endWorkout(Destination.Home(Tab.History)) { state -> historyDao.update(state.historyRecord.copy(workoutPhase = WorkoutPhase.Completed)) }
         } else {
             endWorkout { state -> historyDao.delete(state.historyRecord) }
@@ -137,6 +135,8 @@ class TrainViewModel(
         val formatter = DateTimeFormatter.ofPattern("m:ss").withZone(ZoneId.systemDefault())
         val hourFormatter = DateTimeFormatter.ofPattern("mm:ss").withZone(ZoneId.systemDefault())
 
+        if (isWorkoutEditing()) return "Editing"
+
         val millis = instant?.toEpochMilli() ?: workoutState?.historyRecord?.workoutStartTs?.toEpochMilli() ?: return ""
         val differenceMillis = max(0, clock.toEpochMilli() - millis)
         val hours = differenceMillis / (1000 * 60 * 60)
@@ -154,7 +154,7 @@ class TrainViewModel(
             val record = if (newId == -1) historyRecord else historyRecord.copy(id = newId)
 
             clock = Instant.now()
-            exercises = historyRecord.workout.exercises.toMutableStateList()
+            exercises = record.workout.exercises.toMutableStateList()
             workoutState = WorkoutState(historyRecord = record, timer = timer(initialDelay = 1000L, period = 1000L) {
                 clock = Instant.now()
                 BackgroundSlave.enqueue {

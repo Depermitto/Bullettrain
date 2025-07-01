@@ -53,9 +53,9 @@ import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.exercises.ExerciseScreen
 import io.github.depermitto.bullettrain.home.HomeScreen
 import io.github.depermitto.bullettrain.home.HomeViewModel
-import io.github.depermitto.bullettrain.programs.DayExercisesScreen
+import io.github.depermitto.bullettrain.programs.DayScreen
 import io.github.depermitto.bullettrain.programs.ProgramCreationScreen
-import io.github.depermitto.bullettrain.programs.ProgramDaysScreen
+import io.github.depermitto.bullettrain.programs.ProgramScreen
 import io.github.depermitto.bullettrain.programs.ProgramViewModel
 import io.github.depermitto.bullettrain.settings.SettingsScreen
 import io.github.depermitto.bullettrain.theme.GymAppTheme
@@ -185,6 +185,7 @@ fun App(db: Database) = MaterialTheme {
                         trainViewModel = trainViewModel,
                         settingsDao = db.settingsDao,
                         exerciseDao = db.exerciseDao,
+                        navController = navController,
                         snackbarHostState = snackbarHostState
                     )
                 }
@@ -254,10 +255,11 @@ fun App(db: Database) = MaterialTheme {
                 val day = programViewModel.getDay(dayIndex)
 
                 Scaffold(ribbon = { HeaderWithBackButton(navController = navController, title = day.name) }) {
-                    DayExercisesScreen(
+                    DayScreen(
                         programViewModel = programViewModel,
                         exerciseDao = db.exerciseDao,
                         dayIndex = dayIndex,
+                        navController = navController,
                         snackbarHostState = snackbarHostState
                     )
                 }
@@ -270,8 +272,7 @@ fun App(db: Database) = MaterialTheme {
                     programViewModel = viewModel(factory = ProgramViewModel.Factory(program))
 
                     Scaffold(ribbon = {
-                        HeaderWithBackButton(
-                            navController = navController,
+                        HeaderWithBackButton(navController = navController,
                             title = programViewModel.programName,
                             topEndContent = {
                                 if (!programViewModel.areDaysEqual(program)) TextButton(onClick = {
@@ -288,7 +289,7 @@ fun App(db: Database) = MaterialTheme {
                                 }
                             })
                     }) {
-                        ProgramDaysScreen(programViewModel = programViewModel, navController = navController)
+                        ProgramScreen(programViewModel = programViewModel, navController = navController)
                     }
 
                     if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },

@@ -27,7 +27,7 @@ fun ProgramCreationScreen(
         shape = MaterialTheme.shapes.medium,
         colors = notUnderlinedTextFieldColors()
     )
-    ProgramDaysScreen(
+    ProgramScreen(
         modifier = Modifier.padding(top = ItemPadding),
         programViewModel = programViewModel,
         navController = navController

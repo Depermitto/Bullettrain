@@ -42,7 +42,7 @@ data class Program(
     override fun clone(id: Int) = copy(id = id)
 
     override fun equals(other: Any?): Boolean = other is Program && this.id == other.id
-    
+
     fun nextDay() = days[nextDayIndex]
 
     companion object {
@@ -82,8 +82,7 @@ data class Exercise(
     val hasIntensity: Boolean
         get() = intensityCategory != null
 
-    val lastPerformedSet: ExerciseSet?
-        get() = sets.lastOrNull { it.doneTs != null }
+    fun lastPerformedSet(): ExerciseSet? = sets.lastOrNull { it.doneTs != null }
 
     override fun clone(id: Int) = copy(id = id)
 }

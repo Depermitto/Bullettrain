@@ -35,12 +35,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DropdownButton
 import io.github.depermitto.bullettrain.components.Header
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.Placeholder
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
+import io.github.depermitto.bullettrain.components.TextLink
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.ExerciseSet
@@ -69,11 +72,13 @@ fun TrainingScreen(
     settingsDao: SettingsDao,
     exerciseDao: ExerciseDao,
     modifier: Modifier = Modifier,
+    navController: NavController,
     snackbarHostState: SnackbarHostState
 ) = Column(
     modifier = modifier
         .padding(horizontal = ItemPadding)
-        .verticalScroll(rememberScrollState(0)),
+        .verticalScroll(rememberScrollState(0))
+        .padding(bottom = 100.dp),
     verticalArrangement = Arrangement.spacedBy(CardSpacing)
 ) {
     var showExerciseDeleteDialog by remember { mutableStateOf(false) }
@@ -86,15 +91,15 @@ fun TrainingScreen(
                 onChoose = { it -> trainViewModel.setExercise(exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
 
             Column(modifier = Modifier.padding(ItemPadding)) {
-                val lastPerformedSet = exercise.lastPerformedSet
+                val lastPerformedSet = exercise.lastPerformedSet()
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        modifier = Modifier
-                            .padding(start = ItemSpacing)
-                            .weight(1f),
-                        text = "${exerciseIndex + 1}. ${exercise.name}",
+                    TextLink(
+                        "${exerciseIndex + 1}. ${exercise.name}",
+                        navController = navController,
+                        destination = Destination.Exercise(exercise.id),
                         style = MaterialTheme.typography.titleMedium,
                     )
+                    Spacer(Modifier.weight(1f))
                     lastPerformedSet?.let { exerciseSet ->
                         Card {
                             Text(
@@ -142,8 +147,8 @@ fun TrainingScreen(
                         trainViewModel.removeExerciseSet(exerciseIndex, setIndex)
                         if (set.actualPerfVar != 0f) scope.launch {
                             val snackBarResult = snackbarHostState.showSnackbar(
-                                message = PerfVar.of(exercise.perfVarCategory, set.actualPerfVar).encodeToStringOutput() +
-                                        " of ${exercise.name} deleted",
+                                message = PerfVar.of(exercise.perfVarCategory, set.actualPerfVar)
+                                    .encodeToStringOutput() + " of ${exercise.name} deleted",
                                 actionLabel = "Undo",
                                 withDismissAction = true,
                             )

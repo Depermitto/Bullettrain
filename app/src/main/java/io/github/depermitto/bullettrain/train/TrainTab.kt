@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import io.github.depermitto.bullettrain.components.Ratio
-import io.github.depermitto.bullettrain.components.WorkoutBasicTable
+import io.github.depermitto.bullettrain.components.WorkoutTable
 import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
@@ -61,7 +61,7 @@ fun TrainTab(
             )
 
             programs.getOrNull(selectedProgramIndex)?.let { program ->
-                WorkoutBasicTable(
+                WorkoutTable(
                     modifier = Modifier
                         .fillMaxWidth()
                         .align(Alignment.TopCenter),

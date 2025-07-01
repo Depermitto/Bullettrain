@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -43,11 +44,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DragButton
 import io.github.depermitto.bullettrain.components.Header
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
+import io.github.depermitto.bullettrain.components.TextLink
 import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.ExerciseSet
 import io.github.depermitto.bullettrain.database.IntensityCategory
@@ -75,11 +79,12 @@ import kotlin.math.max
 import kotlin.math.min
 
 @Composable
-fun DayExercisesScreen(
+fun DayScreen(
     modifier: Modifier = Modifier,
     programViewModel: ProgramViewModel,
     dayIndex: Int,
     exerciseDao: ExerciseDao,
+    navController: NavController,
     snackbarHostState: SnackbarHostState
 ) = Box(modifier = modifier.fillMaxSize()) {
     val view = LocalView.current
@@ -96,6 +101,16 @@ fun DayExercisesScreen(
     }, onSettle = { fromIndex, toIndex ->
         programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises.reorder(fromIndex, toIndex)))
     }) { exerciseIndex, exercise, isDragging ->
+        fun setIntensity(cat: IntensityCategory?) {
+            val intensity = if (cat != null) 0f else null
+            programViewModel.setExercise(
+                dayIndex,
+                exerciseIndex,
+                exercise.copy(intensityCategory = cat,
+                    sets = exercise.sets.map { it.copy(intensity = intensity) })
+            )
+        }
+
         key(exercise.id) {
             val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
             var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
@@ -119,24 +134,13 @@ fun DayExercisesScreen(
                         Column(modifier = Modifier.padding(ItemPadding)) {
                             var showTargetEditDropdown by remember { mutableStateOf(false) }
                             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(start = ItemSpacing),
-                                    text = exercise.name,
+                                TextLink(
+                                    exercise.name,
+                                    navController = navController,
+                                    destination = Destination.Exercise(exercise.id),
                                     style = MaterialTheme.typography.titleMedium,
                                 )
-
-                                fun setIntensity(cat: IntensityCategory?) {
-                                    val intensity = if (cat != null) 0f else null
-                                    programViewModel.setExercise(
-                                        dayIndex,
-                                        exerciseIndex,
-                                        exercise.copy(intensityCategory = cat,
-                                            sets = exercise.sets.map { it.copy(intensity = intensity) })
-                                    )
-                                }
-
+                                Spacer(Modifier.weight(1f))
                                 IconButton(modifier = Modifier.size(SqueezableIconSize),
                                     onClick = { showSwapExerciseChooser = true }) {
                                     SwapIcon()
@@ -153,8 +157,12 @@ fun DayExercisesScreen(
                                 DragButton(this@ReorderableColumn, view)
                             }
 
-                            Row(modifier = Modifier.padding(top = ItemPadding, bottom = ItemSpacing)) {
+                            Row(
+                                modifier = Modifier.padding(top = ItemPadding, bottom = ItemSpacing),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Header(Modifier.weight(ExerciseSetNarrowWeight), "Set")
+                                // PerfVarCategory Dropdown with Icon
                                 Row(
                                     modifier = Modifier
                                         .weight(ExerciseSetWideWeight)
