@@ -2,6 +2,7 @@ package io.github.depermitto.bullettrain.exercises
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -9,15 +10,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.depermitto.bullettrain.components.BasicTable
+import io.github.depermitto.bullettrain.components.DataPanel
 import io.github.depermitto.bullettrain.components.HeroTile
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
+import io.github.depermitto.bullettrain.database.entities.ExerciseSet
 import io.github.depermitto.bullettrain.database.entities.HistoryDao
 import io.github.depermitto.bullettrain.database.entities.SettingsDao
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
@@ -42,27 +42,39 @@ fun ExerciseScreen(
     ) {
         items(exercises) { exercise ->
             val doneDate = exercise.lastPerformedSet()?.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
-            BasicTable(
-                headers = listOf("Set", "Completed"), list = exercise.getPerformedSets(), separateHeadersAndContent = false,
-                headlineContent = { Text(dateFormatter.format(doneDate), style = MaterialTheme.typography.titleMedium) },
+            DataPanel<ExerciseSet>(
+                items = exercise.getPerformedSets(),
+                separateHeaderAndContent = false,
+                headline = {
+                    HeroTile(
+                        headlineContent = { Text(dateFormatter.format(doneDate)) },
+                        headlineTextStyle = MaterialTheme.typography.titleMedium,
+                        contentPadding = PaddingValues(Dp.Medium),
+                    )
+                },
+                headerPadding = PaddingValues(horizontal = Dp.Medium),
+                headerContent = {
+                    Text("Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+                    Spacer(Modifier.weight(1f))
+                    Text("Completed", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+                },
             ) { setIndex, set ->
                 HeroTile(
                     headlineContent = { Text("${setIndex + 1}", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     trailingContent = {
-                        Text(
-                            text = run {
-                                val perfVar = set.actualPerfVar.encodeToStringOutput() // is always non-zero
-                                val weight = set.weight.encodeToStringOutput()
+                        Text(maxLines = 1, overflow = TextOverflow.Ellipsis, text = run {
+                            val perfVar = set.actualPerfVar.encodeToStringOutput() // is always non-zero
+                            val weight = set.weight.encodeToStringOutput()
 
-                                when {
-                                    weight.isBlank() -> "$perfVar ${set.targetPerfVar.category.shortName.lowercase()}"
-                                    else -> "$perfVar x $weight ${settings.unitSystem.weightUnit()}"
-                                }
-                            }, maxLines = 1, overflow = TextOverflow.Ellipsis
-                        )
+                            when {
+                                weight.isBlank() -> "$perfVar ${set.targetPerfVar.category.shortName.lowercase()}"
+                                else -> "$perfVar x $weight ${settings.unitSystem.weightUnit()}"
+                            }
+                        })
                     },
-                    modifier = Modifier.clip(MaterialTheme.shapes.small),
-                    contentPadding = PaddingValues(0.dp)
+                    contentPadding = PaddingValues(horizontal = Dp.Medium),
+                    headlineTextStyle = MaterialTheme.typography.bodyLarge,
+                    supportingTextStyle = MaterialTheme.typography.bodyLarge,
                 )
             }
         }

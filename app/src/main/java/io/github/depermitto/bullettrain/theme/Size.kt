@@ -11,6 +11,3 @@ val Dp.Companion.EmptyScrollSpace get() = 500.dp
 
 val CompactIconSize = 20.dp
 val SqueezableIconSize = 40.dp
-
-const val NarrowWeight = 0.3f
-const val WideWeight = 0.9f

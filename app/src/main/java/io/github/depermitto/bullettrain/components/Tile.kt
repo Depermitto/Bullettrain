@@ -30,10 +30,10 @@ fun HeroTile(
     onClick: (() -> Unit)? = null,
     supportingContent: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
+    headlineContent: @Composable () -> Unit,
     headlineTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     supportingTextStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     contentPadding: PaddingValues = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
-    headlineContent: @Composable () -> Unit,
 ) = Box(if (onClick == null) modifier else modifier.clickable { onClick() }) {
     ConstraintLayout(
         Modifier

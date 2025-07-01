@@ -41,9 +41,9 @@ fun SettingsScreen(
     SettingGroup(headline = "Appearance") {
         SettingList(headline = "Palette",
             supporting = settings.palette.name,
-            list = listOfNotNull(dynamicPalette, RhinoButtercupPalette, FlamePeaPalette, WoodsmokePalette),
+            list = listOfNotNull(dynamicPalette, RhinoButtercupPalette, FlamePeaPalette, BonemashPalette),
             onClick = { db.settingsDao.update { state -> state.copy(palette = it) } }) { palette ->
-            RadioTile(headlineContent = { Text(palette.name) }, selected = palette.name == settings.palette.name)
+            RadioTile(headlineContent = { Text(palette.name) }, selected = palette corresponds settings.palette)
         }
 
         SettingList(headline = "Theme",
@@ -140,7 +140,8 @@ fun <T> SettingList(
     content: @Composable (T) -> Unit
 ) {
     var showDialog by remember { mutableStateOf(false) }
-    HeroTile(modifier = modifier,
+    HeroTile(
+        modifier = modifier,
         headlineContent = { Text(headline) },
         supportingContent = { Text(supporting) },
         onClick = { showDialog = true },
@@ -161,7 +162,8 @@ fun Setting(
     onClick: () -> Unit,
     headline: String,
     supporting: String,
-) = HeroTile(modifier = modifier,
+) = HeroTile(
+    modifier = modifier,
     headlineContent = { Text(headline) },
     supportingContent = { Text(supporting) },
     onClick = onClick,
@@ -176,12 +178,10 @@ fun SettingSwitch(
     onChecked: (Boolean) -> Unit,
     checked: Boolean,
     enabled: Boolean = true
-) {
-    HeroTile(modifier = modifier,
-        headlineContent = { Text(headline) },
-        supportingContent = { Text(supporting) },
-        onClick = { onChecked(!checked) }.takeIf { enabled },
-        trailingContent = { Switch(checked = checked, onCheckedChange = null, enabled = enabled) },
-        supportingTextStyle = MaterialTheme.typography.bodySmall
-    )
-}
+) = HeroTile(modifier = modifier,
+    headlineContent = { Text(headline) },
+    supportingContent = { Text(supporting) },
+    onClick = { onChecked(!checked) }.takeIf { enabled },
+    trailingContent = { Switch(checked = checked, onCheckedChange = null, enabled = enabled) },
+    supportingTextStyle = MaterialTheme.typography.bodySmall
+)

@@ -8,21 +8,27 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.R
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
+import io.github.depermitto.bullettrain.components.DataPanel
 import io.github.depermitto.bullettrain.components.HeroTile
 import io.github.depermitto.bullettrain.components.ListAlertDialog
-import io.github.depermitto.bullettrain.components.WorkoutInfo
 import io.github.depermitto.bullettrain.database.entities.ExerciseDao
 import io.github.depermitto.bullettrain.database.entities.Program
 import io.github.depermitto.bullettrain.database.entities.ProgramDao
 import io.github.depermitto.bullettrain.database.entities.Settings
 import io.github.depermitto.bullettrain.database.entities.Workout
+import io.github.depermitto.bullettrain.database.entities.WorkoutEntry
+import io.github.depermitto.bullettrain.theme.Large
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.focalGround
 
@@ -51,31 +57,46 @@ fun TrainTab(
                 return@Card
             }
 
-            WorkoutInfo(program = program,
-                workout = program.nextDay(),
-                headers = listOf("Exercise", "Sets"),
-                exstractor = { exercise -> exercise.sets.size.toString() },
-                navController = navController,
-                exerciseDao = exerciseDao,
-                overlayingContent = {
-                    Row(horizontalArrangement = Arrangement.Center) {
-                        ElevatedButton(
-                            onClick = { showChangeDayIndexDialog = true },
-                            colors = ButtonDefaults.elevatedButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
-                            shape = RoundedCornerShape(16.dp, 4.dp, 4.dp, 16.dp)
-                        ) {
-                            Icon(painterResource(R.drawable.autorenew), null, Modifier.size(ButtonDefaults.IconSize))
-                        }
-                        Spacer(Modifier.width(2.dp))
-                        ElevatedButton(
-                            onClick = { trainViewModel.startWorkout(program.nextDay(), program.id) },
-                            colors = ButtonDefaults.elevatedButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
-                            shape = RoundedCornerShape(4.dp, 16.dp, 16.dp, 4.dp)
-                        ) {
-                            Text("Start ${program.nextDay().name}")
-                        }
-                    }
-                })
+            DataPanel<WorkoutEntry>(items = program.nextDay().entries, backgroundColor = Color.Transparent, headline = {
+                HeroTile(
+                    headlineContent = { Text(text = program.name) },
+                    headlineTextStyle = MaterialTheme.typography.titleLarge,
+                    supportingContent = { Text(text = program.nextDay().name) },
+                )
+            }, headerTextStyle = MaterialTheme.typography.bodyLarge, headerContent = {
+                Text("Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+                Spacer(Modifier.weight(1f))
+                Text("Sets", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+            }, contentPadding = PaddingValues(horizontal = Dp.Large)
+            ) { entryIndex, entry ->
+                val exerciseDescriptor = exerciseDao.where(entry.descriptorId)
+                HeroTile(
+                    headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
+                    trailingContent = { Text(text = entry.sets.size.toString(), overflow = TextOverflow.Ellipsis, maxLines = 2) },
+                    modifier = Modifier.clip(MaterialTheme.shapes.small),
+                    onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },
+                    contentPadding = PaddingValues(0.dp)
+                )
+            }
+
+            Spacer(Modifier.weight(1f))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                ElevatedButton(
+                    onClick = { showChangeDayIndexDialog = true },
+                    colors = ButtonDefaults.elevatedButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
+                    shape = RoundedCornerShape(16.dp, 4.dp, 4.dp, 16.dp)
+                ) {
+                    Icon(painterResource(R.drawable.autorenew), null, Modifier.size(ButtonDefaults.IconSize))
+                }
+                Spacer(Modifier.width(2.dp))
+                ElevatedButton(
+                    onClick = { trainViewModel.startWorkout(program.nextDay(), program.id) },
+                    colors = ButtonDefaults.elevatedButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
+                    shape = RoundedCornerShape(4.dp, 16.dp, 16.dp, 4.dp)
+                ) {
+                    Text("Start ${program.nextDay().name}")
+                }
+            }
 
             if (showChangeDayIndexDialog) ListAlertDialog(title = "Which day would you like to swap with?",
                 onDismissRequest = { showChangeDayIndexDialog = false },

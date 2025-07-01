@@ -76,8 +76,8 @@ private val surfaceContainerDark = Color(0xFF211F1F)
 private val surfaceContainerHighDark = Color(0xFF2B2A29)
 private val surfaceContainerHighestDark = Color(0xFF363434)
 
-val WoodsmokePalette = Palette(
-    name = "Woodsmoke",
+val BonemashPalette = Palette(
+    name = "Bonemash",
     lightScheme = lightColorScheme(
         primary = primaryLight,
         onPrimary = onPrimaryLight,
