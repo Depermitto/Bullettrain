@@ -68,6 +68,9 @@ dependencies {
     def filekit_version = '0.8.1'
     implementation "io.github.vinceglb:filekit-core:$filekit_version"
     implementation "io.github.vinceglb:filekit-compose:$filekit_version"
+    
+    // Drag 'n drop
+    implementation 'sh.calvin.reorderable:reorderable:2.3.1'
 
     // Testing
     testImplementation 'junit:junit:4.13.2'

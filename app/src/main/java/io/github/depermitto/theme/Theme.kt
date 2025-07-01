@@ -12,7 +12,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
@@ -36,13 +35,6 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
     */
 )
-
-val ItemPadding = 8.dp
-val ItemSpacing = 4.dp
-val ExerciseSetSpacing = 2.dp
-
-const val ExerciseSetWideWeight = 0.9f
-const val ExerciseSetNarrowWeight = 0.3f
 
 @Composable
 fun adaptiveIconTint() = if (isSystemInDarkTheme()) Color.White else Color.Black

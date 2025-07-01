@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.depermitto.database.*
+import io.github.depermitto.util.smallListSet
 
 class ProgramViewModel(program: Program) : ViewModel() {
     private val programId = program.id
@@ -17,16 +18,18 @@ class ProgramViewModel(program: Program) : ViewModel() {
     var followed by mutableStateOf(program.followed)
         private set
 
+    fun getDay(dayIndex: Int) = days[dayIndex]
     fun addDay() = days.add(Day("Day ${days.size + 1}"))
     fun addDay(day: Day) = days.add(day)
     fun setDay(dayIndex: Int, day: Day) = days.set(dayIndex, day)
     fun removeDayAt(dayIndex: Int) = days.removeAt(dayIndex)
+    fun setExercise(dayIndex: Int, exerciseIndex: Int, exercise: Exercise) = setDay(
+        dayIndex, getDay(dayIndex).copy(exercises = getDay(dayIndex).exercises.smallListSet(exerciseIndex, exercise))
+    )
 
-    fun constructProgram(): Program =
-        Program(id = programId, name = programName, days = days.toList(), followed = followed)
+    fun constructProgram(): Program = Program(id = programId, name = programName, days = days.toList(), followed = followed)
 
     companion object {
-        fun Factory(program: Program, programDao: ProgramDao) =
-            viewModelFactory { initializer { ProgramViewModel(program) } }
+        fun Factory(program: Program, programDao: ProgramDao) = viewModelFactory { initializer { ProgramViewModel(program) } }
     }
 }

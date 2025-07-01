@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
-import io.github.depermitto.home.Screen
 import io.github.depermitto.database.Day
 import io.github.depermitto.database.Exercise
 import io.github.depermitto.database.ExerciseSet
@@ -13,7 +12,8 @@ import io.github.depermitto.database.HistoryDao
 import io.github.depermitto.database.HistoryRecord
 import io.github.depermitto.database.Program
 import io.github.depermitto.database.ProgramDao
-import io.github.depermitto.util.set
+import io.github.depermitto.home.Screen
+import io.github.depermitto.util.smallListSet
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
@@ -46,7 +46,7 @@ class TrainViewModel(
 
     fun setExercise(index: Int, exercise: Exercise) = exercises.set(index, exercise)
     fun setExerciseSet(exerciseIndex: Int, setIndex: Int, set: ExerciseSet) = setExercise(
-        exerciseIndex, getExercise(exerciseIndex).copy(sets = getExercise(exerciseIndex).sets.set(setIndex, set))
+        exerciseIndex, getExercise(exerciseIndex).copy(sets = getExercise(exerciseIndex).sets.smallListSet(setIndex, set))
     )
 
     fun getExercise(index: Int) = exercises[index]

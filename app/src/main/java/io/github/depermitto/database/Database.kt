@@ -2,7 +2,7 @@ package io.github.depermitto.database
 
 import androidx.compose.runtime.*
 import io.github.depermitto.train.WorkoutPhase
-import io.github.depermitto.util.set
+import io.github.depermitto.util.bigListSet
 import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerType
 import io.github.vinceglb.filekit.core.pickFile
@@ -111,7 +111,7 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
         val existingIndex = items.value.indexOfFirst { it.id == item.id }
         if (existingIndex == -1) return false
 
-        val state = items.updateAndGet { state -> state.set(existingIndex, item) }
+        val state = items.updateAndGet { state -> state.bigListSet(existingIndex, item) }
         BackgroundSlave.enqueue { storageFile.write(state) }
         return true
     }

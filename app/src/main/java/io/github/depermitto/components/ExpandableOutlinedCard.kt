@@ -17,45 +17,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
-import io.github.depermitto.theme.ItemPadding
+import androidx.compose.ui.unit.dp
+import io.github.depermitto.theme.SqueezableIconSize
 
 @Composable
 fun ExpandableOutlinedCard(
-    title: @Composable () -> Unit,
-    titlePadding: PaddingValues = PaddingValues(horizontal = ItemPadding),
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    title: @Composable RowScope.() -> Unit,
     dropdownItems: (@Composable () -> Unit)? = null,
     startExpanded: Boolean = false,
-    content: @Composable () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     var expanded by remember { mutableStateOf(startExpanded) }
-    val rotationState by animateFloatAsState(targetValue = if (expanded) 180f else 0f, label = "")
+    val rotationState by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
     OutlinedCard(
-        modifier = Modifier
-            .fillMaxSize()
-            .animateContentSize(animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing))
+        modifier = modifier.animateContentSize(animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing))
     ) {
-        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .weight(6f)
-                        .padding(titlePadding)
-                ) {
-                    title()
-                }
-                IconButton(
-                    modifier = Modifier
-                        .alpha(0.5f)
-                        .weight(1f)
-                        .rotate(rotationState),
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                title()
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(modifier = Modifier
+                    .size(SqueezableIconSize)
+                    .alpha(0.5f)
+                    .rotate(rotationState),
                     onClick = { expanded = !expanded }) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown, contentDescription = "Drop-Down Arrow"
-                    )
+                    Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "Toggle Expandable Card")
                 }
                 if (dropdownItems != null) {
                     var showDropdownMenu by remember { mutableStateOf(false) }
-                    IconButton(modifier = Modifier.weight(1f), onClick = { showDropdownMenu = true }) {
+                    IconButton(modifier = Modifier.size(SqueezableIconSize), onClick = { showDropdownMenu = true }) {
                         Icon(Icons.Filled.MoreVert, contentDescription = null)
 
                         DropdownMenu(expanded = showDropdownMenu, onDismissRequest = { showDropdownMenu = false }) {
@@ -65,7 +57,9 @@ fun ExpandableOutlinedCard(
                 }
             }
             if (expanded) {
-                content()
+                Column(modifier = Modifier.padding(contentPadding), horizontalAlignment = Alignment.CenterHorizontally) {
+                    content()
+                }
             }
         }
     }

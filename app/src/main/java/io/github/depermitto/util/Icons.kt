@@ -2,6 +2,7 @@ package io.github.depermitto.util
 
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import io.github.depermitto.R
@@ -15,15 +16,7 @@ val SwapIcon: @Composable () -> Unit = {
     )
 }
 
-val IntensityIcon: @Composable () -> Unit = {
-    Image(
-        painterResource(id = R.drawable.heart_flash),
-        contentDescription = "Heart Flash",
-        colorFilter = ColorFilter.tint(adaptiveIconTint())
-    )
-}
-
-val DuplicateIcon: @Composable () -> Unit = {
+val DuplicateIcon: @Composable () -> Unit = { 
     Image(
         painterResource(id = R.drawable.duplicate),
         contentDescription = "Duplicate",
@@ -31,11 +24,25 @@ val DuplicateIcon: @Composable () -> Unit = {
     )
 }
 
-
-val TodayIcon: @Composable () -> Unit = {
+val DragHandleIcon: @Composable () -> Unit = {
     Image(
-        painterResource(id = R.drawable.calendar_today),
-        contentDescription = "Calendar Today",
+        painterResource(id = R.drawable.drag_horizontal_variant),
+        contentDescription = "Drag Handle",
+        colorFilter = ColorFilter.tint(adaptiveIconTint())
+    )
+}
+
+val HeartPlusIcon: @Composable () -> Unit = {
+    Image(
+        painterResource(id = R.drawable.heart_plus),
+        contentDescription = "Heart Plus",
+        colorFilter = ColorFilter.tint(adaptiveIconTint())
+    )
+}
+val HeartRemoveIcon: @Composable () -> Unit = {
+    Image(
+        painterResource(id = R.drawable.heart_remove),
+        contentDescription = "Heart Remove",
         colorFilter = ColorFilter.tint(adaptiveIconTint())
     )
 }

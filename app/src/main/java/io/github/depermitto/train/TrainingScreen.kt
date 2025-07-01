@@ -41,6 +41,7 @@ import io.github.depermitto.database.ExerciseSet
 import io.github.depermitto.database.PerfVar
 import io.github.depermitto.database.SettingsDao
 import io.github.depermitto.exercises.exerciseChooser
+import io.github.depermitto.theme.CompactIconSize
 import io.github.depermitto.theme.ExerciseSetNarrowWeight
 import io.github.depermitto.theme.ExerciseSetSpacing
 import io.github.depermitto.theme.ExerciseSetWideWeight
@@ -153,7 +154,7 @@ fun TrainingScreen(
                                 placeholder = { lastPerformedSet?.let { Placeholder(it.weight.encodeToStringOutput()) } },
                             )
                             Checkbox(modifier = Modifier
-                                .size(20.dp)
+                                .size(CompactIconSize)
                                 .weight(ExerciseSetNarrowWeight),
                                 checked = set.date != null,
                                 onCheckedChange = {
