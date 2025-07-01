@@ -35,7 +35,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
     buildFeatures {
         compose true
@@ -55,7 +55,7 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation "androidx.lifecycle:lifecycle-runtime-compose:2.8.4"
     implementation 'androidx.activity:activity-compose:1.9.1'
-    implementation platform('androidx.compose:compose-bom:2024.02.01')
+    implementation platform('androidx.compose:compose-bom:2024.06.00')
     
     // Theming
     implementation 'androidx.compose.material3:material3'
@@ -71,7 +71,7 @@ dependencies {
 
     // Room
     def room_version = "2.7.0-alpha05"
-    implementation 'androidx.sqlite:sqlite-bundled-android:2.5.0-alpha05'
+    implementation 'androidx.sqlite:sqlite-bundled-android:2.5.0-alpha06'
     implementation "androidx.room:room-runtime:$room_version"
     ksp "androidx.room:room-compiler:$room_version"
     
@@ -79,15 +79,12 @@ dependencies {
     def filekit_version = "0.7.0"
     implementation "io.github.vinceglb:filekit-core:$filekit_version"
     implementation "io.github.vinceglb:filekit-compose:$filekit_version"
-    
-    // Icons
-    // implementation 'androidx.compose.material:material-icons-extended-android:1.6.8'
 
     // Testing
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
-    androidTestImplementation platform('androidx.compose:compose-bom:2024.02.01')
+    androidTestImplementation platform('androidx.compose:compose-bom:2024.06.00')
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'

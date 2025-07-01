@@ -5,125 +5,124 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.NavController
 import io.github.depermitto.data.entities.*
-import kotlinx.coroutines.*
+import io.github.depermitto.main.Screen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import kotlin.math.min
+import java.util.*
+import kotlin.concurrent.timer
+import kotlin.math.max
 
 @Serializable
 enum class WorkoutPhase { During, Completed }
 
-class TrainViewModel(private val historyDao: HistoryDao, private val programDao: ProgramDao) : ViewModel() {
-    var name by mutableStateOf("")
-        private set
-    var exercises = mutableStateListOf<Exercise>()
-        private set
-    var workoutPhase by mutableStateOf(WorkoutPhase.Completed)
-        private set
-    private var relatedProgramId: Long = 0
-    private lateinit var start: Instant
-    private var countingJob: Job? = null
-    private var now by mutableStateOf(Instant.ofEpochMilli(0)) // This is just to initialize by mutableStateOf
+data class WorkoutState(
+    val historyRecord: HistoryRecord,
+    val clockTimer: Timer,
+    val saveTimer: Timer,
+)
 
-    suspend fun restoreWorkout(): Boolean {
+// Maybe just do a state machine 
+class TrainViewModel(
+    private val historyDao: HistoryDao,
+    private val programDao: ProgramDao,
+    private val navController: NavController,
+) : ViewModel() {
+    private var workoutState: WorkoutState? = null
+    private var exercises = mutableStateListOf<Exercise>()
+    private var clock: Instant by mutableStateOf(Instant.ofEpochMilli(0))
+
+    fun isWorkoutRunning(): Boolean = workoutState?.historyRecord?.workoutPhase == WorkoutPhase.During
+
+    fun setExercise(index: Int, exercise: Exercise) = exercises.set(index, exercise)
+    fun getExercise(index: Int) = exercises[index]
+    fun getExercises() = exercises
+    fun addExercise(exercise: Exercise) = exercises.add(exercise)
+    fun removeExercise(index: Int) = exercises.removeAt(index)
+
+    fun startWorkout(day: Day, programId: Long) {
+        if (workoutState != null) return
+
+        val record = HistoryRecord(
+            day = day,
+            relatedProgramId = programId,
+            workoutPhase = WorkoutPhase.During,
+            date = Instant.now(),
+            workoutStartTime = Instant.now(),
+        )
+        createState(record)
+    }
+
+    fun restoreWorkout(): Boolean = runBlocking(Dispatchers.IO) {
         val session = historyDao.getUnfinishedBusiness()
-        if (session != null && session.workoutPhase == WorkoutPhase.During) {
-            name = session.day.name
-            exercises = session.day.exercises.toMutableStateList()
-            relatedProgramId = session.relatedProgramId
-            workoutPhase = session.workoutPhase
-            start = session.workoutStartTime
-
-            startCounting()
-            return true
+        if (session != null && workoutState == null) {
+            createState(session)
+            return@runBlocking true
         }
-        return false
+        return@runBlocking false
     }
 
-    fun startWorkoutOnce(day: Day, programId: Long) {
-        if (workoutPhase == WorkoutPhase.Completed) {
-            name = day.name
-            exercises = day.exercises.toMutableStateList()
-            relatedProgramId = programId
-            workoutPhase = WorkoutPhase.During
-            start = Instant.now()
+    fun completeWorkout() = endWorkout { state ->
+        val record = state.historyRecord.copy(
+            workoutPhase = WorkoutPhase.Completed, day = Day(state.historyRecord.day.name, exercises.toList())
+        )
+        val program = programDao.whereId(record.relatedProgramId) ?: return@endWorkout
+        val nextDay = (program.nextDay + 1) % program.days.size
 
-            startCounting()
-        }
-    }
-
-    fun stopWorkoutOnce() {
-        if (workoutPhase == WorkoutPhase.During) {
-            countingJob?.cancel("Workout Finished")
-            countingJob = null
-            workoutPhase = WorkoutPhase.Completed
-
-            viewModelScope.launch {
-                val program = programDao.whereId(relatedProgramId) ?: return@launch
-                val nextDay = (program.nextDay + 1) % program.days.size
-                programDao.upsert(
-                    program.copy(
-                        nextDay = nextDay,
-                        weekStreak = program.weekStreak + if (nextDay == 0) 1 else 0
-                    )
-                )
-                saveProgress()
-            }
-        }
-    }
-
-    private fun startCounting() {
-        if (countingJob == null) {
-            now = Instant.now()
-            countingJob = viewModelScope.launch {
-                while (true) {
-                    now = now.plusSeconds(1)
-
-                    if (now.epochSecond % 10 == 0L) {
-                        launch(Dispatchers.IO) {
-                            saveProgress()
-                        }
-                    }
-
-                    delay(1000)
-                }
-            }
-        }
-    }
-
-    private suspend fun saveProgress() {
-        val session = historyDao.getUnfinishedBusiness()
-        if (session != null) {
-            historyDao.upsert(
-                session.copy(
-                    day = Day(name = name, exercises = exercises.toList()),
-                    workoutPhase = workoutPhase,
-                )
+        historyDao.upsert(record)
+        programDao.upsert(
+            program.copy(
+                nextDay = nextDay,
+                weekStreak = program.weekStreak + if (nextDay == 0) 1 else 0,
+                mostRecentWorkoutDate = Instant.now()
             )
-        } else {
-            historyDao.upsert(
-                HistoryRecord(
-                    day = Day(name = name, exercises = exercises.toList()),
-                    relatedProgramId = relatedProgramId,
-                    workoutPhase = workoutPhase,
-                    date = Instant.now(),
-                    workoutStartTime = start
-                )
-            )
-        }
+        )
+    }
+
+    fun cancelWorkout() = endWorkout { historyDao.delete(it.historyRecord) }
+
+    private fun endWorkout(deinit: suspend (WorkoutState) -> Unit) = workoutState?.let { state ->
+        state.saveTimer.cancel()
+        state.clockTimer.cancel()
+        workoutState = null
+        exercises.clear()
+
+        viewModelScope.launch(Dispatchers.IO) { deinit(state) }
+
+        navController.popBackStack(Screen.MainScreen.route, false)
     }
 
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("m:ss").withZone(ZoneId.systemDefault())
-    fun elapsedSince(instant: Instant = start): String {
-        return if (workoutPhase == WorkoutPhase.Completed) ""
-        else formatter.format(now.minusMillis(min(instant.toEpochMilli(), now.toEpochMilli())))
+    fun elapsedSince(instant: Instant? = null): String = workoutState?.let { state ->
+        val millis = instant?.toEpochMilli() ?: state.historyRecord.workoutStartTime.toEpochMilli()
+        formatter.format(Instant.ofEpochMilli(max(0, clock.toEpochMilli() - millis)))
+    } ?: ""
+
+    private fun createState(historyRecord: HistoryRecord) {
+        if (workoutState == null) {
+            val newId = runBlocking { historyDao.upsert(historyRecord) }
+            val record = if (newId == -1L) historyRecord else historyRecord.copy(historyEntryId = newId)
+
+            clock = Instant.now()
+            exercises = historyRecord.day.exercises.toMutableStateList()
+            workoutState = WorkoutState(historyRecord = record,
+                clockTimer = timer(initialDelay = 1000L, period = 1000L) { clock = clock.plusSeconds(1L) },
+                saveTimer = timer(initialDelay = 0L, period = 10000L) {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        historyDao.update(historyRecord.copy(day = historyRecord.day.copy(exercises = exercises.toList())))
+                    }
+                })
+        } else throw UnsupportedOperationException("WorkoutState Is Not Null")
     }
 
     companion object {
-        fun Factory(historyDao: HistoryDao, programDao: ProgramDao) =
-            viewModelFactory { initializer { TrainViewModel(historyDao, programDao) } }
+        fun Factory(historyDao: HistoryDao, programDao: ProgramDao, navController: NavController) =
+            viewModelFactory { initializer { TrainViewModel(historyDao, programDao, navController) } }
     }
 }

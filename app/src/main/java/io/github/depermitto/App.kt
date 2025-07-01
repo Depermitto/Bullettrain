@@ -32,11 +32,13 @@ fun App(persistentData: PersistentData) = MaterialTheme {
     val historyDao = persistentData.db.getHistoryDao()
     val exerciseDao = persistentData.db.getExerciseDao()
 
+    val navController = rememberNavController()
+
     val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program(), programDao))
     val settingsViewModel = viewModel<SettingsViewModel>(factory = SettingsViewModel.Factory(persistentData))
-    val trainViewModel = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(historyDao, programDao))
+    val trainViewModel =
+        viewModel<TrainViewModel>(factory = TrainViewModel.Factory(historyDao, programDao, navController))
 
-    val navController = rememberNavController()
     LaunchedEffect(Unit) {
         if (trainViewModel.restoreWorkout()) navController.navigate(Screen.TrainingScreen.route)
     }
@@ -60,7 +62,6 @@ fun App(persistentData: PersistentData) = MaterialTheme {
                 trainViewModel = trainViewModel,
                 settingsViewModel = settingsViewModel,
                 exerciseDao = exerciseDao,
-                navController = navController,
             )
         }
 

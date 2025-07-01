@@ -10,15 +10,18 @@ import java.time.Instant
 @Dao
 interface HistoryDao {
     @Upsert
-    suspend fun upsert(entry: HistoryRecord)
+    suspend fun upsert(record: HistoryRecord): Long
+
+    @Update
+    suspend fun update(record: HistoryRecord)
 
     @Delete
-    suspend fun delete(entry: HistoryRecord)
+    suspend fun delete(vararg records: HistoryRecord)
 
     @Query("SELECT * FROM history")
     fun getAllFlow(): Flow<List<HistoryRecord>>
 
-    @Query("SELECT * FROM history WHERE workoutPhase = 'During'")
+    @Query("SELECT * FROM history WHERE workoutPhase = 'During' LIMIT 1")
     suspend fun getUnfinishedBusiness(): HistoryRecord?
 }
 
@@ -26,9 +29,9 @@ interface HistoryDao {
 @Entity(tableName = "history")
 data class HistoryRecord(
     @ColumnInfo(name = "history_entry_id") @PrimaryKey(autoGenerate = true) val historyEntryId: Long = 0,
-    @Serializable(with = InstantSerializer::class) val date: Instant,
-    val day: Day,
     val relatedProgramId: Long,
+    val day: Day,
     val workoutPhase: WorkoutPhase,
+    @Serializable(with = InstantSerializer::class) val date: Instant,
     @Serializable(with = InstantSerializer::class) val workoutStartTime: Instant,
 )

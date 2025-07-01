@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.sharp.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
-import androidx.navigation.NavController
 import io.github.depermitto.components.DropdownButton
 import io.github.depermitto.components.NumberField
 import io.github.depermitto.components.RibbonScaffold
@@ -22,7 +22,6 @@ import io.github.depermitto.data.entities.PerfVar
 import io.github.depermitto.exercises.AddExerciseButton
 import io.github.depermitto.exercises.Header
 import io.github.depermitto.exercises.exerciseChooser
-import io.github.depermitto.main.Screen
 import io.github.depermitto.misc.SwapIcon
 import io.github.depermitto.misc.set
 import io.github.depermitto.settings.SettingsViewModel
@@ -34,18 +33,19 @@ fun TrainingScreen(
     trainViewModel: TrainViewModel,
     settingsViewModel: SettingsViewModel,
     exerciseDao: ExerciseDao,
-    navController: NavController,
 ) = RibbonScaffold(ribbon = {
     OutlinedCard(modifier = Modifier.padding(start = ItemPadding, end = ItemPadding, bottom = ItemPadding)) {
-        if (trainViewModel.workoutPhase == WorkoutPhase.During) {
+        if (trainViewModel.isWorkoutRunning()) {
             Row(Modifier.padding(horizontal = ItemPadding), verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { trainViewModel.cancelWorkout() }) {
+                    Icon(Icons.Sharp.Close, contentDescription = "Cancel Workout")
+                }
+                Spacer(modifier = Modifier.weight(1f))
                 Text(text = trainViewModel.elapsedSince(), style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.weight(1f))
                 TextButton(
-                    onClick = {
-                        trainViewModel.stopWorkoutOnce()
-                        navController.popBackStack(Screen.MainScreen.route, false)
-                    }, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
+                    onClick = { trainViewModel.completeWorkout() },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
                 ) { Text(text = "Finish") }
             }
         }
@@ -55,7 +55,7 @@ fun TrainingScreen(
         modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
     ) {
         // TODO add colors for supersets here P2
-        itemsIndexed(trainViewModel.exercises) { i, _ ->
+        itemsIndexed(trainViewModel.getExercises()) { i, _ ->
             TrainExercise(
                 settingsViewModel = settingsViewModel,
                 trainViewModel = trainViewModel,
@@ -64,7 +64,7 @@ fun TrainingScreen(
             )
         }
 
-        item { AddExerciseButton(exerciseDao = exerciseDao, onChoose = { trainViewModel.exercises.add(it) }) }
+        item { AddExerciseButton(exerciseDao = exerciseDao, onChoose = { trainViewModel.addExercise(it) }) }
     }
 }
 
@@ -75,11 +75,11 @@ fun TrainExercise(
     exerciseIndex: Int,
     exerciseDao: ExerciseDao,
 ) = Card(colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
-    val exercise = trainViewModel.exercises[exerciseIndex]
+    val exercise = trainViewModel.getExercise(exerciseIndex)
 
     var showDropdownButton by remember { mutableStateOf(false) }
     val swapExerciseChooser = exerciseChooser(exerciseDao = exerciseDao, onChoose = {
-        trainViewModel.exercises[exerciseIndex] = exercise.copy(name = it.name, exerciseId = it.exerciseId)
+        trainViewModel.setExercise(exerciseIndex, exercise.copy(name = it.name, exerciseId = it.exerciseId))
     })
 
     Column(modifier = Modifier.padding(ItemPadding), verticalArrangement = Arrangement.spacedBy(2 * ItemSpacing)) {
@@ -89,7 +89,7 @@ fun TrainExercise(
                 text = "${exerciseIndex + 1}. ${exercise.name}",
                 style = MaterialTheme.typography.titleMedium,
             )
-            if (trainViewModel.workoutPhase == WorkoutPhase.During) {
+            if (trainViewModel.isWorkoutRunning()) {
                 exercise.sets.lastOrNull { it.date != null }?.let { exerciseSet ->
                     Card {
                         Text(
@@ -104,7 +104,7 @@ fun TrainExercise(
             DropdownButton(show = showDropdownButton, onShowChange = { showDropdownButton = it }) {
                 DropdownMenuItem(leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
                     text = { Text(text = "Delete") },
-                    onClick = { trainViewModel.exercises.removeAt(exerciseIndex) })
+                    onClick = { trainViewModel.removeExercise(exerciseIndex) })
                 DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
                     swapExerciseChooser() // TODO add alternatives here P2
                     showDropdownButton = false
@@ -121,7 +121,7 @@ fun TrainExercise(
                 Header(Modifier.weight(ExerciseSetNarrowWeight + 0.1f), "Target")
                 Header(Modifier.weight(ExerciseSetWideWeight), exercise.perfVarCategory.prettyName)
                 Header(Modifier.weight(ExerciseSetWideWeight), settingsViewModel.settings.unitSystem.weightUnit())
-                if (trainViewModel.workoutPhase == WorkoutPhase.During) {
+                if (trainViewModel.isWorkoutRunning()) {
                     Header(Modifier.weight(ExerciseSetNarrowWeight), "")
                 }
             }
@@ -155,11 +155,11 @@ fun TrainExercise(
                             .padding(horizontal = ExerciseSetSpacing),
                         value = set.actualPerfVar,
                         onValueChange = {
-                            trainViewModel.exercises[exerciseIndex] = exercise.copy(
-                                sets = exercise.sets.set(setIndex, set.copy(actualPerfVar = it))
+                            trainViewModel.setExercise(
+                                exerciseIndex,
+                                exercise.copy(sets = exercise.sets.set(setIndex, set.copy(actualPerfVar = it)))
                             )
                         },
-                        readOnly = trainViewModel.workoutPhase == WorkoutPhase.Completed,
                     )
                     NumberField(
                         Modifier
@@ -167,20 +167,23 @@ fun TrainExercise(
                             .padding(horizontal = ExerciseSetSpacing),
                         value = set.weight,
                         onValueChange = {
-                            trainViewModel.exercises[exerciseIndex] = exercise.copy(
-                                sets = exercise.sets.set(setIndex, set.copy(weight = it))
+                            trainViewModel.setExercise(
+                                exerciseIndex, exercise.copy(sets = exercise.sets.set(setIndex, set.copy(weight = it)))
                             )
                         },
-                        readOnly = trainViewModel.workoutPhase == WorkoutPhase.Completed
                     )
-                    if (trainViewModel.workoutPhase == WorkoutPhase.During) {
+                    if (trainViewModel.isWorkoutRunning()) {
                         Checkbox(modifier = Modifier
                             .size(20.dp)
                             .weight(ExerciseSetNarrowWeight),
                             checked = set.date != null,
                             onCheckedChange = {
-                                trainViewModel.exercises[exerciseIndex] = exercise.copy(
-                                    sets = exercise.sets.set(setIndex, set.copy(date = if (it) Instant.now() else null))
+                                trainViewModel.setExercise(
+                                    exerciseIndex, exercise.copy(
+                                        sets = exercise.sets.set(
+                                            setIndex, set.copy(date = if (it) Instant.now() else null)
+                                        )
+                                    )
                                 )
                             })
                     }
@@ -192,10 +195,12 @@ fun TrainExercise(
             colors = ButtonDefaults.outlinedButtonColors()
                 .copy(contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
             onClick = {
-                trainViewModel.exercises[exerciseIndex] = exercise.copy(
-                    sets = exercise.sets + ExerciseSet(
-                        intensity = exercise.intensityCategory?.let { 0f },
-                        targetPerfVar = PerfVar.of(exercise.perfVarCategory),
+                trainViewModel.setExercise(
+                    exerciseIndex, exercise.copy(
+                        sets = exercise.sets + ExerciseSet(
+                            intensity = exercise.intensityCategory?.let { 0f },
+                            targetPerfVar = PerfVar.of(exercise.perfVarCategory),
+                        )
                     )
                 )
             }) { Text(text = "Add Set") }

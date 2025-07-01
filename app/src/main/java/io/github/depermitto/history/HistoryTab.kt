@@ -14,6 +14,7 @@ import io.github.depermitto.data.entities.HistoryDao
 import io.github.depermitto.exercises.Exercise
 import io.github.depermitto.theme.ItemPadding
 
+// TODO Actually make it worth being here, some stats, a finder per date, calendar and maybe some graphs would be good too
 @Composable
 fun HistoryTab(modifier: Modifier = Modifier, historyDao: HistoryDao) {
     val historyRecords by historyDao.getAllFlow().collectAsStateWithLifecycle(initialValue = emptyList())
@@ -32,6 +33,7 @@ fun HistoryTab(modifier: Modifier = Modifier, historyDao: HistoryDao) {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Text(text = historyRecord.workoutPhase.name)
                     historyRecord.day.exercises.forEach { exercise ->
                         Exercise(
                             exercise = exercise,
@@ -39,7 +41,6 @@ fun HistoryTab(modifier: Modifier = Modifier, historyDao: HistoryDao) {
                         )
                     }
                 }
-                Text(text = historyRecord.workoutPhase.name)
             }
         }
     }
