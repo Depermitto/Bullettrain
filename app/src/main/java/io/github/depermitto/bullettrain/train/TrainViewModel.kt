@@ -51,6 +51,7 @@ class TrainViewModel(
 
   // Workout-related
   private lateinit var workoutName: String
+  private lateinit var targetWorkout: Workout
   private var exercises = mutableStateListOf<Exercise>()
 
   // Realtime-related
@@ -66,18 +67,49 @@ class TrainViewModel(
   }
 
   fun setExerciseSet(exerciseIndex: Int, setIndex: Int, set: Exercise.Set.Builder) =
-    setExercise(
-      exerciseIndex,
-      getExercise(exerciseIndex).toBuilder().setSets(setIndex, set).build(),
-    )
-
-  fun getExercise(index: Int) = exercises[index]
+    setExercise(exerciseIndex, exercises[exerciseIndex].toBuilder().setSets(setIndex, set).build())
 
   fun getExercises() = exercises.toList()
 
-  fun addExercise(exercise: Exercise) {
-    exercises.add(exercise)
+  fun addExercise(exerciseDescriptor: Exercise.Descriptor) {
+    val targetExercise =
+      targetWorkout.exercisesList.firstOrNull { it.descriptorId == exerciseDescriptor.id }
+    if (targetExercise != null) exercises.add(targetExercise)
+    else
+      exercises.add(
+        Exercise.newBuilder()
+          .setDescriptorId(exerciseDescriptor.id)
+          .addSets(Exercise.Set.getDefaultInstance())
+          .build()
+      )
     if (isWorkoutRunning()) historyDao.update(this.getRecord())
+  }
+
+  fun addExerciseSet(exerciseIndex: Int) {
+    val exercise = exercises[exerciseIndex]
+    val targetExercise =
+      targetWorkout.exercisesList.firstOrNull { it.descriptorId == exercise.descriptorId }
+    if (
+      targetExercise != null &&
+        exercise.setsCount < targetExercise.setsCount &&
+        exercise.setsList.zip(targetExercise.setsList).all { it.first.target == it.second.target }
+    )
+      setExercise(
+        exerciseIndex,
+        exercise
+          .toBuilder()
+          .apply {
+            for (setIndex in setsCount..<targetExercise.setsCount) {
+              addSets(targetExercise.getSets(setIndex))
+            }
+          }
+          .build(),
+      )
+    else
+      setExercise(
+        exerciseIndex,
+        exercise.toBuilder().addSets(Exercise.Set.getDefaultInstance()).build(),
+      )
   }
 
   fun reorderExercises(fromIndex: Int, toIndex: Int) {
@@ -119,6 +151,7 @@ class TrainViewModel(
       timer = timer(initialDelay = 1000L, period = 1000L) { clock = date.atTimeNow().epochSecond }
     date = record.date
 
+    targetWorkout = record.workout
     workoutName = record.workout.name
     exercises = record.workout.exercisesList.toMutableStateList()
   }
@@ -126,16 +159,19 @@ class TrainViewModel(
   fun elapsed(since: Timestamp? = null): String {
     val secs = since?.seconds ?: workoutStartTs.seconds
     val diff = max(0, clock - secs)
-    return if (diff < 3600) {
+    val hours = diff / 3600
+    return if (hours == 0L) {
       DateFormatters.m_ss.format(Instant.ofEpochSecond(diff))
+    } else if (hours >= 10) {
+      "--:--:--"
     } else {
-      DateFormatters.k_mm_ss.format(Instant.ofEpochSecond(diff))
+      "$hours:${DateFormatters.mm_ss.format(Instant.ofEpochSecond(diff))}"
     }
   }
 
   fun toggleCompletion(checked: Boolean, exerciseIndex: Int, setIndex: Int) {
-    val lastPerformedSet = getExercise(exerciseIndex).lastCompletedSet
-    val set = getExercise(exerciseIndex).getSets(setIndex)
+    val lastPerformedSet = exercises[exerciseIndex].lastCompletedSet
+    val set = exercises[exerciseIndex].getSets(setIndex)
     val builder =
       if (checked) {
         set

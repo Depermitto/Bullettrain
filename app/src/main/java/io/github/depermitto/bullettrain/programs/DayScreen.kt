@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -128,7 +129,7 @@ fun DayScreen(
             headline = {
               ExtendedListItem(
                 onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },
-                contentPadding = PaddingValues(12.dp),
+                contentPadding = PaddingValues(12.dp, 12.dp, 8.dp, 12.dp),
                 headlineContent = {
                   Text(
                     "${exerciseIndex + 1}. ${exerciseDescriptor.name}",
@@ -139,7 +140,11 @@ fun DayScreen(
                 trailingContent = {
                   Row(verticalAlignment = Alignment.CenterVertically) {
                     var showDropdown by rememberSaveable { mutableStateOf(false) }
-                    DropdownButton(show = showDropdown, onShowChange = { showDropdown = it }) {
+                    DropdownButton(
+                      modifier = Modifier.offset(x = 2.dp),
+                      show = showDropdown,
+                      onShowChange = { showDropdown = it },
+                    ) {
                       DropdownMenuItem(
                         text = { Text("Swap") },
                         onClick = {
@@ -211,14 +216,13 @@ fun DayScreen(
                     }
 
                     FilledTonalIconButton(
-                      modifier = Modifier.size(SqueezableIconSize),
                       onClick = {
                         programViewModel.setExercise(
                           dayIndex,
                           exerciseIndex,
                           exercise.toBuilder().addSets(Exercise.Set.getDefaultInstance()).build(),
                         )
-                      },
+                      }
                     ) {
                       Icon(Icons.Filled.Add, "Add Exercise Set")
                     }
@@ -322,7 +326,7 @@ fun DayScreen(
                   },
                 )
               IconButton(
-                modifier = Modifier.weight(0.2F).size(CompactIconSize),
+                modifier = Modifier.weight(0.2F).size(20.dp),
                 onClick = {
                   programViewModel.setExercise(
                     dayIndex,

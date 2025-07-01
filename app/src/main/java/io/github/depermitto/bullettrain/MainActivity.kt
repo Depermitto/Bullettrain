@@ -237,11 +237,11 @@ fun App(db: Db) = MaterialTheme {
         snackbarHost = { SnackbarHost(snackbarHostState) },
       ) { paddingValues ->
         TrainingScreen(
-          modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
           trainViewModel = trainViewModel,
           exerciseDao = db.exerciseDao,
           historyDao = db.historyDao,
           settings = settings,
+          modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
           navController = navController,
           snackbarHostState = snackbarHostState,
         )
@@ -601,11 +601,11 @@ fun App(db: Db) = MaterialTheme {
         }
       ) { paddingValues ->
         TrainingScreen(
-          modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
           trainViewModel = trainViewModel,
           exerciseDao = db.exerciseDao,
           historyDao = db.historyDao,
           settings = settings,
+          modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
           navController = navController,
           snackbarHostState = snackbarHostState,
         )

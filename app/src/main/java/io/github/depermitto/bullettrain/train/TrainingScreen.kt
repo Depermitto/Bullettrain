@@ -128,7 +128,7 @@ fun TrainingScreen(
           headline = {
             ExtendedListItem(
               onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },
-              contentPadding = PaddingValues(12.dp),
+              contentPadding = PaddingValues(12.dp, 12.dp, 8.dp, 12.dp),
               headlineContent = {
                 Text(
                   "${exerciseIndex + 1}. ${exerciseDescriptor.name}",
@@ -152,7 +152,11 @@ fun TrainingScreen(
                     }
 
                   var showDropdown by rememberSaveable { mutableStateOf(false) }
-                  DropdownButton(show = showDropdown, onShowChange = { showDropdown = it }) {
+                  DropdownButton(
+                    modifier = Modifier.offset(x = 2.dp),
+                    show = showDropdown,
+                    onShowChange = { showDropdown = it },
+                  ) {
                     DropdownMenuItem(
                       text = { Text("Swap") },
                       onClick = {
@@ -180,29 +184,7 @@ fun TrainingScreen(
                   }
 
                   FilledTonalIconButton(
-                    modifier = Modifier.size(SqueezableIconSize),
-                    onClick = {
-                      trainViewModel.setExercise(
-                        exerciseIndex,
-                        exercise
-                          .toBuilder()
-                          .apply {
-                            // TODO get target and RPE from relatedProgram
-                            if (setsCount == 0) {
-                              addSets(Exercise.Set.getDefaultInstance())
-                            } else {
-                              val lastSet = exercise.setsList.last()
-                              val builder =
-                                Exercise.Set.newBuilder()
-                                  .setTarget(lastSet.target)
-                                  .setIntensity(lastSet.intensity)
-                              if (exercise.hasTarget2) builder.setTarget2(lastSet.target2)
-                              addSets(builder)
-                            }
-                          }
-                          .build(),
-                      )
-                    },
+                    onClick = { trainViewModel.addExerciseSet(exerciseIndex) }
                   ) {
                     Icon(Icons.Filled.Add, "Add Exercise Set")
                   }
@@ -275,7 +257,7 @@ fun TrainingScreen(
               placeholder = { lastPerformedSet?.let { Placeholder(it.weight.format()) } },
             )
             Checkbox(
-              modifier = Modifier.size(CompactIconSize).weight(.3F),
+              modifier = Modifier.size(20.dp).weight(.3F),
               checked = set.hasDoneTs(),
               onCheckedChange = { trainViewModel.toggleCompletion(it, exerciseIndex, setIndex) },
             )
@@ -291,14 +273,7 @@ fun TrainingScreen(
         historyDao = historyDao,
         onDismissRequest = { showExerciseChooser = false },
         filter = duplicateExerciseFilter,
-        onSelection = {
-          trainViewModel.addExercise(
-            Exercise.newBuilder()
-              .setDescriptorId(it.id)
-              .addSets(Exercise.Set.getDefaultInstance())
-              .build()
-          )
-        },
+        onSelection = { trainViewModel.addExercise(it) },
       )
     TextButton(
       modifier = Modifier.fillMaxWidth(),
