@@ -1,0 +1,136 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 9,
+    "identityHash": "0045d58d9c03fbc35a6a31a7d512c0b7",
+    "entities": [
+      {
+        "tableName": "exercises",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`exercise_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `reps` REAL NOT NULL, `rpe` REAL NOT NULL, `superset` TEXT, `alternatives` TEXT, `notes` TEXT NOT NULL, `done` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "exerciseId",
+            "columnName": "exercise_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reps",
+            "columnName": "reps",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rpe",
+            "columnName": "rpe",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "superset",
+            "columnName": "superset",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "alternatives",
+            "columnName": "alternatives",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "done",
+            "columnName": "done",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "exercise_id"
+          ]
+        }
+      },
+      {
+        "tableName": "history",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`history_entry_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `reps` REAL NOT NULL, `rpe` REAL NOT NULL, `date` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "historyEntryId",
+            "columnName": "history_entry_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reps",
+            "columnName": "reps",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rpe",
+            "columnName": "rpe",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "history_entry_id"
+          ]
+        }
+      },
+      {
+        "tableName": "programs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`program_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `days` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "programId",
+            "columnName": "program_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "days",
+            "columnName": "days",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "program_id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0045d58d9c03fbc35a6a31a7d512c0b7')"
+    ]
+  }
+}

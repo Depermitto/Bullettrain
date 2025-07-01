@@ -1,6 +1,9 @@
 package io.github.depermitto
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -9,21 +12,27 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.components.Ribbon
 import io.github.depermitto.components.RibbonScaffold
+import io.github.depermitto.data.Day
 import io.github.depermitto.data.GymDatabase
 import io.github.depermitto.data.Program
 import io.github.depermitto.presentation.ProgramViewModel
+import io.github.depermitto.presentation.ProgramViewModelFactory
+import io.github.depermitto.presentation.TrainViewModel
+import io.github.depermitto.presentation.TrainViewModelFactory
 import io.github.depermitto.screens.MainScreen
 import io.github.depermitto.screens.Screen
 import io.github.depermitto.screens.SettingsScreen
+import io.github.depermitto.screens.programs.ProgramCreationScreen
 import io.github.depermitto.screens.programs.ProgramScreen
-import io.github.depermitto.screens.programs.ProgramsCreationScreen
 import kotlinx.coroutines.launch
 import java.io.File
 
 const val DB_FILENAME = "firetent.sqlite"
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme {
     val scope = rememberCoroutineScope()
@@ -32,34 +41,43 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
     val exerciseDao = db.getExerciseDao()
     val programDao = db.getProgramDao()
 
-    val programViewModel: ProgramViewModel = viewModel()
+    val programViewModel = viewModel<ProgramViewModel>()
+    val trainViewModel = viewModel<TrainViewModel>(factory = TrainViewModelFactory(Day()))
 
     NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
         composable(Screen.MainScreen.route) {
-            RibbonScaffold(ribbon = { Ribbon(navController = navController, backButton = false) }) {
-                MainScreen(programDao, navController)
-            }
+            MainScreen(
+                trainViewModel = trainViewModel,
+                programDao = programDao,
+                exerciseDao = exerciseDao,
+                navController = navController
+            )
         }
 
-        composable(Screen.ProgramsCreationScreen.route) {
+        composable(Screen.ProgramCreationScreen.route) {
             RibbonScaffold(ribbon = { Ribbon(navController = navController, title = "New Program") }) {
-                ProgramsCreationScreen(
+                ProgramCreationScreen(
                     programViewModel, programDao = programDao, exerciseDao = exerciseDao, navController = navController
                 )
             }
         }
 
-        composable(Screen.ProgramOverviewScreen.route) { navBackStackEntry ->
+        composable(Screen.ProgramScreen.route) { navBackStackEntry ->
             val programId = navBackStackEntry.arguments?.getString("programId") ?: return@composable
-            val programMaybe: Program? by programDao.where(id = programId.toLong())
+            val programMaybe: Program? by programDao.whereId(id = programId.toLong())
                 .collectAsStateWithLifecycle(initialValue = null)
 
-            programMaybe?.let { program ->
+            programMaybe?.let {
+                val program = viewModel<ProgramViewModel>(factory = ProgramViewModelFactory(it))
+
                 RibbonScaffold(ribbon = { Ribbon(navController = navController, title = program.name) }) {
-                    ProgramScreen(viewModel = viewModel<ProgramViewModel>().reset(program), onFabClick = {
-                        scope.launch { programDao.upsert(it) }
-                        navController.popBackStack(Screen.MainScreen.route, inclusive = false)
-                    }, fabText = { if (program != it) "Finish Edit" else null }, exerciseDao = exerciseDao)
+                    ProgramScreen(program, exerciseDao = exerciseDao)
+                    if (program.days != it.days) {
+                        AnchoredFloatingActionButton(text = { Text("Finish Edit") }, onClick = {
+                            scope.launch { programDao.upsert(Program(name = program.name, days = program.days)) }
+                            navController.popBackStack(Screen.MainScreen.route, inclusive = false)
+                        })
+                    }
                 }
             }
         }

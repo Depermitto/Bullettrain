@@ -1,5 +1,7 @@
 package io.github.depermitto.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,15 +15,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
+import io.github.depermitto.components.Ribbon
+import io.github.depermitto.components.RibbonScaffold
+import io.github.depermitto.data.ExerciseDao
 import io.github.depermitto.data.ProgramDao
-import io.github.depermitto.screens.Screen.*
+import io.github.depermitto.presentation.TrainViewModel
+import io.github.depermitto.screens.Screen.MainScreen
 import io.github.depermitto.screens.programs.ProgramsScreen
+import io.github.depermitto.screens.train.TrainScreen
 import io.github.depermitto.theme.adaptiveIconTint
 import io.github.depermitto.theme.filledContainerColor
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainScreen(programDao: ProgramDao, navController: NavController) {
-    var activeBar by remember { mutableStateOf(MainScreen.Tabs.Programs) }
+fun MainScreen(
+    trainViewModel: TrainViewModel,
+    programDao: ProgramDao,
+    exerciseDao: ExerciseDao,
+    navController: NavController,
+) {
+    var activeBar by remember { mutableStateOf(MainScreen.Tabs.Train) }
 
     Scaffold(bottomBar = {
         NavigationBar(containerColor = filledContainerColor()) {
@@ -42,9 +55,14 @@ fun MainScreen(programDao: ProgramDao, navController: NavController) {
                 .padding(paddingValues)
         ) {
             when (activeBar) {
-                MainScreen.Tabs.Programs -> ProgramsScreen(programDao = programDao, navController = navController)
+                MainScreen.Tabs.Programs -> {
+                    RibbonScaffold(ribbon = { Ribbon(navController = navController, backButton = false) }) {
+                        ProgramsScreen(programDao = programDao, navController = navController)
+                    }
+                }
+
                 MainScreen.Tabs.History -> HistoryScreen()
-                MainScreen.Tabs.Train -> TrainScreen()
+                MainScreen.Tabs.Train -> TrainScreen(viewModel = trainViewModel, exerciseDao = exerciseDao)
             }
         }
     }

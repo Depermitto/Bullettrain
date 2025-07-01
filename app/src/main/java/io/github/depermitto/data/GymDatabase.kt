@@ -1,17 +1,20 @@
 package io.github.depermitto.data
 
 import android.database.Cursor
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.room.*
 import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.util.*
+import java.time.Instant
 
 @Database(
-    entities = [Exercise::class, HistoryEntry::class, Program::class], version = 7, exportSchema = true
+    entities = [Exercise::class, HistoryEntry::class, Program::class], version = 9, exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class GymDatabase : RoomDatabase() {
@@ -39,6 +42,7 @@ data class Exercise(
     val superset: Exercise? = null,
     val alternatives: List<Exercise>? = null,
     val notes: String = "",
+    @Contextual val done: Instant? = null,
 )
 
 @Dao
@@ -58,7 +62,7 @@ data class HistoryEntry(
     @SerialName("history-entry-id") @ColumnInfo(name = "history_entry_id") @PrimaryKey(autoGenerate = true) val historyEntryId: Long = 0,
     val reps: Float,
     val rpe: Float,
-    val date: Date,
+    val date: Instant,
 )
 
 @Dao
@@ -83,10 +87,8 @@ data class Program(
 @Serializable
 data class Day(
     val name: String = "Day 1",
-    val exercises: List<Sets> = listOf(),
+    val sets: List<List<Exercise>> = listOf(),
 )
-
-typealias Sets = List<Exercise>
 
 @Dao
 interface ProgramDao {
@@ -95,26 +97,28 @@ interface ProgramDao {
 
     @Delete
     suspend fun delete(program: Program)
-    
+
     @Query("SELECT * FROM programs WHERE program_id = :id LIMIT 1")
-    fun where(id: Long): Flow<Program?>
+    fun whereId(id: Long): Flow<Program?>
 
     @Query("SELECT * FROM programs")
     fun getAllFlow(): Flow<List<Program>>
 }
 
 class Converters {
+    @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
-    fun dateFromTimestamp(value: Long): Date = Date(value)
+    fun dateFromTimestamp(value: Long): Instant = Instant.ofEpochMilli(value)
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
-    fun dateToTimestamp(date: Date): Long = date.time
+    fun dateToTimestamp(date: Instant): Long = date.toEpochMilli()
 
     @TypeConverter
     fun dayFromString(value: String): List<Day> = Json.decodeFromString(value)
 
     @TypeConverter
-    fun daysToString(work: List<Day>): String = Json.encodeToString(work)
+    fun daysToString(days: List<Day>): String = Json.encodeToString(days)
 
     @TypeConverter
     fun exerciseFromString(value: String?): Exercise? = null
