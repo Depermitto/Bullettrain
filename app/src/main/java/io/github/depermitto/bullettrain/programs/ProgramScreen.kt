@@ -29,9 +29,9 @@ import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.PerfVar
-import io.github.depermitto.bullettrain.theme.WideSpacing
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
 import io.github.depermitto.bullettrain.theme.RegularPadding
+import io.github.depermitto.bullettrain.theme.WideSpacing
 import sh.calvin.reorderable.ReorderableColumn
 
 @Composable
@@ -130,5 +130,16 @@ fun ExerciseTargetField(
         NumberField(
             modifier = modifier, value = value.max, onValueChange = { onValueChange(value.copy(max = it)) }, readOnly = readOnly
         )
+    }
+
+    is PerfVar.TimeRange -> Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        NumberField(
+            modifier = modifier, value = value.min, onValueChange = { onValueChange(value.copy(min = it)) }, readOnly = readOnly
+        )
+        Text(text = "-")
+        NumberField(
+            modifier = modifier, value = value.max, onValueChange = { onValueChange(value.copy(max = it)) }, readOnly = readOnly
+        )
+        Text(text = "min")
     }
 }

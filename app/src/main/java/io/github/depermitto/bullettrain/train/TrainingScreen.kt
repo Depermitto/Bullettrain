@@ -91,7 +91,7 @@ fun TrainingScreen(
                 onDismissRequest = { showSwapExerciseChooser = false },
                 onChoose = { it -> trainViewModel.setExercise(exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
 
-            val lastPerformedSet = exercise.sets.lastOrNull { it.doneTs != null }
+            val lastPerformedSet = exercise.sets.lastOrNull { it.completed }
             Row(
                 modifier = Modifier
                     .padding(RegularPadding)
@@ -108,7 +108,7 @@ fun TrainingScreen(
                     Card {
                         Text(
                             modifier = Modifier.padding(4.dp),
-                            text = if (exercise.sets.all<ExerciseSet> { it.doneTs != null }) "Done"
+                            text = if (exercise.sets.all { it.completed }) "Done"
                             else trainViewModel.elapsedSince(exerciseSet.doneTs!!),
                             style = MaterialTheme.typography.titleMedium
                         )
@@ -133,8 +133,8 @@ fun TrainingScreen(
 
             Row(modifier = Modifier.padding(top = RegularPadding, bottom = RegularSpacing)) {
                 Header(Modifier.weight(NarrowWeight), "Set")
-                if (exercise.intensityCategory != null) {
-                    Header(Modifier.weight(NarrowWeight), exercise.intensityCategory.name)
+                if (exercise.intensity != null) {
+                    Header(Modifier.weight(NarrowWeight), exercise.intensity.name)
                 }
                 Header(Modifier.weight(NarrowWeight + 0.1f), "Target")
                 Header(Modifier.weight(WideWeight), exercise.perfVarCategory.trainName)
@@ -151,8 +151,7 @@ fun TrainingScreen(
                     trainViewModel.removeExerciseSet(exerciseIndex, setIndex)
                     if (set.actualPerfVar != 0f) scope.launch {
                         val snackBarResult = snackbarHostState.showSnackbar(
-                            message = PerfVar.of(exercise.perfVarCategory, set.actualPerfVar)
-                                .encodeToStringOutput() + " of ${exercise.name} deleted",
+                            message = "Set ${setIndex + 1} of ${exercise.name} deleted",
                             actionLabel = "Undo",
                             withDismissAction = true,
                         )
@@ -173,9 +172,9 @@ fun TrainingScreen(
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyMedium
                         )
-                        if (set.intensity != null) Text(
+                        if (set.actualIntensity != null) Text(
                             modifier = Modifier.weight(NarrowWeight),
-                            text = set.intensity.encodeToStringOutput().ifBlank { "0" },
+                            text = set.actualIntensity.encodeToStringOutput().ifBlank { "0" },
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -232,7 +231,7 @@ fun TrainingScreen(
                     trainViewModel.setExercise(
                         exerciseIndex, exercise.copy(
                             sets = exercise.sets + ExerciseSet(
-                                intensity = exercise.intensityCategory?.let { 0f },
+                                actualIntensity = exercise.intensity?.let { 0f },
                                 targetPerfVar = PerfVar.of(exercise.perfVarCategory),
                             )
                         )

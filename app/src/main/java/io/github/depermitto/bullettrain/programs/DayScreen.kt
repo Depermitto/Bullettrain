@@ -53,22 +53,22 @@ import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
 import io.github.depermitto.bullettrain.components.TextLink
 import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.ExerciseSet
-import io.github.depermitto.bullettrain.database.IntensityCategory
+import io.github.depermitto.bullettrain.database.Intensity
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.PerfVarCategory
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
-import io.github.depermitto.bullettrain.theme.WideSpacing
 import io.github.depermitto.bullettrain.theme.CompactIconSize
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
-import io.github.depermitto.bullettrain.theme.NarrowWeight
-import io.github.depermitto.bullettrain.theme.SmallSpacing
-import io.github.depermitto.bullettrain.theme.WideWeight
 import io.github.depermitto.bullettrain.theme.HeartPlusIcon
 import io.github.depermitto.bullettrain.theme.HeartRemoveIcon
+import io.github.depermitto.bullettrain.theme.NarrowWeight
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.RegularSpacing
+import io.github.depermitto.bullettrain.theme.SmallSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.SwapIcon
+import io.github.depermitto.bullettrain.theme.WideSpacing
+import io.github.depermitto.bullettrain.theme.WideWeight
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.util.reorder
 import io.github.depermitto.bullettrain.util.smallListSet
@@ -100,12 +100,12 @@ fun DayScreen(
     }, onSettle = { fromIndex, toIndex ->
         programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises.reorder(fromIndex, toIndex)))
     }) { exerciseIndex, exercise, isDragging ->
-        fun setIntensity(cat: IntensityCategory?) {
+        fun setIntensity(cat: Intensity?) {
             val intensity = if (cat != null) 0f else null
             programViewModel.setExercise(
                 dayIndex,
                 exerciseIndex,
-                exercise.copy(intensityCategory = cat, sets = exercise.sets.map { it.copy(intensity = intensity) })
+                exercise.copy(intensity = cat, sets = exercise.sets.map { it.copy(actualIntensity = intensity) })
             )
         }
 
@@ -148,7 +148,7 @@ fun DayScreen(
 
                             if (!exercise.hasIntensity) IconButton(
                                 modifier = Modifier.size(SqueezableIconSize),
-                                onClick = { setIntensity(IntensityCategory.RPE) }) {
+                                onClick = { setIntensity(Intensity.RPE) }) {
                                 HeartPlusIcon()
                             }
                             else IconButton(modifier = Modifier.size(SqueezableIconSize), onClick = { setIntensity(null) }) {
@@ -240,16 +240,16 @@ fun DayScreen(
                                                 )
                                             )
                                         })
-                                    if (set.intensity != null) {
+                                    if (set.actualIntensity != null) {
                                         NumberField(modifier = Modifier
                                             .weight(WideWeight)
                                             .padding(horizontal = SmallSpacing),
-                                            value = set.intensity,
+                                            value = set.actualIntensity,
                                             onValueChange = {
                                                 programViewModel.setExercise(
                                                     dayIndex, exerciseIndex, exercise.copy(
                                                         sets = exercise.sets.smallListSet(
-                                                            setIndex, set.copy(intensity = max(min(it, 10f), 0f))
+                                                            setIndex, set.copy(actualIntensity = max(min(it, 10f), 0f))
                                                         )
                                                     )
                                                 )
@@ -277,7 +277,7 @@ fun DayScreen(
                                 programViewModel.setExercise(
                                     dayIndex, exerciseIndex, exercise.copy(
                                         sets = exercise.sets + ExerciseSet(
-                                            intensity = exercise.intensityCategory?.let { 0f },
+                                            actualIntensity = exercise.intensity?.let { 0f },
                                             targetPerfVar = PerfVar.of(exercise.perfVarCategory)
                                         )
                                     )

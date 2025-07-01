@@ -72,39 +72,40 @@ data class Day(
 data class Exercise(
     @SerialName("exerciseId") override val id: Int = 0,
     val name: String,
-    val perfVarCategory: PerfVarCategory = PerfVarCategory.Reps,
-    val intensityCategory: IntensityCategory? = null,
+    @SerialName("performanceVariableCategory") val perfVarCategory: PerfVarCategory = PerfVarCategory.Reps,
+    val intensity: Intensity? = null,
     val sets: List<ExerciseSet> = listOf(),
     val superset: List<Int>? = null,
     val alternatives: List<Int>? = null,
     val notes: String = "",
 ) : Entity {
     val hasIntensity: Boolean
-        get() = intensityCategory != null
+        get() = intensity != null
 
-    fun getPerformedSets(): List<ExerciseSet> = sets.filter { it.doneTs != null }
+    fun getPerformedSets(): List<ExerciseSet> = sets.filter { it.completed }
 
     override fun clone(id: Int) = copy(id = id)
 }
 
 @Serializable
 data class ExerciseSet(
-    val targetPerfVar: PerfVar,
-    val actualPerfVar: Float = 0f,
-    // val targetIntensity
-    val intensity: Float? = null,
+    @SerialName("targetPerformanceVariable") val targetPerfVar: PerfVar,
+    @SerialName("actualPerformanceVariable") val actualPerfVar: Float = 0f,
+    val targetIntensity: Intensity? = null,
+    val actualIntensity: Float? = null,
     val weight: Float = 0f,
     @Serializable(with = InstantSerializer::class) val doneTs: Instant? = null,
 ) {
     val completed = doneTs != null
 }
 
+// TODO implement these as choices
 @Serializable
-enum class IntensityCategory { RPE, AMRAP, RIR }
+enum class Intensity { RPE, RIR, PercentOf1RM }
 
 @Serializable
 enum class PerfVarCategory {
-    Reps, RepRange, Time;
+    Reps, RepRange, Time, TimeRange;
 
     val prettyName = name.split(regex = Regex("(?=[A-Z])")).joinToString(" ")
     val trainName get() = if (this == RepRange) "Reps" else name
@@ -121,24 +122,22 @@ sealed class PerfVar(val category: PerfVarCategory) {
     @Serializable
     data class RepRange(val min: Float = 0f, val max: Float = 0f) : PerfVar(PerfVarCategory.RepRange)
 
+    @Serializable
+    data class TimeRange(val min: Float = 0f, val max: Float = 0f) : PerfVar(PerfVarCategory.TimeRange)
+
     companion object {
         fun of(category: PerfVarCategory) = when (category) {
             PerfVarCategory.Reps -> Reps()
             PerfVarCategory.Time -> Time()
             PerfVarCategory.RepRange -> RepRange()
-        }
-
-        fun of(category: PerfVarCategory, vararg perf: Float) = when {
-            category == PerfVarCategory.Reps && perf.size == 1 -> Reps(perf[0])
-            category == PerfVarCategory.Time && perf.size == 1 -> Time(perf[0])
-            category == PerfVarCategory.RepRange && perf.size == 2 -> RepRange(perf[0], perf[1])
-            else -> of(category)
+            PerfVarCategory.TimeRange -> TimeRange()
         }
     }
 
     fun encodeToStringOutput(): String = when (this) {
-        is RepRange -> if (this == RepRange()) "" else "${min.encodeToStringOutput()}-${max.encodeToStringOutput()} reps"
         is Reps -> if (this == Reps()) "" else reps.encodeToStringOutput() + if (reps == 1f) " rep" else " reps"
         is Time -> if (this == Time()) "" else time.encodeToStringOutput() + " min"
+        is RepRange -> if (this == RepRange()) "" else "${min.encodeToStringOutput()}-${max.encodeToStringOutput()} reps"
+        is TimeRange -> if (this == TimeRange()) "" else "${min.encodeToStringOutput()}-${max.encodeToStringOutput()} min"
     }
 }
