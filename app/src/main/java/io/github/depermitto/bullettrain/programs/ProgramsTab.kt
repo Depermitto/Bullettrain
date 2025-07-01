@@ -25,12 +25,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
-import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
+import io.github.depermitto.bullettrain.components.ConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
-import io.github.depermitto.bullettrain.database.daos.ProgramDao
-import io.github.depermitto.bullettrain.database.entities.Settings
+import io.github.depermitto.bullettrain.db.ProgramDao
+import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
@@ -61,7 +61,7 @@ fun ProgramsTab(
           holdOptions = { closeDropdown ->
             DropdownMenuItem(
               text = { Text(text = "Rename") },
-              leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
+              leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = "Rename Program") },
               onClick = {
                 closeDropdown()
                 showRenameDialog = true
@@ -69,7 +69,7 @@ fun ProgramsTab(
             )
             DropdownMenuItem(
               text = { Text(text = "Delete") },
-              leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+              leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = "Delete Program") },
               onClick = {
                 closeDropdown()
                 showProgramDeleteDialog = true
@@ -87,40 +87,19 @@ fun ProgramsTab(
               },
               supportingContent = {
                 Column {
-                  Text(text = "${program.workouts.size} day program")
+                  Text(text = "${program.workoutsCount} day program")
                   Text(
                     text =
-                      "${program.workouts.sumOf { day -> day.entries.sumOf { it.sets.size } }} total sets"
+                      "${program.workoutsList.sumOf { day -> day.exercisesList.sumOf { it.setsCount } }} total sets"
                   )
-                  //
-                  // program.mostRecentWorkoutDate?.let { date ->
-                  //                                    val formatter =
-                  // DateTimeFormatter.ofPattern("d MMM yyyy")
-                  //                                    Text(
-                  //                                        text = "Most recent
-                  // workout: ${formatter.format(date)}",
-                  //                                        style =
-                  // MaterialTheme.typography.bodyMedium
-                  //                                    )
-                  //                                }
                 }
-              },
-              trailingContent = {
-                if (program.draft)
-                  Card {
-                    Text(
-                      text = "Draft",
-                      modifier = Modifier.padding(Dp.Small),
-                      style = MaterialTheme.typography.titleSmall,
-                    )
-                  }
               },
             )
           }
 
           if (showProgramDeleteDialog)
-            DiscardConfirmationAlertDialog(
-              text = "Do you definitely want to discard ${program.name}?",
+            ConfirmationAlertDialog(
+              text = "Do you definitely want to delete ${program.name}?",
               onDismissRequest = { showProgramDeleteDialog = false },
               onConfirm = { programDao.delete(program) },
             )
@@ -141,7 +120,7 @@ fun ProgramsTab(
                       return@TextButton
                     }
 
-                    programDao.update(program.copy(name = name))
+                    programDao.update(program.toBuilder().setName(name).build())
                     showRenameDialog = false
                   }
                 ) {

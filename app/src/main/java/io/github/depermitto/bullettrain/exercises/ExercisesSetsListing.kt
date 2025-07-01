@@ -12,55 +12,49 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.DataPanel
 import io.github.depermitto.bullettrain.components.ExtendedListItem
-import io.github.depermitto.bullettrain.components.encodeToStringOutput
-import io.github.depermitto.bullettrain.database.daos.HistoryDao
-import io.github.depermitto.bullettrain.database.daos.SettingsDao
-import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
-import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
+import io.github.depermitto.bullettrain.components.format
+import io.github.depermitto.bullettrain.protos.ExercisesProto.Exercise
+import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import io.github.depermitto.bullettrain.util.weightUnit
 
+/**
+ * Show sets in a listing for [exercises]. Shows only completed sets and guarantees that at least
+ * one set will be shown per exercise, otherwise exercise is skipped.
+ */
 @Composable
-fun ExerciseScreen(
+fun ExercisesSetsListings(
   modifier: Modifier = Modifier,
-  historyDao: HistoryDao,
-  settingsDao: SettingsDao,
-  exerciseDescriptor: ExerciseDescriptor,
+  exercises: List<Exercise>,
+  exerciseHeadline: @Composable (Exercise) -> Unit,
+  settings: Settings,
 ) {
-  val settings by settingsDao.getSettings.collectAsStateWithLifecycle()
-  val exercises by
-    historyDao.where(exerciseDescriptor).collectAsStateWithLifecycle(initialValue = emptyList())
-  val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMM dd yyyy")
-
   LazyColumn(
     modifier = modifier,
-    contentPadding =
-      PaddingValues(start = Dp.Medium, end = Dp.Medium, bottom = Dp.EmptyScrollSpace),
+    contentPadding = PaddingValues(start = Dp.Medium, end = Dp.Medium),
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.spacedBy(Dp.Small),
   ) {
     items(exercises) { exercise ->
-      val doneDate =
-        exercise.lastPerformedSet()?.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
+      val sets = exercise.setsList.filter { set -> set.hasDoneTs() }
+      if (sets.isEmpty()) return@items
       DataPanel(
-        items = exercise.getPerformedSets(),
+        items = sets,
         separateHeaderAndContent = false,
         headline = {
           ExtendedListItem(
-            headlineContent = { Text(dateFormatter.format(doneDate)) },
+            headlineContent = { exerciseHeadline(exercise) },
             headlineTextStyle = MaterialTheme.typography.titleMedium,
             contentPadding = PaddingValues(Dp.Medium),
           )
         },
         headerPadding = PaddingValues(horizontal = Dp.Medium),
         headerContent = {
-          Text("Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
-          Spacer(Modifier.weight(1f))
+          Text("Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5F))
+          Spacer(Modifier.weight(1F))
           Text("Completed", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
         },
       ) { setIndex, set ->
@@ -74,13 +68,11 @@ fun ExerciseScreen(
               overflow = TextOverflow.Ellipsis,
               text =
                 run {
-                  val perfVar = set.actualPerfVar.encodeToStringOutput() // is always non-zero
-                  val weight = set.weight.encodeToStringOutput()
-
+                  val actual = set.actual.format()
+                  val weight = set.weight.format()
                   when {
-                    weight.isBlank() ->
-                      "$perfVar ${set.targetPerfVar.category.shortName.lowercase()}"
-                    else -> "$perfVar x $weight ${settings.unitSystem.weightUnit()}"
+                    weight.isBlank() -> "$actual ${exercise.type}"
+                    else -> "$actual x $weight ${settings.unitSystem.weightUnit()}"
                   }
                 },
             )

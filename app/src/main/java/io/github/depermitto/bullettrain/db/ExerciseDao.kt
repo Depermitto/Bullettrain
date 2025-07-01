@@ -1,22 +1,23 @@
-package io.github.depermitto.bullettrain.database.daos
+package io.github.depermitto.bullettrain.db
 
-import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
+import io.github.depermitto.bullettrain.protos.ExercisesProto.Exercise
 import io.github.depermitto.bullettrain.util.BKTree
 import io.github.depermitto.bullettrain.util.bigListSet
+import kotlin.Result.Companion.failure
+import kotlin.Result.Companion.success
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
 /** Abstraction representing a Data Access Object. Every method executes synchronously. */
-class ExerciseDao(state: List<ExerciseDescriptor>) {
-  internal val items = MutableStateFlow(state)
+class ExerciseDao(exerciseDescriptors: List<Exercise.Descriptor>) {
+  internal val items = MutableStateFlow(exerciseDescriptors)
   private var newId = items.value.maxOfOrNull { it.id } ?: 0
   private val bkTree =
     BKTree("Press") // Most frequent word in our database, followed by "Dumbbell" and "Barbell"
 
-  val getAll: StateFlow<List<ExerciseDescriptor>> = items.asStateFlow()
+  val getAll = items.asStateFlow()
   val getSortedAlphabetically =
     getAll.map { exerciseDescriptors ->
       exerciseDescriptors.filterNot { it.obsolete }.sortedBy { it.name }
@@ -34,32 +35,37 @@ class ExerciseDao(state: List<ExerciseDescriptor>) {
   }
 
   /** @return Boolean indicating if the operation was successful. */
-  fun update(item: ExerciseDescriptor): Boolean {
-    val existingIndex = items.value.indexOfFirst { it.id == item.id }
-    if (existingIndex == -1) return false
+  fun update(descriptor: Exercise.Descriptor): Boolean {
+    if (descriptor.id >= items.value.size) return false
 
     items.update { state ->
-      state.bigListSet(existingIndex, item.copy(name = item.name.capitalizeWords()))
+      state.bigListSet(
+        // Index lookup because the list has no gaps
+        descriptor.id - 1,
+        descriptor.toBuilder().setName(descriptor.name.capitalizeWords()).build(),
+      )
     }
     return true
   }
 
-  /** @return Id of the inserted item. */
-  fun insert(item: ExerciseDescriptor): Int {
+  /** @return Id of the inserted descriptor. */
+  fun insert(descriptor: Exercise.Descriptor): Int {
     items.update { state ->
       newId += 1
       state +
-        item.copy(
-          name = item.name.capitalizeWords().also { preppedName -> bkTree.insert(preppedName) },
-          id = newId,
-        )
+        descriptor
+          .toBuilder()
+          .setName(descriptor.name.capitalizeWords().also { name -> bkTree.insert(name) })
+          .setId(newId)
+          .build()
     }
     return newId
   }
 
-  fun delete(item: ExerciseDescriptor) = update(item.copy(obsolete = true))
+  fun delete(descriptor: Exercise.Descriptor) =
+    update(descriptor.toBuilder().setObsolete(true).build())
 
-  fun where(id: Int): ExerciseDescriptor = items.value.first { it.id == id }
+  fun where(id: Int): Exercise.Descriptor = items.value.first { it.id == id }
 
   /**
    * Filter out exercises by name. This function provides an autocorrect/typo correcting algorithm
@@ -71,29 +77,26 @@ class ExerciseDao(state: List<ExerciseDescriptor>) {
       val predictedWords = words.mapNotNull { bkTree.search(it, errorTolerance, ignoreCase) }
 
       exercises.filter { exercise ->
-        words.all {
-          exercise.name.contains(it, ignoreCase)
-        } || // not checking for empty string will show all exercises
+        val matches = words.all { word -> exercise.name.contains(word, ignoreCase) }
+        // not checking for empty string will show all exercises
+        val matchesPrediction =
           (predictedWords.isNotEmpty() &&
-            predictedWords.all { exercise.name.contains(it, ignoreCase) })
+            predictedWords.all { word -> exercise.name.contains(word, ignoreCase) })
+        matches || matchesPrediction
       }
     }
 
-  /**
-   * Check [name] for duplicates and emptiness.
-   *
-   * @return Error message if [name] is bad and null if successfully validated.
-   */
-  fun validateName(name: String): String? {
+  /** Check [name] for duplicates and emptiness. */
+  fun validateName(name: String): Result<Unit> {
     if (name.isBlank()) {
-      return "Empty Exercise Name"
+      return failure(Throwable(message = "Empty Exercise Name"))
     }
 
     if (getAll.value.any { !it.obsolete && it.name == name.capitalizeWords() }) {
-      return "Duplicate Exercise Name"
+      return failure(Throwable(message = "Duplicate Exercise Name"))
     }
 
-    return null
+    return success(Unit)
   }
 
   private fun String.capitalizeWords() =

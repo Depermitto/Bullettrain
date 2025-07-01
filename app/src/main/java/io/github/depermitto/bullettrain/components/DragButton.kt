@@ -11,25 +11,26 @@ import io.github.depermitto.bullettrain.theme.DragHandleIcon
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import sh.calvin.reorderable.ReorderableScope
 
+fun Modifier.reorderable(receiver: ReorderableScope, view: View): Modifier =
+  with(receiver = receiver) {
+    this@reorderable.draggableHandle(
+      onDragStarted = {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+          view.performHapticFeedback(HapticFeedbackConstants.DRAG_START)
+        }
+      },
+      onDragStopped = {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+          view.performHapticFeedback(HapticFeedbackConstants.GESTURE_END)
+        }
+      },
+    )
+  }
+
 @Composable
 fun DragButton(receiver: ReorderableScope, view: View, modifier: Modifier = Modifier) {
   IconButton(
-    modifier =
-      with(receiver = receiver) {
-          modifier.draggableHandle(
-            onDragStarted = {
-              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                view.performHapticFeedback(HapticFeedbackConstants.DRAG_START)
-              }
-            },
-            onDragStopped = {
-              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                view.performHapticFeedback(HapticFeedbackConstants.GESTURE_END)
-              }
-            },
-          )
-        }
-        .size(SqueezableIconSize),
+    modifier = modifier.reorderable(receiver, view).size(SqueezableIconSize),
     onClick = {},
   ) {
     DragHandleIcon()

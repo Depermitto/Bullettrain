@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavController
+import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.unlinedColors
 
@@ -16,6 +17,7 @@ import io.github.depermitto.bullettrain.theme.unlinedColors
 fun ProgramCreationScreen(
   modifier: Modifier = Modifier,
   programViewModel: ProgramViewModel,
+  settings: Settings,
   navController: NavController,
 ) {
   Column(modifier = modifier.fillMaxSize()) {
@@ -32,6 +34,7 @@ fun ProgramCreationScreen(
     ProgramScreen(
       modifier = Modifier.padding(top = Dp.Medium),
       programViewModel = programViewModel,
+      settings = settings,
       navController = navController,
     )
   }

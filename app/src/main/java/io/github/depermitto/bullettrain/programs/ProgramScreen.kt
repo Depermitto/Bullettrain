@@ -24,22 +24,24 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
-import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
+import io.github.depermitto.bullettrain.components.ConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DragButton
+import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
-import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
-import io.github.depermitto.bullettrain.database.entities.PerfVar
+import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.DuplicateIcon
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
+import io.github.depermitto.bullettrain.theme.focalGround
 import sh.calvin.reorderable.ReorderableColumn
 
 @Composable
 fun ProgramScreen(
   modifier: Modifier = Modifier,
   programViewModel: ProgramViewModel,
+  settings: Settings,
   navController: NavController,
 ) {
   Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
@@ -57,7 +59,7 @@ fun ProgramScreen(
           view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
         }
       },
-      onSettle = { fromIndex, toIndex -> programViewModel.reorderDays(fromIndex, toIndex) },
+      onSettle = { from, to -> programViewModel.reorderDays(from, to) },
     ) { dayIndex, day, isDragging ->
       val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
 
@@ -70,14 +72,14 @@ fun ProgramScreen(
             holdOptions = { closeDropdown ->
               DropdownMenuItem(
                 text = { Text(text = "Rename") },
-                leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = "Rename Day") },
                 onClick = {
                   closeDropdown()
                   showRenameDialog = true
                 },
               )
               DropdownMenuItem(
-                text = { Text(text = "Duplicate") },
+                text = { Text(text = "Duplicate Day") },
                 leadingIcon = { DuplicateIcon() },
                 onClick = {
                   closeDropdown()
@@ -86,7 +88,7 @@ fun ProgramScreen(
               )
               DropdownMenuItem(
                 text = { Text(text = "Delete") },
-                leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = "Delete Day") },
                 onClick = {
                   closeDropdown()
                   showDayDeleteDialog = true
@@ -94,19 +96,19 @@ fun ProgramScreen(
               )
             },
           ) {
-            OutlinedCard {
-              ListItem(
+            Card(colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme))) {
+              ExtendedListItem(
                 headlineContent = { Text(text = day.name, maxLines = 1) },
                 supportingContent = {
-                  Text(text = "${day.entries.sumOf { it.sets.size }} sets", maxLines = 1)
+                  Text(text = "${day.exercisesList.sumOf { it.setsCount }} sets", maxLines = 1)
                 },
                 trailingContent = { DragButton(this@ReorderableColumn, view) },
               )
             }
 
             if (showDayDeleteDialog)
-              DiscardConfirmationAlertDialog(
-                text = "Do you definitely want to discard ${day.name}?",
+              ConfirmationAlertDialog(
+                text = "Do you definitely want to delete ${day.name}?",
                 onDismissRequest = { showDayDeleteDialog = false },
                 onConfirm = { programViewModel.removeDayAt(dayIndex) },
               )
@@ -121,7 +123,7 @@ fun ProgramScreen(
                 confirmButton = {
                   TextButton(
                     onClick = {
-                      programViewModel.setDay(dayIndex, day.copy(name = it))
+                      programViewModel.setDay(dayIndex, day.toBuilder().setName(it).build())
                       showRenameDialog = false
                     }
                   ) {
@@ -140,71 +142,5 @@ fun ProgramScreen(
         text = { Text("Add Day") },
         icon = { Icon(Icons.Filled.Add, contentDescription = "Add New Day") },
       )
-  }
-}
-
-@Composable
-fun ExerciseTargetField(
-  modifier: Modifier = Modifier,
-  value: PerfVar,
-  onValueChange: (PerfVar) -> Unit,
-  readOnly: Boolean = false,
-) {
-  Box(modifier = modifier) {
-    when (value) {
-      is PerfVar.Reps ->
-        NumberField(
-          modifier = Modifier.fillMaxWidth(),
-          value = value.reps,
-          onValueChange = { onValueChange(value.copy(it)) },
-          readOnly = readOnly,
-        )
-
-      is PerfVar.Time ->
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          NumberField(
-            modifier = Modifier.weight(1f),
-            value = value.time,
-            onValueChange = { onValueChange(value.copy(it)) },
-            readOnly = readOnly,
-          )
-          Text(text = "min")
-        }
-
-      is PerfVar.RepRange ->
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          NumberField(
-            modifier = Modifier.weight(0.5f),
-            value = value.min,
-            onValueChange = { onValueChange(value.copy(min = it)) },
-            readOnly = readOnly,
-          )
-          Text(text = "-", modifier = Modifier.padding(horizontal = 2.dp))
-          NumberField(
-            modifier = Modifier.weight(0.5f),
-            value = value.max,
-            onValueChange = { onValueChange(value.copy(max = it)) },
-            readOnly = readOnly,
-          )
-        }
-
-      is PerfVar.TimeRange ->
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          NumberField(
-            modifier = Modifier.weight(0.5f),
-            value = value.min,
-            onValueChange = { onValueChange(value.copy(min = it)) },
-            readOnly = readOnly,
-          )
-          Text(text = "-", modifier = Modifier.padding(horizontal = 2.dp))
-          NumberField(
-            modifier = Modifier.weight(0.5f),
-            value = value.max,
-            onValueChange = { onValueChange(value.copy(max = it)) },
-            readOnly = readOnly,
-          )
-          Text(text = "min")
-        }
-    }
   }
 }

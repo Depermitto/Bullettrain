@@ -38,8 +38,6 @@ fun TextLink(
   lineHeight: TextUnit = TextUnit.Unspecified,
   overflow: TextOverflow = TextOverflow.Ellipsis,
   softWrap: Boolean = true,
-  maxLines: Int = 2,
-  minLines: Int = 1,
 ) {
   Card(
     modifier = modifier,
@@ -60,8 +58,8 @@ fun TextLink(
         lineHeight = lineHeight,
         overflow = overflow,
         softWrap = softWrap,
-        maxLines = maxLines,
-        minLines = minLines,
+        maxLines = 1,
+        minLines = 1,
       )
     },
   )

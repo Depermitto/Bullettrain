@@ -24,3 +24,11 @@ val HeartPlusIcon: @Composable () -> Unit = {
 val HeartRemoveIcon: @Composable () -> Unit = {
   Icon(painterResource(id = R.drawable.heart_remove), contentDescription = "Heart Remove")
 }
+
+val MergeIcon: @Composable () -> Unit = {
+  Icon(painterResource(id = R.drawable.merge), contentDescription = "Merge")
+}
+
+val SplitIcon: @Composable () -> Unit = {
+  Icon(painterResource(id = R.drawable.split), contentDescription = "Split")
+}

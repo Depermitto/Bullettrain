@@ -7,16 +7,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import io.github.depermitto.bullettrain.database.entities.Settings
+import io.github.depermitto.bullettrain.protos.SettingsProto.*
+import io.github.depermitto.bullettrain.util.isDarkMode
 
 @Composable
 fun BullettrainTheme(settings: Settings, content: @Composable () -> Unit) {
   val colorScheme =
     when {
       settings.theme.isDarkMode() && settings.trueBlack ->
-        settings.palette.darkScheme.copy(background = Color.Black)
-      settings.theme.isDarkMode() -> settings.palette.darkScheme
-      else -> settings.palette.lightScheme
+        darkColorScheme().copy(background = Color.Black)
+      settings.theme.isDarkMode() -> darkColorScheme()
+      else -> lightColorScheme()
     }
 
   MaterialTheme(

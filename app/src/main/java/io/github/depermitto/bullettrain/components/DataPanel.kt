@@ -37,7 +37,6 @@ fun <T> DataPanel(
   content: @Composable RowScope.(Int, T) -> Unit,
 ) {
   Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = backgroundColor)) {
-    // TODO next step: try to overwrite BasicTable with this
     headline.invoke()
     CompositionLocalProvider(
       LocalTextStyle provides LocalTextStyle.current.merge(headerTextStyle)

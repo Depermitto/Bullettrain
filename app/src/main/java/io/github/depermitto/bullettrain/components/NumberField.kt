@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.depermitto.bullettrain.theme.numeric
+import java.util.Locale
 import kotlin.math.roundToInt
 
 @Composable
@@ -36,11 +37,17 @@ fun NumberField(
   unfocusedBorderThickness: Dp = OutlinedTextFieldDefaults.UnfocusedBorderThickness,
   contentPadding: PaddingValues = PaddingValues(3.dp),
 ) {
-  val textValue = if (value == 0f) "" else value.toString().removeSuffix(".0")
-
+  val textValue = value.format()
   var textFieldValue by remember { mutableStateOf(TextFieldValue(textValue)) }
   if (textFieldValue.text != "-" && value != textFieldValue.text.toFloatOrNull()) {
     textFieldValue = textFieldValue.copy(text = textValue)
+  }
+
+  LaunchedEffect(enabled) {
+    if (value == 0F) {
+      textFieldValue =
+        if (!enabled) textFieldValue.copy(text = "0") else textFieldValue.copy(text = "")
+    }
   }
 
   val interactionSource = remember { MutableInteractionSource() }
@@ -63,7 +70,7 @@ fun NumberField(
       textFieldValue =
         if (it.text == ".") textFieldValue.copy(text = "0.", selection = TextRange(2)) else it
 
-      if (it.text.isBlank()) onValueChange(0f)
+      if (it.text.isBlank()) onValueChange(0F)
       else it.text.toFloatOrNull()?.let { value -> onValueChange(value) }
     },
     textStyle = textStyle,
@@ -87,8 +94,12 @@ fun NumberField(
   )
 }
 
-// TODO change this cancer function name
-fun Float.encodeToStringOutput(): String {
-  if (this == 0f) return ""
-  return takeIf { it == it.roundToInt().toFloat() }?.roundToInt()?.toString() ?: this.toString()
+fun Float.format(): String {
+  if (this == 0F) return ""
+
+  return if (this == this.roundToInt().toFloat()) {
+    this.roundToInt().toString()
+  } else {
+    String.format(Locale.getDefault(), "%.1f", this)
+  }
 }

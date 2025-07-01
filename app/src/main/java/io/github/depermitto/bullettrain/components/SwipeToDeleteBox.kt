@@ -25,8 +25,9 @@ import io.github.depermitto.bullettrain.theme.Medium
 @Composable
 fun SwipeToDeleteBox(
   modifier: Modifier = Modifier,
-  threshold: Float = 0.5f,
+  threshold: Float = 0.5F,
   onDelete: () -> Unit,
+  text: String = "Delete",
   shadowElevation: Dp = 0.dp,
   shape: Shape = RectangleShape,
   content: @Composable RowScope.() -> Unit,
@@ -53,7 +54,7 @@ fun SwipeToDeleteBox(
           content = {
             Text(
               modifier = Modifier.padding(horizontal = Dp.Medium),
-              text = "Delete",
+              text = text,
               color = MaterialTheme.colorScheme.onErrorContainer,
             )
           },

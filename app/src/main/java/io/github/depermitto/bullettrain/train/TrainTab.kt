@@ -22,14 +22,15 @@ import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DataPanel
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.ListAlertDialog
-import io.github.depermitto.bullettrain.database.daos.ExerciseDao
-import io.github.depermitto.bullettrain.database.daos.ProgramDao
-import io.github.depermitto.bullettrain.database.entities.Program
-import io.github.depermitto.bullettrain.database.entities.Settings
-import io.github.depermitto.bullettrain.database.entities.Workout
+import io.github.depermitto.bullettrain.db.ExerciseDao
+import io.github.depermitto.bullettrain.db.ProgramDao
+import io.github.depermitto.bullettrain.protos.ProgramsProto.Workout
+import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.Large
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.focalGround
+import io.github.depermitto.bullettrain.util.toTimestamp
+import java.time.Instant
 
 @Composable
 fun TrainTab(
@@ -63,20 +64,20 @@ fun TrainTab(
           }
 
         DataPanel(
-          items = program.nextDay().entries,
+          items = program.getWorkouts(program.nextDayIndex).exercisesList,
           backgroundColor = Color.Transparent,
           headline = {
             ExtendedListItem(
               headlineContent = { Text(text = program.name) },
               headlineTextStyle = MaterialTheme.typography.titleLarge,
-              supportingContent = { Text(text = program.nextDay().name) },
+              supportingContent = { Text(text = program.getWorkouts(program.nextDayIndex).name) },
             )
           },
           headerTextStyle = MaterialTheme.typography.bodyLarge,
           headerContent = {
-            Text("Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
-            Spacer(Modifier.weight(1f))
-            Text("Sets", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+            Text("Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5F))
+            Spacer(Modifier.weight(1F))
+            Text("Sets", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5F))
           },
           contentPadding = PaddingValues(horizontal = Dp.Large),
         ) { _, entry ->
@@ -85,7 +86,7 @@ fun TrainTab(
             headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
             trailingContent = {
               Text(
-                text = entry.sets.size.toString(),
+                text = entry.setsCount.toString(),
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 2,
               )
@@ -96,7 +97,7 @@ fun TrainTab(
           )
         }
 
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.weight(1F))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
           ElevatedButton(
             onClick = { showChangeDayIndexDialog = true },
@@ -114,14 +115,20 @@ fun TrainTab(
           }
           Spacer(Modifier.width(2.dp))
           ElevatedButton(
-            onClick = { trainViewModel.startWorkout(program.nextDay(), program.id) },
+            onClick = {
+              trainViewModel.startWorkout(
+                program.getWorkouts(program.nextDayIndex),
+                program.id,
+                Instant.now().toTimestamp(),
+              )
+            },
             colors =
               ButtonDefaults.elevatedButtonColors(
                 contentColor = MaterialTheme.colorScheme.secondary
               ),
             shape = RoundedCornerShape(4.dp, 16.dp, 16.dp, 4.dp),
           ) {
-            Text("Start ${program.nextDay().name}")
+            Text("Start ${program.getWorkouts(program.nextDayIndex).name}")
           }
         }
 
@@ -132,10 +139,12 @@ fun TrainTab(
             dismissButton = {
               TextButton(onClick = { showChangeDayIndexDialog = false }) { Text("Cancel") }
             },
-            list = program.workouts,
+            list = program.workoutsList,
             onClick = { day ->
               showChangeDayIndexDialog = false
-              programDao.update(program.copy(nextDayIndex = program.workouts.indexOf(day)))
+              programDao.update(
+                program.toBuilder().setNextDayIndex(program.workoutsList.indexOf(day)).build()
+              )
             },
           ) { day ->
             ExtendedListItem(headlineContent = { Text(day.name) })
@@ -160,7 +169,7 @@ fun TrainTab(
       icon = { Icon(painterResource(R.drawable.checkbox_blank), null) },
       text = { Text("Start Empty Workout") },
     ) {
-      trainViewModel.startWorkout(Workout(), Program.EmptyWorkout.id)
+      trainViewModel.startWorkout(Workout.getDefaultInstance(), -1, Instant.now().toTimestamp())
     }
   }
 }

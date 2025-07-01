@@ -1,6 +1,5 @@
 package io.github.depermitto.bullettrain.settings
 
-import android.os.Build
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -8,21 +7,17 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.components.RadioTile
-import io.github.depermitto.bullettrain.database.Database
-import io.github.depermitto.bullettrain.database.entities.Theme
-import io.github.depermitto.bullettrain.database.entities.UnitSystem
-import io.github.depermitto.bullettrain.theme.palettes.*
+import io.github.depermitto.bullettrain.db.Db
+import io.github.depermitto.bullettrain.protos.SettingsProto.*
+import io.github.depermitto.bullettrain.util.isDarkMode
 import io.github.depermitto.bullettrain.util.splitOnUppercase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,41 +26,18 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingsScreen(
   modifier: Modifier = Modifier,
-  db: Database,
+  db: Db,
   scope: CoroutineScope = rememberCoroutineScope(),
   snackbarHostState: SnackbarHostState,
 ) {
+  val settings by db.settingsDao.get.collectAsStateWithLifecycle()
   Column(modifier) {
-    val context = LocalContext.current
-    val dynamicPalette =
-      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) null
-      else
-        Palette(
-          lightScheme = dynamicLightColorScheme(context),
-          darkScheme = dynamicDarkColorScheme(context),
-          name = "Dynamic",
-        )
-    val settings by db.settingsDao.getSettings.collectAsStateWithLifecycle()
-
     SettingGroup(headline = "Appearance") {
-      SettingList(
-        headline = "Palette",
-        supporting = settings.palette.name,
-        list =
-          listOfNotNull(dynamicPalette, RhinoButtercupPalette, FlamePeaPalette, BonemashPalette),
-        onClick = { db.settingsDao.update { state -> state.copy(palette = it) } },
-      ) { palette ->
-        RadioTile(
-          headlineContent = { Text(palette.name) },
-          selected = palette corresponds settings.palette,
-        )
-      }
-
       SettingList(
         headline = "Theme",
         supporting = settings.theme.name.splitOnUppercase(),
-        list = Theme.entries,
-        onClick = { db.settingsDao.update { state -> state.copy(theme = it) } },
+        list = listOf(Theme.FollowSystem, Theme.Light, Theme.Dark),
+        onClick = { db.settingsDao.update(settings.toBuilder().setTheme(it)) },
       ) { theme ->
         RadioTile(
           headlineContent = { Text(theme.name.splitOnUppercase()) },
@@ -77,7 +49,7 @@ fun SettingsScreen(
         headline = "True Black",
         supporting = "Recommended for OLED screens",
         checked = settings.trueBlack,
-        onChecked = { db.settingsDao.update { state -> state.copy(trueBlack = it) } },
+        onChecked = { db.settingsDao.update(settings.toBuilder().setTrueBlack(it)) },
         enabled = settings.theme.isDarkMode(),
       )
     }
@@ -86,8 +58,8 @@ fun SettingsScreen(
       SettingList(
         headline = "Unit System",
         supporting = settings.unitSystem.name,
-        list = UnitSystem.entries,
-        onClick = { db.settingsDao.update { state -> state.copy(unitSystem = it) } },
+        list = listOf(UnitSystem.Metric, UnitSystem.Imperial),
+        onClick = { db.settingsDao.update(settings.toBuilder().setUnitSystem(it)) },
       ) { unitSystem ->
         RadioTile(
           headlineContent = { Text(unitSystem.name) },
@@ -104,7 +76,7 @@ fun SettingsScreen(
           scope.launch(Dispatchers.IO) {
             val msg =
               db
-                .exportDatabase()
+                .exportDatabaseInteractively()
                 .fold(
                   onSuccess = { filename -> "Successfully saved to $filename" },
                   onFailure = { err ->
@@ -122,7 +94,7 @@ fun SettingsScreen(
           scope.launch(Dispatchers.IO) {
             val msg =
               db
-                .importDatabase()
+                .importDatabaseInteractively()
                 .fold(
                   onSuccess = { filename -> "Successfully Imported $filename" },
                   onFailure = { err ->
@@ -156,7 +128,7 @@ fun SettingsScreen(
               onClick = {
                 showConfirmFactoryResetDialog = false
                 scope.launch(Dispatchers.IO) {
-                  if (db.exportDatabase().isFailure)
+                  if (db.exportDatabaseInteractively().isFailure)
                     snackbarHostState.showSnackbar(
                       "You are required to save your data if you want to reset to factory",
                       withDismissAction = true,

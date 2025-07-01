@@ -11,15 +11,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,22 +33,26 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
+import io.github.depermitto.bullettrain.components.ConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DataPanel
+import io.github.depermitto.bullettrain.components.DropdownButton
 import io.github.depermitto.bullettrain.components.ExtendedListItem
-import io.github.depermitto.bullettrain.components.encodeToStringOutput
-import io.github.depermitto.bullettrain.database.daos.ExerciseDao
-import io.github.depermitto.bullettrain.database.daos.HistoryDao
-import io.github.depermitto.bullettrain.database.daos.ProgramDao
-import io.github.depermitto.bullettrain.database.entities.*
+import io.github.depermitto.bullettrain.components.format
+import io.github.depermitto.bullettrain.db.ExerciseDao
+import io.github.depermitto.bullettrain.db.HistoryDao
+import io.github.depermitto.bullettrain.db.ProgramDao
 import io.github.depermitto.bullettrain.home.HomeViewModel
+import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Large
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.train.TrainViewModel
+import io.github.depermitto.bullettrain.util.DateFormatters
+import io.github.depermitto.bullettrain.util.getDate
+import io.github.depermitto.bullettrain.util.weightUnit
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun HistoryTab(
@@ -64,10 +71,10 @@ fun HistoryTab(
         .where(homeViewModel.calendarDate.month, homeViewModel.calendarDate.year)
         .collectAsStateWithLifecycle(initialValue = emptyList())
     val selectedHistoryRecords =
-      historyRecords.filter { record -> record.date == homeViewModel.selectedDate }
+      historyRecords.filter { record -> record.getDate() == homeViewModel.selectedDate }
     LaunchedEffect(historyRecords) {
       if (homeViewModel.selectedDate == null)
-        homeViewModel.selectedDate = historyRecords.lastOrNull()?.date
+        homeViewModel.selectedDate = historyRecords.lastOrNull()?.getDate()
     }
     val today = LocalDate.now()
     val resetDateButtonVisible =
@@ -89,8 +96,8 @@ fun HistoryTab(
           Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
         }
         Text(
-          modifier = Modifier.weight(1f),
-          text = homeViewModel.calendarDate.format(DateTimeFormatter.ofPattern("MMM yyyy")),
+          modifier = Modifier.weight(1F),
+          text = homeViewModel.calendarDate.format(DateFormatters.MMMM_yyyy),
           maxLines = 1,
           textAlign = TextAlign.Center,
         )
@@ -104,23 +111,23 @@ fun HistoryTab(
       Calendar(
         homeViewModel = homeViewModel,
         trainViewModel = trainViewModel,
-        currentHistoryRecords = historyRecords,
+        currentRecords = historyRecords,
         currentDate = homeViewModel.calendarDate,
         programDao = programDao,
-        historyDao = historyDao,
         modifier = Modifier.heightIn(0.dp, 400.dp),
       )
 
       selectedHistoryRecords.forEach { record ->
+        var showRecordDeleteDialog by rememberSaveable { mutableStateOf(false) }
         val relatedProgram = programDao.where(record.relatedProgramId)
-        val plannedWorkout = relatedProgram.workouts.first { it.name == record.workout.name }
+        val plannedWorkout = relatedProgram.workoutsList.first { it.name == record.workout.name }
         DataPanel(
           modifier = Modifier.fillMaxWidth(),
           items =
-            record.workout.entries.filter { workoutEntry ->
-              val skipped = workoutEntry.getPerformedSets().isEmpty()
+            record.workout.exercisesList.filter { exercise ->
+              val skipped = exercise.setsList.all { set -> !set.hasDoneTs() }
               val planned =
-                plannedWorkout.entries.any { it.descriptorId == workoutEntry.descriptorId }
+                plannedWorkout.exercisesList.any { it.descriptorId == exercise.descriptorId }
               !skipped || planned
             },
           backgroundColor = focalGround(settings.theme),
@@ -130,39 +137,68 @@ fun HistoryTab(
               headlineTextStyle = MaterialTheme.typography.titleLarge,
               supportingContent = { Text(text = record.workout.name) },
               trailingContent = {
-                TextButton(onClick = { trainViewModel.editWorkout(record) }) {
-                  Icon(Icons.Filled.Edit, "Edit Workout", Modifier.size(ButtonDefaults.IconSize))
-                  Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                  Text("Edit")
+                var showDropdown by rememberSaveable { mutableStateOf(false) }
+                DropdownButton(showDropdown, onShowChange = { showDropdown = it }) {
+                  DropdownMenuItem(
+                    text = { Text(text = "Edit") },
+                    leadingIcon = { Icon(Icons.Filled.Edit, "Edit Workout") },
+                    onClick = {
+                      showDropdown = false
+                      trainViewModel.editWorkout(record.id)
+                    },
+                  )
+                  DropdownMenuItem(
+                    text = { Text(text = "Delete") },
+                    leadingIcon = { Icon(Icons.Filled.Delete, "Delete Workout") },
+                    onClick = {
+                      showDropdown = false
+                      showRecordDeleteDialog = true
+                    },
+                  )
+                }
+
+                if (showRecordDeleteDialog) {
+                  val date = record.getDate().format(DateFormatters.MMMM_d_yyyy)
+                  val text =
+                    if (relatedProgram.id != -1) {
+                      "Do you definitely want to delete the ${record.workout.name} workout from ${relatedProgram.name} on $date?"
+                    } else {
+                      "Do you definitely want to delete an ${relatedProgram.name} on $date?"
+                    }
+
+                  ConfirmationAlertDialog(
+                    text = text,
+                    onDismissRequest = { showRecordDeleteDialog = false },
+                    onConfirm = { historyDao.delete(record.id) },
+                  )
                 }
               },
+              onClick = { navController.navigate(Destination.Workout(record.id)) },
             )
           },
           headerTextStyle = MaterialTheme.typography.bodyLarge,
           headerContent = {
-            Text("Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
-            Spacer(Modifier.weight(1f))
-            Text("Best Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+            Text("Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5F))
+            Spacer(Modifier.weight(1F))
+            Text("Best Set", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5F))
           },
           contentPadding = PaddingValues(horizontal = Dp.Large),
-        ) { entryIndex, entry ->
+        ) { _, exercise ->
           val bestSet =
-            entry
-              .getPerformedSets()
-              .maxByOrNull { set -> set.weight * set.actualPerfVar }
+            exercise.setsList
+              .filter { it.hasDoneTs() }
+              .maxByOrNull { set -> set.weight * (1 + set.actual / 30F) } // 1RM
               ?.let { bestSet ->
-                val perfVar = bestSet.actualPerfVar.encodeToStringOutput() // is always non-zero
-                val weight = bestSet.weight.encodeToStringOutput()
-
+                val actual = bestSet.actual.format()
+                val weight = bestSet.weight.format()
                 when {
-                  weight.isBlank() ->
-                    "$perfVar ${bestSet.targetPerfVar.category.shortName.lowercase()}"
-
-                  else -> "$perfVar x $weight ${settings.unitSystem.weightUnit()}"
+                  actual.isBlank() -> "$weight ${settings.unitSystem.weightUnit()}"
+                  weight.isBlank() -> "$actual ${exercise.type}"
+                  else -> "$actual x $weight ${settings.unitSystem.weightUnit()}"
                 }
               }
 
-          val exerciseDescriptor = exerciseDao.where(entry.descriptorId)
+          val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
           ExtendedListItem(
             headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
             trailingContent = {
@@ -196,7 +232,7 @@ fun HistoryTab(
         Icon(
           modifier = Modifier.size(ButtonDefaults.IconSize),
           imageVector = Icons.Filled.Refresh,
-          contentDescription = null,
+          contentDescription = "Reset Date",
         )
         Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
         Text("Reset Date")

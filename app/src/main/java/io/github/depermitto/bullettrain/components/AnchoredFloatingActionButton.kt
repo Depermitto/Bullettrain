@@ -15,11 +15,11 @@ import io.github.depermitto.bullettrain.theme.Large
 
 @Composable
 fun BoxScope.AnchoredFloatingActionButton(
-  modifier: Modifier = Modifier.align(Alignment.BottomEnd).padding(Dp.Large),
   icon: (@Composable () -> Unit)? = { Icon(Icons.Filled.Edit, contentDescription = null) },
   text: (@Composable () -> Unit)? = null,
   onClick: () -> Unit,
 ) {
+  val modifier = Modifier.align(Alignment.BottomEnd).padding(Dp.Large)
   if (icon != null && text != null) {
     ExtendedFloatingActionButton(modifier = modifier, onClick = onClick, text = text, icon = icon)
   } else {

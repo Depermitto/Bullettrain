@@ -11,7 +11,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.graphics.ColorUtils
-import io.github.depermitto.bullettrain.database.entities.Theme
+import io.github.depermitto.bullettrain.protos.SettingsProto.*
+import io.github.depermitto.bullettrain.util.isDarkMode
 
 @Composable
 fun TextFieldDefaults.unlinedColors() =

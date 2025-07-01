@@ -11,6 +11,5 @@ message HistoryRecord {
   uint32 relatedProgramId = 2;
   Workout workout = 3;
   Workout.Phase workoutPhase = 4;
-  google.protobuf.Timestamp dateTs = 5;
-  google.protobuf.Timestamp workoutStartTs = 6;
+  google.protobuf.Timestamp workoutStartTs = 5;
 }

@@ -16,30 +16,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import io.github.depermitto.bullettrain.components.DataPanel
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
-import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
-import io.github.depermitto.bullettrain.database.entities.ExerciseSet
-import io.github.depermitto.bullettrain.database.entities.Settings
-import io.github.depermitto.bullettrain.database.entities.WorkoutEntry
+import io.github.depermitto.bullettrain.protos.ExercisesProto.Exercise
+import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.focalGround
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
-fun WorkoutEntry(
-  workoutEntry: WorkoutEntry,
-  onWorkoutEntryChange: (WorkoutEntry) -> Unit,
+fun Exercise(
+  exercise: Exercise,
+  onExerciseChange: (Exercise) -> Unit,
   modifier: Modifier = Modifier,
   headline: @Composable () -> Unit,
   headerContent: @Composable RowScope.() -> Unit,
   settings: Settings,
-  exerciseDescriptor: ExerciseDescriptor,
+  exerciseDescriptor: Exercise.Descriptor,
   scope: CoroutineScope = rememberCoroutineScope(),
   snackbarHostState: SnackbarHostState,
-  content: @Composable RowScope.(Int, ExerciseSet) -> Unit,
+  content: @Composable RowScope.(Int, Exercise.Set) -> Unit,
 ) {
   DataPanel(
-    items = workoutEntry.sets,
+    items = exercise.setsList,
     modifier = modifier,
     backgroundColor = focalGround(settings.theme),
     headerPadding = PaddingValues(horizontal = Dp.Medium),
@@ -48,10 +46,8 @@ fun WorkoutEntry(
   ) { setIndex, set ->
     SwipeToDeleteBox(
       onDelete = {
-        onWorkoutEntryChange(
-          workoutEntry.copy(sets = workoutEntry.sets.filterIndexed { i, _ -> i != setIndex })
-        )
-        if (set.weight != 0f || set.actualPerfVar != 0f)
+        onExerciseChange(exercise.toBuilder().removeSets(setIndex).build())
+        if (set.weight != 0F || set.actual != 0F)
           scope.launch {
             val snackBarResult =
               snackbarHostState.showSnackbar(
@@ -60,7 +56,7 @@ fun WorkoutEntry(
                 withDismissAction = true,
               )
             if (snackBarResult == SnackbarResult.ActionPerformed) {
-              onWorkoutEntryChange(workoutEntry)
+              onExerciseChange(exercise)
             }
           }
       }

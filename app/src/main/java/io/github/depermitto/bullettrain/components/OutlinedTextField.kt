@@ -82,12 +82,12 @@ fun OutlinedTextField(
 }
 
 @Composable
-fun Placeholder(text: String, modifier: Modifier = Modifier.fillMaxWidth()) {
-  Box(modifier = modifier, contentAlignment = Alignment.Center) {
+fun Placeholder(text: String) {
+  Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
     Text(
       text = text,
       style = MaterialTheme.typography.bodyMedium,
-      color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.40f),
+      color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.40F),
       maxLines = 1,
     )
   }

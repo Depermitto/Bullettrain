@@ -48,9 +48,9 @@ fun TextFieldAlertDialog(
         supportingText = { if (isError) Text(errorMessage) },
       )
 
-      Spacer(Modifier.weight(1f))
+      Spacer(Modifier.weight(1F))
       Row(modifier = Modifier.padding(end = Dp.Large, bottom = Dp.ExtraLarge)) {
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.weight(1F))
         dismissButton()
         confirmButton(name)
       }

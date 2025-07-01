@@ -20,9 +20,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
-import io.github.depermitto.bullettrain.database.daos.ExerciseDao
-import io.github.depermitto.bullettrain.database.daos.HistoryDao
-import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
+import io.github.depermitto.bullettrain.db.ExerciseDao
+import io.github.depermitto.bullettrain.db.HistoryDao
+import io.github.depermitto.bullettrain.protos.ExercisesProto.*
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.unlinedColors
@@ -33,21 +33,12 @@ fun ExercisesListScreen(
   exerciseDao: ExerciseDao,
   historyDao: HistoryDao,
   modifier: Modifier = Modifier,
-  filter: ((ExerciseDescriptor) -> Boolean)? = null,
-  onSelection: (ExerciseDescriptor) -> Unit,
+  filter: ((Exercise.Descriptor) -> Boolean)?,
+  onSelection: (Exercise.Descriptor) -> Unit,
 ) {
   Box(modifier = modifier.fillMaxSize()) {
     val exerciseFrequencyMap by
-      historyDao.getAll
-        .map { records ->
-          records
-            .flatMap { record ->
-              record.workout.entries.filter { entry -> entry.sets.any { set -> set.completed } }
-            }
-            .groupingBy { entry -> entry.descriptorId }
-            .eachCount()
-        }
-        .collectAsStateWithLifecycle(initialValue = emptyMap())
+      historyDao.getSortedByFrequency.collectAsStateWithLifecycle(initialValue = emptyMap())
 
     var searchText by rememberSaveable { mutableStateOf("") }
     val exercises by
@@ -115,12 +106,16 @@ fun ExercisesListScreen(
           TextButton(
             onClick = {
               errorMessage =
-                exerciseDao.validateName(name)
-                  ?: ""
-                    .also {
+                exerciseDao
+                  .validateName(name)
+                  .fold(
+                    onSuccess = {
                       showDialog = false
-                      exerciseDao.insert(ExerciseDescriptor(name = name))
-                    }
+                      exerciseDao.insert(Exercise.Descriptor.newBuilder().setName(name).build())
+                      ""
+                    },
+                    onFailure = { throwable -> throwable.message ?: "Invalid Exercise Name" },
+                  )
             }
           ) {
             Text("Confirm")

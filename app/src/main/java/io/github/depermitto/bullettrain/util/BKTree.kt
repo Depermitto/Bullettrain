@@ -64,5 +64,6 @@ class BKTree(root: String) {
   fun delete(key: String) {
     TODO("Maybe add a delete function once user deletes and exercise.")
     // 27.09.2024 00:02 maybe I will not
+    // 06.02.2025 12:18 this will NOT happen
   }
 }

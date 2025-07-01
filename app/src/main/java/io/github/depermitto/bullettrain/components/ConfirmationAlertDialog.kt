@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun DiscardConfirmationAlertDialog(
+fun ConfirmationAlertDialog(
   text: String,
   onDismissRequest: () -> Unit,
   onConfirm: () -> Unit,
@@ -24,7 +24,7 @@ fun DiscardConfirmationAlertDialog(
           onConfirm()
         }
       ) {
-        Text("Discard")
+        Text("Confirm")
       }
     },
     text = { Text(text = text) },
