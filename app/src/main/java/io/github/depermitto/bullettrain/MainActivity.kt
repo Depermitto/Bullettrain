@@ -53,7 +53,6 @@ import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.train.TrainingScreen
 import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.reflect.typeOf
@@ -83,7 +82,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalSerializationApi::class)
 @Composable
 fun App(db: Database) = MaterialTheme {
     val navController = rememberNavController()

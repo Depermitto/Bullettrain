@@ -20,7 +20,6 @@ import io.github.depermitto.bullettrain.theme.ItemSpacing
 import io.github.depermitto.bullettrain.theme.filledContainerColor
 import io.github.depermitto.bullettrain.theme.notUnderlinedTextFieldColors
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) = Box(modifier = Modifier.fillMaxSize()) {
     val exercises by exerciseDao.getSortedAlphabetically.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -60,7 +59,8 @@ fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) =
 
     if (showDialog) {
         var isError by remember { mutableStateOf(false) }
-        TextFieldAlertDialog(onDismissRequest = { showDialog = false },
+        TextFieldAlertDialog(
+            onDismissRequest = { showDialog = false },
             dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } },
             confirmButton = { name ->
                 TextButton(onClick = {

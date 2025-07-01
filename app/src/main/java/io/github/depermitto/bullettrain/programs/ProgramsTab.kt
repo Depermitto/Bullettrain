@@ -1,6 +1,5 @@
 package io.github.depermitto.bullettrain.programs
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,7 +33,6 @@ import io.github.depermitto.bullettrain.theme.filledContainerColor
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ProgramsTab(
     modifier: Modifier = Modifier,
@@ -77,7 +75,7 @@ fun ProgramsTab(
                                 )
                                 program.mostRecentWorkoutDate?.let { instant ->
                                     val date = instant.atZone(ZoneId.systemDefault())
-                                    val formatter = DateTimeFormatter.ofPattern("dd MM yyyy")
+                                    val formatter = DateTimeFormatter.ofPattern("d MMM yyyy")
                                     Text(
                                         text = "Most recent workout: ${formatter.format(date)}",
                                         style = MaterialTheme.typography.bodyMedium
@@ -98,7 +96,6 @@ fun ProgramsTab(
                         TextButton(onClick = {
                             programDao.update(program.copy(name = name))
                             showRenameDialog = false
-                            true
                         }) {
                             Text("Confirm")
                         }

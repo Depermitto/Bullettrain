@@ -23,7 +23,6 @@ import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.util.DuplicateIcon
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgramDaysScreen(
     modifier: Modifier = Modifier, programViewModel: ProgramViewModel, navController: NavController
