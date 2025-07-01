@@ -148,14 +148,12 @@ fun DayScreen(
                             )
                         }, trailingContent = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                IconButton(
-                                    modifier = Modifier.size(SqueezableIconSize),
+                                IconButton(modifier = Modifier.size(SqueezableIconSize),
                                     onClick = { showSwapExerciseChooser = true }) {
                                     SwapIcon()
                                 }
 
-                                if (!exercise.hasIntensity) IconButton(
-                                    modifier = Modifier.size(SqueezableIconSize),
+                                if (!exercise.hasIntensity) IconButton(modifier = Modifier.size(SqueezableIconSize),
                                     onClick = { setIntensity(Intensity.RPE) }) {
                                     HeartPlusIcon()
                                 }
@@ -167,9 +165,7 @@ fun DayScreen(
                             }
                         })
 
-                        Row(
-                            modifier = Modifier.padding(SmallPadding), verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(modifier = Modifier.padding(SmallPadding), verticalAlignment = Alignment.CenterVertically) {
                             Header(Modifier.weight(NarrowWeight), "Set")
                             // PerfVarCategory Dropdown with Icon
                             Row(
@@ -182,8 +178,7 @@ fun DayScreen(
                                 Header(text = exercise.perfVarCategory.prettyName)
                                 Icon(Sharp.KeyboardArrowDown, contentDescription = null)
 
-                                DropdownMenu(
-                                    expanded = showTargetEditDropdown,
+                                DropdownMenu(expanded = showTargetEditDropdown,
                                     onDismissRequest = { showTargetEditDropdown = false }) {
                                     PerfVarCategory.entries.forEach { entry ->
                                         DropdownMenuItem(text = { Text(entry.prettyName) }, onClick = {
@@ -298,14 +293,16 @@ fun DayScreen(
                 }
             }
 
-            if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao, historyDao = historyDao,
+            if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
+                historyDao = historyDao,
                 onDismissRequest = { showSwapExerciseChooser = false },
                 onChoose = { programViewModel.setExercise(dayIndex, exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
         }
     }
 
     var showAddExerciseChooser by rememberSaveable { mutableStateOf(false) }
-    if (showAddExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao, historyDao = historyDao,
+    if (showAddExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
+        historyDao = historyDao,
         onDismissRequest = { showAddExerciseChooser = false },
         onChoose = {
             programViewModel.setDay(

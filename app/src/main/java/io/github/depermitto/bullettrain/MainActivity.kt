@@ -389,7 +389,7 @@ fun App(db: Database) = MaterialTheme {
                             TextButton(onClick = {
                                 errorMessage = db.exerciseDao.validateName(name) ?: "".also {
                                     showRenameDialog = false
-                                    db.exerciseDao.update(exercise)
+                                    db.exerciseDao.update(exercise.copy(name = name))
                                 }
                             }) {
                                 Text("Confirm")
