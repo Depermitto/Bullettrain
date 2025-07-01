@@ -2,13 +2,23 @@ package io.github.depermitto.bullettrain.exercises
 
 import android.text.Layout
 import android.text.SpannableStringBuilder
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -19,14 +29,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
@@ -79,6 +92,7 @@ import io.github.depermitto.bullettrain.util.toLocalDate
 import java.time.ZoneId
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlinx.coroutines.launch
 
 @Composable
 fun ExerciseScreen(
@@ -87,186 +101,230 @@ fun ExerciseScreen(
   exerciseDescriptor: Exercise.Descriptor,
   settings: Settings,
 ) {
-  val exercises by
-    historyDao
-      .map { records ->
-        records
-          .sortedBy { r -> r.workoutStartTs.seconds }
-          .flatMap { r ->
-            r.workout.exercisesList.filter { e -> e.descriptorId == exerciseDescriptor.id }
-          }
-          .filter { e -> e.setsList.any { s -> s.hasDoneTs() } }
-      }
-      .collectAsStateWithLifecycle(initialValue = emptyList())
+  val scope = rememberCoroutineScope()
+  val pager = rememberPagerState { Tab.entries.size }
 
-  Column(modifier = modifier) {
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-    // TODO add gestures to swipe between tabs
-    TabRow(selectedTabIndex = selectedTabIndex, containerColor = Color.Transparent) {
-      Tab(
-        selected = selectedTabIndex == 0,
-        onClick = { selectedTabIndex = 0 },
-        modifier = Modifier.height(40.dp),
-      ) {
-        Text("History")
-      }
-      Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }) { Text("Graph") }
-    }
+  @Composable
+  fun Modifier.pager(): Modifier {
+    val screenWidth = LocalContext.current.resources.displayMetrics.widthPixels
+    return this.fillMaxSize()
+      .draggable(
+        orientation = Orientation.Horizontal,
+        state = rememberDraggableState { delta -> scope.launch { pager.scrollBy(-delta) } },
+        onDragStopped = { velocity ->
+          val snapToNextPage =
+            if (velocity < 0)
+              pager.currentPageOffsetFraction > 0 &&
+                -velocity > screenWidth * (1 - pager.currentPageOffsetFraction)
+            else
+              pager.currentPageOffsetFraction < 0 &&
+                velocity > screenWidth * (1 + pager.currentPageOffsetFraction)
 
-    Spacer(Modifier.height(Dp.Medium))
-
-    val lazyListState = rememberLazyListState()
-    if (selectedTabIndex == 0) {
-      ExercisesSetsListings(
-        exercises = exercises.asReversed(),
-        exerciseHeadline = { exercise ->
-          val start = exercise.setsList.first().doneTs.toInstant().atZone(ZoneId.systemDefault())
-          val startDateText = DateFormatters.EEEE_MMMM_d_yyyy.format(start.toLocalDate())
-          val startTimeText = DateFormatters.kk_mm.format(start.toLocalTime())
-          Text("$startDateText ($startTimeText)", maxLines = 2, overflow = TextOverflow.Ellipsis)
-        },
-        settings = settings,
-        lazyListState = lazyListState,
-      )
-    }
-
-    var selectedPeriod by remember { mutableStateOf(Period.Yearly) }
-    var selectedMetric by remember { mutableStateOf(Metric.OneRepMax) }
-
-    if (selectedTabIndex == 1 && exercises.isNotEmpty()) {
-      Column(
-        modifier = Modifier.padding(horizontal = Dp.Medium),
-        verticalArrangement = Arrangement.spacedBy(Dp.Large),
-      ) {
-        val (horizontalAxisData, markerData, zoomState) =
-          remember(selectedPeriod, key2 = exercises) {
-            val dates = exercises.map { e -> e.lastCompletedSet!!.doneTs.toLocalDate() }
-            Triple(
-              when (selectedPeriod) {
-                Period.Weekly -> dates.map { DateFormatters.MMM_d_yyyy.format(it) }
-                Period.Monthly -> dates.map { DateFormatters.MMM_yyyy.format(it) }
-                Period.Yearly -> dates.map { DateFormatters.yyyy.format(it) }
-              },
-              dates.map { DateFormatters.MMMM_d_yyyy.format(it) },
-              when (selectedPeriod) {
-                Period.Weekly -> Zoom.max(Zoom.fixed(2F), Zoom.Content)
-                Period.Monthly -> Zoom.max(Zoom.fixed(1F), Zoom.Content)
-                Period.Yearly -> Zoom.Content
-              },
+          scope.launch {
+            pager.animateScrollToPage(
+              if (snapToNextPage) (pager.currentPage + 1) % pager.pageCount else pager.settledPage,
+              animationSpec = spring(stiffness = Spring.StiffnessLow),
             )
           }
+        },
+      )
+  }
 
-        val values: List<Double> =
-          remember(selectedMetric) {
-            when (selectedMetric) {
-              Metric.OneRepMax -> exercises.map { e -> e.setsList.maxOf { s -> oneRepMax(s) } }
-              Metric.Volume -> exercises.map { e -> volume(e.setsList) }
-              Metric.BestWeight -> exercises.map { e -> bestWeight(e.setsList) }
-              Metric.BestReps -> exercises.map { e -> bestReps(e.setsList) }
+  Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(Dp.Medium)) {
+    TabRow(selectedTabIndex = pager.currentPage, containerColor = Color.Transparent) {
+      Tab.entries.forEachIndexed { tabIndex, tab ->
+        val isSelected = pager.currentPage == tabIndex
+        Tab(
+          modifier = Modifier.height(40.dp),
+          selected = pager.currentPage == tabIndex,
+          onClick = {
+            if (!isSelected) {
+              scope.launch { pager.animateScrollToPage(tabIndex) }
             }
-          }
-        val modelProducer = remember { CartesianChartModelProducer() }
-        LaunchedEffect(values) { modelProducer.runTransaction { lineSeries { series(values) } } }
-
-        val lineColor = MaterialTheme.colorScheme.primary
-        CartesianChartHost(
-          modifier = Modifier.height(250.dp),
-          modelProducer = modelProducer,
-          zoomState = rememberVicoZoomState(initialZoom = zoomState),
-          chart =
-            rememberCartesianChart(
-              rememberLineCartesianLayer(
-                lineProvider =
-                  LineCartesianLayer.LineProvider.series(
-                    LineCartesianLayer.rememberLine(
-                      fill = LineCartesianLayer.LineFill.single(fill(lineColor)),
-                      areaFill =
-                        LineCartesianLayer.AreaFill.single(
-                          fill(
-                            ShaderProvider.verticalGradient(
-                              arrayOf(lineColor.copy(alpha = 0.3f), Color.Transparent)
-                            )
-                          )
-                        ),
-                    )
-                  ),
-                rangeProvider =
-                  run {
-                    val minY = floor(values.min())
-                    val maxY = ceil(values.max())
-                    CartesianLayerRangeProvider.fixed(
-                      minY = if (minY == maxY) 0.0 else minY,
-                      maxY = maxY,
-                    )
-                  },
-              ),
-              startAxis = VerticalAxis.rememberStart(),
-              bottomAxis =
-                HorizontalAxis.rememberBottom(
-                  guideline = null,
-                  itemPlacer = rememberCustomItemPlacer(horizontalAxisData),
-                  valueFormatter = { _, pos, _ -> horizontalAxisData[pos.toInt()] },
-                ),
-              marker = rememberCustomCartesianMarker(markerData),
-            ),
-        )
-
-        var showPeriodDropdown by remember { mutableStateOf(false) }
-        Column(modifier = Modifier.clickable { showPeriodDropdown = true }) {
-          Text(
-            "Period",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6F),
-          )
-
-          Text(selectedPeriod.name)
-
-          DropdownMenu(
-            expanded = showPeriodDropdown,
-            onDismissRequest = { showPeriodDropdown = false },
-          ) {
-            for (period in Period.entries) {
-              DropdownMenuItem(
-                text = { Text(period.name) },
-                onClick = {
-                  showPeriodDropdown = false
-                  selectedPeriod = period
-                },
-              )
-            }
-          }
-          HorizontalDivider()
-        }
-
-        var showMetricDropdown by remember { mutableStateOf(false) }
-        Column(modifier = Modifier.clickable { showMetricDropdown = true }) {
-          Text(
-            "Metric",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6F),
-          )
-
-          Text(selectedMetric.name.splitOnUppercase())
-
-          DropdownMenu(
-            expanded = showMetricDropdown,
-            onDismissRequest = { showMetricDropdown = false },
-          ) {
-            for (metric in Metric.entries) {
-              DropdownMenuItem(
-                text = { Text(metric.name.splitOnUppercase()) },
-                onClick = {
-                  showMetricDropdown = false
-                  selectedMetric = metric
-                },
-              )
-            }
-          }
-          HorizontalDivider()
+          },
+        ) {
+          Text(tab.name)
         }
       }
     }
+
+    val exercises by
+      historyDao
+        .map { records ->
+          records
+            .sortedBy { r -> r.workoutStartTs.seconds }
+            .flatMap { r ->
+              r.workout.exercisesList.filter { e -> e.descriptorId == exerciseDescriptor.id }
+            }
+            .filter { e -> e.setsList.any { s -> s.hasDoneTs() } }
+        }
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+
+    val lazyListState = rememberLazyListState()
+    var selectedPeriod by remember { mutableStateOf(Period.Yearly) }
+    var selectedMetric by remember { mutableStateOf(Metric.OneRepMax) }
+    HorizontalPager(state = pager, userScrollEnabled = false) { page ->
+      if (page == Tab.History.ordinal)
+        ExercisesSetsListings(
+          modifier = Modifier.pager(),
+          exercises = exercises.asReversed(),
+          exerciseHeadline = { exercise ->
+            val start = exercise.setsList.first().doneTs.toInstant().atZone(ZoneId.systemDefault())
+            val startDateText = DateFormatters.EEEE_MMMM_d_yyyy.format(start.toLocalDate())
+            val startTimeText = DateFormatters.kk_mm.format(start.toLocalTime())
+            Text("$startDateText ($startTimeText)", maxLines = 2, overflow = TextOverflow.Ellipsis)
+          },
+          settings = settings,
+          lazyListState = lazyListState,
+        )
+      else if (page == Tab.Chart.ordinal && exercises.isNotEmpty())
+        Column(verticalArrangement = Arrangement.spacedBy(Dp.Large)) {
+          val (horizontalAxisData, markerData, zoomState) =
+            remember(selectedPeriod, key2 = exercises) {
+              val dates = exercises.map { e -> e.lastCompletedSet!!.doneTs.toLocalDate() }
+              Triple(
+                when (selectedPeriod) {
+                  Period.Weekly -> dates.map { DateFormatters.MMM_d_yyyy.format(it) }
+                  Period.Monthly -> dates.map { DateFormatters.MMM_yyyy.format(it) }
+                  Period.Yearly -> dates.map { DateFormatters.yyyy.format(it) }
+                },
+                dates.map { DateFormatters.MMMM_d_yyyy.format(it) },
+                when (selectedPeriod) {
+                  Period.Weekly -> Zoom.max(Zoom.fixed(2F), Zoom.Content)
+                  Period.Monthly -> Zoom.max(Zoom.fixed(1F), Zoom.Content)
+                  Period.Yearly -> Zoom.Content
+                },
+              )
+            }
+
+          val values: List<Double> =
+            remember(selectedMetric) {
+              when (selectedMetric) {
+                Metric.OneRepMax -> exercises.map { e -> e.setsList.maxOf { s -> oneRepMax(s) } }
+                Metric.Volume -> exercises.map { e -> volume(e.setsList) }
+                Metric.BestWeight -> exercises.map { e -> bestWeight(e.setsList) }
+                Metric.BestReps -> exercises.map { e -> bestReps(e.setsList) }
+              }
+            }
+          val modelProducer = remember { CartesianChartModelProducer() }
+          LaunchedEffect(values) { modelProducer.runTransaction { lineSeries { series(values) } } }
+
+          val lineColor = MaterialTheme.colorScheme.primary
+          CartesianChartHost(
+            modifier = Modifier.height(250.dp),
+            modelProducer = modelProducer,
+            zoomState = rememberVicoZoomState(initialZoom = zoomState),
+            chart =
+              rememberCartesianChart(
+                rememberLineCartesianLayer(
+                  lineProvider =
+                    LineCartesianLayer.LineProvider.series(
+                      LineCartesianLayer.rememberLine(
+                        fill = LineCartesianLayer.LineFill.single(fill(lineColor)),
+                        areaFill =
+                          LineCartesianLayer.AreaFill.single(
+                            fill(
+                              ShaderProvider.verticalGradient(
+                                arrayOf(lineColor.copy(alpha = 0.3f), Color.Transparent)
+                              )
+                            )
+                          ),
+                      )
+                    ),
+                  rangeProvider =
+                    run {
+                      val minY = floor(values.min())
+                      val maxY = ceil(values.max())
+                      CartesianLayerRangeProvider.fixed(
+                        minY = if (minY == maxY) 0.0 else minY,
+                        maxY = maxY,
+                      )
+                    },
+                ),
+                startAxis = VerticalAxis.rememberStart(),
+                bottomAxis =
+                  HorizontalAxis.rememberBottom(
+                    guideline = null,
+                    itemPlacer = rememberCustomItemPlacer(horizontalAxisData),
+                    valueFormatter = { _, pos, _ -> horizontalAxisData[pos.toInt()] },
+                  ),
+                marker = rememberCustomCartesianMarker(markerData),
+              ),
+          )
+
+          Column(
+            modifier = Modifier.pager().padding(horizontal = Dp.Medium),
+            verticalArrangement = Arrangement.spacedBy(Dp.Large),
+          ) {
+            var showPeriodDropdown by remember { mutableStateOf(false) }
+            Column(modifier = Modifier.clickable { showPeriodDropdown = true }) {
+              Text(
+                "Period",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6F),
+              )
+
+              Text(selectedPeriod.name)
+
+              BoxWithConstraints(contentAlignment = Alignment.BottomCenter) {
+                DropdownMenu(
+                  modifier = Modifier.width(maxWidth),
+                  offset = DpOffset(0.dp, 1.dp),
+                  expanded = showPeriodDropdown,
+                  onDismissRequest = { showPeriodDropdown = false },
+                ) {
+                  for (period in Period.entries) {
+                    DropdownMenuItem(
+                      text = { Text(period.name) },
+                      onClick = {
+                        showPeriodDropdown = false
+                        selectedPeriod = period
+                      },
+                    )
+                  }
+                }
+              }
+              HorizontalDivider()
+            }
+
+            var showMetricDropdown by remember { mutableStateOf(false) }
+            Column(modifier = Modifier.clickable { showMetricDropdown = true }) {
+              Text(
+                "Metric",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6F),
+              )
+
+              Text(selectedMetric.name.splitOnUppercase())
+
+              BoxWithConstraints(contentAlignment = Alignment.BottomCenter) {
+                DropdownMenu(
+                  modifier = Modifier.width(maxWidth),
+                  expanded = showMetricDropdown,
+                  onDismissRequest = { showMetricDropdown = false },
+                ) {
+                  for (metric in Metric.entries) {
+                    DropdownMenuItem(
+                      text = { Text(metric.name.splitOnUppercase()) },
+                      onClick = {
+                        showMetricDropdown = false
+                        selectedMetric = metric
+                      },
+                    )
+                  }
+                }
+                HorizontalDivider()
+              }
+            }
+          }
+        }
+    }
   }
+}
+
+private enum class Tab {
+  History,
+  Chart,
 }
 
 private enum class Period {
