@@ -2,7 +2,9 @@ package io.github.depermitto.bullettrain.train
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -46,7 +48,12 @@ fun TrainTab(
   navController: NavController,
 ) {
   val scope = rememberCoroutineScope()
-  Column(modifier.fillMaxSize().padding(horizontal = Dp.Medium)) {
+  Column(
+    modifier
+      .fillMaxSize()
+      .verticalScroll(state = rememberScrollState())
+      .padding(horizontal = Dp.Medium)
+  ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       val programs by
         programDao.getUserPrograms.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -54,7 +61,7 @@ fun TrainTab(
       var selectedProgramIndex by rememberSaveable { mutableIntStateOf(0) }
 
       Card(
-        modifier = Modifier.heightIn(0.dp, 360.dp),
+        modifier = Modifier.heightIn(0.dp, 350.dp),
         colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
       ) {
         val program =

@@ -137,7 +137,6 @@ fun App(db: Db) = MaterialTheme {
       factory = HomeViewModel.Factory(initialPage = Tab.Train, historyDao = db.historyDao)
     )
   val settings by db.settingsDao.get.collectAsStateWithLifecycle()
-
   val trainViewModel =
     viewModel<TrainViewModel>(
       factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController)
