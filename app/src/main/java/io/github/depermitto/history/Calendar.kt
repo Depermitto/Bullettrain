@@ -7,7 +7,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +33,7 @@ fun Calendar(
         if (it < today.month.length(today.isLeapYear)) it + 1
         else null
     }
+    var selectedDay: LocalDate? by rememberSaveable { mutableStateOf(null) }
 
     Column {
         repeat(if (days.count() <= 36) 6 else 7) { i ->
@@ -57,10 +59,12 @@ fun Calendar(
                                 .padding(4.dp)
                                 .clip(shape = CircleShape)
                                 .aspectRatio(1f)
-                                .clickable { onItemClick(day) }
-                                .background(color = if (ifHighlightItem(day)) MaterialTheme.colorScheme.primaryContainer else Color.Transparent),
-                                underline = day == today,
-                                text = dayOfMonth.toString())
+                                .clickable { onItemClick(day); selectedDay = day }
+                                .background(
+                                    color = if (day == selectedDay) MaterialTheme.colorScheme.tertiaryContainer
+                                    else if (ifHighlightItem(day)) MaterialTheme.colorScheme.primaryContainer
+                                    else Color.Transparent
+                                ), underline = day == today, text = dayOfMonth.toString())
                         }
                         days = days.drop(1)
                     }
@@ -74,13 +78,12 @@ fun Calendar(
 private fun CalendarItem(
     modifier: Modifier = Modifier,
     text: String,
-    textStyle: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyMedium,
     textAlpha: Float = 1f,
     underline: Boolean = false,
 ) = Box(modifier = modifier) {
     Text(
         text = text,
-        style = textStyle.copy(color = textStyle.color.copy(alpha = textAlpha)),
+        color = MaterialTheme.colorScheme.onBackground.copy(alpha = textAlpha),
         modifier = Modifier
             .align(Alignment.Center)
             .padding(10.dp),

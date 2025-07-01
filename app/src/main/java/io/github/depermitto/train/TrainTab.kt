@@ -61,7 +61,7 @@ fun TrainTab(
                     modifier = Modifier.align(Alignment.BottomCenter),
                     onClick = {
                         navController.navigate(Screen.TrainingScreen.route)
-                        trainViewModel.startWorkout(program.days[program.nextDay], program.programId)
+                        trainViewModel.startWorkout(program.days[program.nextDay], program)
                     },
                     colors = ButtonDefaults.elevatedButtonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,

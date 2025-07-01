@@ -48,6 +48,7 @@ fun App(persistentData: PersistentData) = MaterialTheme {
 
             MainScreen(
                 trainViewModel = trainViewModel,
+                settingsViewModel = settingsViewModel,
                 programDao = programDao,
                 historyDao = historyDao,
                 navController = navController,

@@ -145,7 +145,8 @@ fun TrainExercise(
                     }
                     Text(
                         modifier = Modifier.weight(ExerciseSetNarrowWeight + 0.1f),
-                        text = exercise.sets.getOrNull(setIndex)?.targetPerfVar?.toText() ?: "--",
+                        text = exercise.sets.getOrNull(setIndex)?.targetPerfVar?.toText()?.takeUnless(String::isEmpty)
+                            ?: "--",
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium
                     )

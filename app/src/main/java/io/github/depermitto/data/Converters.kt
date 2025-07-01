@@ -21,6 +21,12 @@ class Converters {
     @TypeConverter
     fun dayToString(day: Day): String = Json.encodeToString(day)
 
+    @TypeConverter
+    fun programFromString(value: String): Program = Json.decodeFromString(value)
+
+    @TypeConverter
+    fun programToString(program: Program): String = Json.encodeToString(program)
+
 // ---------------------------------------Categories---------------------------------------------------
 
     @TypeConverter

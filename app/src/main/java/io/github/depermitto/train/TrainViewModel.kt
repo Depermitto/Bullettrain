@@ -46,12 +46,12 @@ class TrainViewModel(
     fun addExercise(exercise: Exercise) = exercises.add(exercise)
     fun removeExercise(index: Int) = exercises.removeAt(index)
 
-    fun startWorkout(day: Day, programId: Long) {
+    fun startWorkout(day: Day, program: Program) {
         if (workoutState != null) return
 
         val record = HistoryRecord(
-            day = day,
-            relatedProgramId = programId,
+            workout = day,
+            relatedProgram = program,
             workoutPhase = WorkoutPhase.During,
             date = Instant.now(),
             workoutStartTime = Instant.now(),
@@ -70,9 +70,9 @@ class TrainViewModel(
 
     fun completeWorkout() = endWorkout { state ->
         val record = state.historyRecord.copy(
-            workoutPhase = WorkoutPhase.Completed, day = state.historyRecord.day.copy(exercises = exercises.toList())
+            workoutPhase = WorkoutPhase.Completed, workout = state.historyRecord.workout.copy(exercises = exercises.toList())
         )
-        val program = programDao.whereId(record.relatedProgramId) ?: return@endWorkout
+        val program = programDao.whereId(record.relatedProgram.programId) ?: return@endWorkout
         val nextDay = (program.nextDay + 1) % program.days.size
 
         historyDao.upsert(record)
@@ -110,12 +110,12 @@ class TrainViewModel(
             val record = if (newId == -1L) historyRecord else historyRecord.copy(historyEntryId = newId)
 
             clock = Instant.now()
-            exercises = historyRecord.day.exercises.toMutableStateList()
+            exercises = historyRecord.workout.exercises.toMutableStateList()
             workoutState = WorkoutState(historyRecord = record,
                 clockTimer = timer(initialDelay = 1000L, period = 1000L) { clock = clock.plusSeconds(1L) },
                 saveTimer = timer(initialDelay = 1000L, period = 10000L) {
                     workoutState = workoutState?.let {
-                        it.copy(historyRecord = it.historyRecord.copy(day = it.historyRecord.day.copy(exercises = exercises.toList())))
+                        it.copy(historyRecord = it.historyRecord.copy(workout = it.historyRecord.workout.copy(exercises = exercises.toList())))
                     }
 
                     viewModelScope.launch(Dispatchers.IO) {

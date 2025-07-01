@@ -4,6 +4,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -19,6 +21,7 @@ import io.github.depermitto.data.entities.HistoryDao
 import io.github.depermitto.data.entities.ProgramDao
 import io.github.depermitto.history.HistoryTab
 import io.github.depermitto.programs.ProgramsTab
+import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.adaptiveIconTint
 import io.github.depermitto.theme.filledContainerColor
 import io.github.depermitto.train.TrainTab
@@ -27,6 +30,7 @@ import io.github.depermitto.train.TrainViewModel
 @Composable
 fun MainScreen(
     trainViewModel: TrainViewModel,
+    settingsViewModel: SettingsViewModel,
     programDao: ProgramDao,
     historyDao: HistoryDao,
     navController: NavController,
@@ -51,13 +55,16 @@ fun MainScreen(
             Ribbon(navController = navController, title = activeBar.name, backButton = false)
         }
     }) { paddingValues ->
+        val scroll = rememberScrollState()
         when (activeBar) {
             Screen.MainScreen.Tabs.Programs -> ProgramsTab(
                 modifier = Modifier.padding(paddingValues), programDao = programDao, navController = navController
             )
 
             Screen.MainScreen.Tabs.History -> HistoryTab(
-                modifier = Modifier.padding(paddingValues), historyDao = historyDao
+                modifier = Modifier.padding(paddingValues).verticalScroll(scroll),
+                historyDao = historyDao,
+                settingsViewModel = settingsViewModel
             )
 
             Screen.MainScreen.Tabs.Train -> TrainTab(

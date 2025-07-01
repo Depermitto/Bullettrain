@@ -29,8 +29,8 @@ interface HistoryDao {
 @Entity(tableName = "history")
 data class HistoryRecord(
     @ColumnInfo(name = "history_entry_id") @PrimaryKey(autoGenerate = true) val historyEntryId: Long = 0,
-    val relatedProgramId: Long,
-    val day: Day,
+    val relatedProgram: Program,
+    val workout: Day,
     val workoutPhase: WorkoutPhase,
     @Serializable(with = InstantSerializer::class) val date: Instant,
     @Serializable(with = InstantSerializer::class) val workoutStartTime: Instant,
