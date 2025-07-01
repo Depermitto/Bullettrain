@@ -80,18 +80,10 @@ fun ExercisesListScreen(
             dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } },
             confirmButton = { name ->
                 TextButton(onClick = {
-                    if (name.isBlank()) {
-                        errorMessage = "Empty Exercise Name"
-                        return@TextButton
+                    errorMessage = exerciseDao.validateName(name) ?: "".also {
+                        showDialog = false
+                        exerciseDao.insert(Exercise(name = name))
                     }
-
-                    if (exercises.any { it.name.contentEquals(name.trim(), ignoreCase = true) }) {
-                        errorMessage = "Duplicate Exercise Name"
-                        return@TextButton
-                    }
-
-                    exerciseDao.upsert(Exercise(name = name))
-                    showDialog = false
                 }) {
                     Text("Confirm")
                 }

@@ -18,6 +18,7 @@ import io.github.depermitto.bullettrain.util.smallListSet
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.LocalDate
+import java.time.OffsetTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Timer
@@ -67,6 +68,23 @@ class TrainViewModel(
         getExercise(exerciseIndex).copy(sets = getExercise(exerciseIndex).sets.filterIndexed { i, _ -> i != setIndex })
     )
 
+    fun toggleCompletion(checked: Boolean, exerciseIndex: Int, setIndex: Int) = workoutState?.let { state ->
+        val lastPerformedSet = getExercise(exerciseIndex).lastPerformedSet()
+        var set = getExercise(exerciseIndex).sets[setIndex]
+        set = if (checked) set.copy(
+            doneTs = state.date.atTimeNow(),
+
+            weight = if (set.weight != 0f) set.weight
+            else lastPerformedSet?.weight ?: 0f,
+
+            actualPerfVar = if (set.actualPerfVar != 0f) set.actualPerfVar
+            else lastPerformedSet?.actualPerfVar ?: 0f
+        )
+        else set.copy(doneTs = null)
+
+        setExerciseSet(exerciseIndex, setIndex, set)
+    }
+
     fun startWorkout(day: Day, program: Program, date: LocalDate = LocalDate.now()) {
         if (workoutState != null) return
 
@@ -75,7 +93,7 @@ class TrainViewModel(
             relatedProgram = program,
             date = date,
             workoutPhase = WorkoutPhase.During,
-            workoutStartTs = Instant.now(),
+            workoutStartTs = date.atTimeNow(),
         )
         createState(record)
 
@@ -168,7 +186,7 @@ class TrainViewModel(
             val record = if (newId == -1) historyRecord else historyRecord.copy(id = newId)
 
             timer = timer(initialDelay = 1000L, period = 1000L) {
-                clock = Instant.now()
+                clock = record.date.atTimeNow()
             }
             exercises = record.workout.exercises.toMutableStateList()
             workoutState = record
@@ -181,3 +199,5 @@ class TrainViewModel(
             viewModelFactory { initializer { TrainViewModel(historyDao, programDao, navController) } }
     }
 }
+
+fun LocalDate.atTimeNow() = this.atTime(OffsetTime.ofInstant(Instant.now(), ZoneId.systemDefault())).toInstant()

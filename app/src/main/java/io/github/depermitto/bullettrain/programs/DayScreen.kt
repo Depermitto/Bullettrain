@@ -8,12 +8,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -28,6 +26,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHostState
@@ -41,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -94,13 +95,17 @@ fun DayScreen(
         .padding(horizontal = RegularPadding)
         .fillMaxSize()
         .verticalScroll(rememberScrollState(0))
-        .padding(bottom = 100.dp), list = day.exercises, verticalArrangement = Arrangement.spacedBy(WideSpacing), onMove = {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
-        }
-    }, onSettle = { fromIndex, toIndex ->
-        programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises.reorder(fromIndex, toIndex)))
-    }) { exerciseIndex, exercise, isDragging ->
+        .padding(bottom = 100.dp),
+        list = day.exercises,
+        verticalArrangement = Arrangement.spacedBy(WideSpacing),
+        onMove = {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
+            }
+        },
+        onSettle = { fromIndex, toIndex ->
+            programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises.reorder(fromIndex, toIndex)))
+        }) { exerciseIndex, exercise, isDragging ->
         fun setIntensity(cat: Intensity?) {
             val intensity = if (cat != null) 0f else null
             programViewModel.setExercise(
@@ -131,32 +136,31 @@ fun DayScreen(
                 }) {
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)) {
                         var showTargetEditDropdown by remember { mutableStateOf(false) }
-                        Row(modifier = Modifier.padding(RegularPadding), verticalAlignment = Alignment.CenterVertically) {
+                        ListItem(colors = ListItemDefaults.colors(containerColor = Color.Transparent), headlineContent = {
                             TextLink(
                                 exercise.name,
-                                Modifier.widthIn(0.dp, 220.dp),
                                 navController = navController,
                                 destination = Destination.Exercise(exercise.id),
                                 style = MaterialTheme.typography.titleMedium,
                             )
-                            Spacer(Modifier.weight(1f))
-                            IconButton(
-                                modifier = Modifier.size(SqueezableIconSize),
-                                onClick = { showSwapExerciseChooser = true }) {
-                                SwapIcon()
-                            }
+                        }, trailingContent = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(modifier = Modifier.size(SqueezableIconSize),
+                                    onClick = { showSwapExerciseChooser = true }) {
+                                    SwapIcon()
+                                }
 
-                            if (!exercise.hasIntensity) IconButton(
-                                modifier = Modifier.size(SqueezableIconSize),
-                                onClick = { setIntensity(Intensity.RPE) }) {
-                                HeartPlusIcon()
-                            }
-                            else IconButton(modifier = Modifier.size(SqueezableIconSize), onClick = { setIntensity(null) }) {
-                                HeartRemoveIcon()
-                            }
+                                if (!exercise.hasIntensity) IconButton(modifier = Modifier.size(SqueezableIconSize),
+                                    onClick = { setIntensity(Intensity.RPE) }) {
+                                    HeartPlusIcon()
+                                }
+                                else IconButton(modifier = Modifier.size(SqueezableIconSize), onClick = { setIntensity(null) }) {
+                                    HeartRemoveIcon()
+                                }
 
-                            DragButton(this@ReorderableColumn, view)
-                        }
+                                DragButton(this@ReorderableColumn, view)
+                            }
+                        })
 
                         Row(
                             modifier = Modifier.padding(top = RegularPadding, bottom = RegularSpacing),
@@ -174,8 +178,7 @@ fun DayScreen(
                                 Header(text = exercise.perfVarCategory.prettyName)
                                 Icon(Sharp.KeyboardArrowDown, contentDescription = null)
 
-                                DropdownMenu(
-                                    expanded = showTargetEditDropdown,
+                                DropdownMenu(expanded = showTargetEditDropdown,
                                     onDismissRequest = { showTargetEditDropdown = false }) {
                                     PerfVarCategory.entries.forEach { entry ->
                                         DropdownMenuItem(text = { Text(entry.prettyName) }, onClick = {
@@ -255,15 +258,13 @@ fun DayScreen(
                                                 )
                                             })
                                     }
-                                    IconButton(
-                                        modifier = Modifier
-                                            .size(CompactIconSize)
-                                            .weight(NarrowWeight),
-                                        onClick = {
-                                            programViewModel.setExercise(
-                                                dayIndex, exerciseIndex, exercise.copy(sets = exercise.sets + set)
-                                            )
-                                        }) {
+                                    IconButton(modifier = Modifier
+                                        .size(CompactIconSize)
+                                        .weight(NarrowWeight), onClick = {
+                                        programViewModel.setExercise(
+                                            dayIndex, exerciseIndex, exercise.copy(sets = exercise.sets + set)
+                                        )
+                                    }) {
                                         DuplicateIcon()
                                     }
                                 }

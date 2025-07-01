@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.Program
@@ -43,7 +45,7 @@ fun <T> BasicTable(
     headers: Pair<String, String>,
     separateHeadersAndContent: Boolean = true,
     list: List<T>,
-    content: (Int, T) -> Pair<String, String>
+    content: (Int, T) -> Pair<@Composable () -> Unit, @Composable () -> Unit>
 ) = Column(modifier = modifier) {
     ListItem(
         headlineContent = headlineContent,
@@ -77,18 +79,18 @@ fun <T> BasicTable(
                 val (col1, col2) = content(i, item)
 
                 if (ratio == Ratio.Unlimited) {
-                    Text(text = col1, overflow = TextOverflow.Ellipsis, maxLines = 1)
+                    col1()
                     Spacer(modifier = Modifier.weight(1f))
-                    Text(text = col2, overflow = TextOverflow.Ellipsis, maxLines = 1)
+                    col2()
                 } else if (ratio is Ratio.Strict) {
                     assert(ratio.value > 0f && ratio.value < 1f)
 
                     Box(modifier = Modifier.weight(ratio.value), contentAlignment = CenterStart) {
-                        Text(text = col1, overflow = TextOverflow.Ellipsis, maxLines = 1)
+                        col1()
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Box(modifier = Modifier.weight(1f - ratio.value), contentAlignment = CenterEnd) {
-                        Text(text = col2, overflow = TextOverflow.Ellipsis, maxLines = 1)
+                        col2()
                     }
                 }
             }
@@ -103,7 +105,8 @@ fun WorkoutTable(
     program: Program,
     trailingContent: (@Composable () -> Unit)? = null,
     exstractor: (Exercise) -> String?,
-    ratio: Ratio = Ratio.Unlimited
+    ratio: Ratio = Ratio.Unlimited,
+    navController: NavController,
 ) {
     var header = program.name
     var supportingText: String? = workout.name
@@ -121,8 +124,12 @@ fun WorkoutTable(
         ratio = ratio,
         emptyMessage = "Empty Workout",
         headers = Pair("Exercise", "Sets"),
-        list = workout.exercises.mapNotNull { exercise -> exstractor(exercise)?.let { exercise.name to it } },
-    ) { _, item ->
-        item
+        list = workout.exercises.mapNotNull { exercise -> exstractor(exercise)?.let { text -> exercise to text } },
+    ) { _, (exercise, text) ->
+        Pair(first = {
+            TextLink(exercise.name, navController, Destination.Exercise(exercise.id), useCard = false, maxLines = 2)
+        }, second = {
+            Text(text = text, overflow = TextOverflow.Ellipsis, maxLines = 2)
+        })
     }
 }

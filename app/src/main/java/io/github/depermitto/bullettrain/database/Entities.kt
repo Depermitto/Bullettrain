@@ -70,7 +70,8 @@ data class Exercise(
     val hasIntensity: Boolean
         get() = intensity != null
 
-    fun getPerformedSets(): List<ExerciseSet> = sets.filter { it.completed }
+    fun getPerformedSets(): List<ExerciseSet> = this.sets.filter { it.completed }
+    fun lastPerformedSet() = this.sets.lastOrNull { it.completed }
 
     override fun clone(id: Int) = copy(id = id)
 }

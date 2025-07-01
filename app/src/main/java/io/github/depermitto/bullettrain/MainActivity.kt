@@ -359,7 +359,6 @@ fun App(db: Database) = MaterialTheme {
         }
 
         composable<Destination.Exercise> { navBackStackEntry ->
-            val exercises by db.exerciseDao.getAll.collectAsStateWithLifecycle()
             val exercise by db.exerciseDao.where(navBackStackEntry.toRoute<Destination.Exercise>().exerciseId)
                 .collectAsStateWithLifecycle(null)
             exercise?.let { exercise ->
@@ -396,18 +395,10 @@ fun App(db: Database) = MaterialTheme {
                         dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Discard") } },
                         confirmButton = { name ->
                             TextButton(onClick = {
-                                if (name.isBlank()) {
-                                    errorMessage = "Empty Exercise Name"
-                                    return@TextButton
+                                errorMessage = db.exerciseDao.validateName(name) ?: "".also {
+                                    showRenameDialog = false
+                                    db.exerciseDao.update(exercise)
                                 }
-
-                                if (exercises.any { it.name.contentEquals(name.trim(), ignoreCase = true) }) {
-                                    errorMessage = "Duplicate Exercise Name"
-                                    return@TextButton
-                                }
-
-                                db.exerciseDao.update(exercise.copy(name = name))
-                                showRenameDialog = false
                             }) {
                                 Text("Confirm")
                             }

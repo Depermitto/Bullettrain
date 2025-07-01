@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.components.Ratio
 import io.github.depermitto.bullettrain.components.WorkoutTable
 import io.github.depermitto.bullettrain.database.Day
@@ -27,6 +28,7 @@ fun TrainTab(
     modifier: Modifier = Modifier,
     trainViewModel: TrainViewModel,
     programDao: ProgramDao,
+    navController: NavController
 ) = Column(
     modifier = modifier.padding(horizontal = RegularPadding),
     horizontalAlignment = Alignment.CenterHorizontally,
@@ -68,7 +70,8 @@ fun TrainTab(
                     program = program,
                     workout = program.nextDay(),
                     exstractor = { exercise -> exercise.sets.size.toString() },
-                    ratio = Ratio.Unlimited
+                    ratio = Ratio.Strict(0.9f),
+                    navController = navController
                 )
                 ElevatedButton(
                     modifier = Modifier.align(Alignment.BottomCenter),

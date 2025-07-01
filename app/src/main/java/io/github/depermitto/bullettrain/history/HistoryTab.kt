@@ -30,6 +30,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.components.Ratio
 import io.github.depermitto.bullettrain.components.WorkoutTable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
@@ -52,6 +53,7 @@ fun HistoryTab(
     settingsDao: SettingsDao,
     historyDao: HistoryDao,
     programDao: ProgramDao,
+    navController: NavController
 ) = Box(modifier = modifier.fillMaxSize()) {
     val historyRecords by historyDao.where(homeViewModel.calendarDate.month, homeViewModel.calendarDate.year)
         .collectAsStateWithLifecycle(initialValue = emptyList())
@@ -110,6 +112,7 @@ fun HistoryTab(
                     modifier = Modifier.fillMaxWidth(),
                     workout = record.workout,
                     program = record.relatedProgram,
+                    navController = navController,
                     exstractor = { exercise ->
                         val setsGroupedByWeight = exercise.getPerformedSets().groupBy { it.weight }.filter { (weight, _) -> weight != 0f }
                         if (setsGroupedByWeight.isNotEmpty()) setsGroupedByWeight.map { (weight, sets) -> "${sets.size}x${weight.encodeToStringOutput()}" }

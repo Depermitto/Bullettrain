@@ -136,7 +136,6 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
 
     /**
      * Update the item and return a boolean indicating if the operation was successful.
-     * i.e. return true if item is present in the database.
      */
     open fun update(item: T): Boolean {
         val existingIndex = items.value.indexOfFirst { it.id == item.id }
@@ -215,7 +214,7 @@ class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {
      * Filter out exercises by name. This function provides an autocorrect/typo correcting algorithm that is
      * controlled with the [errorTolerance] and [ignoreCase] parameters.
      */
-    fun where(name: String, errorTolerance: Int = 0, ignoreCase: Boolean = false) = getAll.map { exercises ->
+    fun where(name: String, errorTolerance: Int = 0, ignoreCase: Boolean = false) = getSortedAlphabetically.map { exercises ->
         val words = name.trim().split(' ')
         val predictedWords = words.mapNotNull { bkTree.search(it, errorTolerance, ignoreCase) }
 
@@ -234,19 +233,37 @@ class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {
     }
 
     override fun insert(item: Exercise): Int {
-        val item = item.prep()
+        val item = item.copy(name = item.name.prep())
         bkTree.insert(item.name)
         return super.insert(item)
     }
 
     override fun update(item: Exercise): Boolean {
-        return super.update(item.prep())
+        return super.update(item.copy(name = item.name.prep()))
     }
 
     override fun upsert(item: Exercise): Int {
-        return super.upsert(item.prep())
+        return super.upsert(item.copy(name = item.name.prep()))
     }
 
-    private fun Exercise.prep() =
-        this.copy(name = name.trim().split(' ').joinToString(" ") { it.replaceFirstChar { it.uppercaseChar() } })
+    /**
+     * Check [name] for duplicates and emptiness.
+     * 
+     * @return Error message if [name] is bad and null if successfully validated.
+     */
+    fun validateName(name: String): String? {
+        val name = name.prep()
+        if (name.isBlank()) {
+            return "Empty Exercise Name"
+        }
+
+        if (getAll.value.any { it.name == name }) {
+            return "Duplicate Exercise Name"
+        }
+
+        return null
+    }
+
+    private fun String.prep() =
+        this.trim().split(' ').joinToString(" ") { it.replaceFirstChar { it.uppercaseChar() } }
 }

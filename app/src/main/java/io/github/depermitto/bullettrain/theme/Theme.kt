@@ -251,6 +251,6 @@ fun GymAppTheme(
     }
 
     MaterialTheme(
-        colorScheme = colorScheme, typography = Typography, content = content, shapes = Shapes
+        colorScheme = colorScheme, typography = Typography, content = content
     )
 }

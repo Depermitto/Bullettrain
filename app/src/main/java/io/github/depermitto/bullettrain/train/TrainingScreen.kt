@@ -18,6 +18,8 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -32,6 +34,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -63,7 +66,6 @@ import io.github.depermitto.bullettrain.theme.WideWeight
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.theme.numeric
 import kotlinx.coroutines.launch
-import java.time.Instant
 import kotlin.collections.all
 import kotlin.collections.plus
 
@@ -91,46 +93,45 @@ fun TrainingScreen(
                 onDismissRequest = { showSwapExerciseChooser = false },
                 onChoose = { it -> trainViewModel.setExercise(exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
 
-            val lastPerformedSet = exercise.sets.lastOrNull { it.completed }
-            Row(
-                modifier = Modifier
-                    .padding(RegularPadding)
-                    .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextLink(
-                    "${exerciseIndex + 1}. ${exercise.name}",
-                    Modifier.widthIn(0.dp, 270.dp),
-                    navController = navController,
-                    destination = Destination.Exercise(exercise.id),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Spacer(Modifier.weight(1f))
-                if (!trainViewModel.isWorkoutEditing()) lastPerformedSet?.let { exerciseSet ->
-                    Card {
-                        Text(
-                            modifier = Modifier.padding(4.dp),
-                            text = if (exercise.sets.all { it.completed }) "Done"
-                            else trainViewModel.elapsedSince(exerciseSet.doneTs!!),
-                            style = MaterialTheme.typography.titleMedium
-                        )
+            val lastPerformedSet = exercise.lastPerformedSet()
+            ListItem(colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                headlineContent = {
+                    TextLink(
+                        "${exerciseIndex + 1}. ${exercise.name}",
+                        navController = navController,
+                        destination = Destination.Exercise(exercise.id),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }, trailingContent = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (!trainViewModel.isWorkoutEditing()) lastPerformedSet?.let { exerciseSet ->
+                            Card {
+                                Text(
+                                    modifier = Modifier.padding(4.dp),
+                                    text = if (exercise.sets.all { it.completed }) "Done"
+                                    else trainViewModel.elapsedSince(exerciseSet.doneTs!!),
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            }
+                        }
+                        var showDropdownButton by remember { mutableStateOf(false) }
+                        DropdownButton(modifier = Modifier.size(SqueezableIconSize),
+                            show = showDropdownButton,
+                            onShowChange = { showDropdownButton = it }) {
+                            DropdownMenuItem(leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+                                text = { Text(text = "Delete") },
+                                onClick = {
+                                    showDropdownButton = false
+                                    showExerciseDeleteDialog = true
+                                })
+                            DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
+                                showDropdownButton = false
+                                showSwapExerciseChooser = true
+                            })
+                        }
                     }
                 }
-                var showDropdownButton by remember { mutableStateOf(false) }
-                DropdownButton(modifier = Modifier.size(SqueezableIconSize),
-                    show = showDropdownButton,
-                    onShowChange = { showDropdownButton = it }) {
-                    DropdownMenuItem(leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
-                        text = { Text(text = "Delete") },
-                        onClick = {
-                            showDropdownButton = false
-                            showExerciseDeleteDialog = true
-                        })
-                    DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
-                        showDropdownButton = false
-                        showSwapExerciseChooser = true
-                    })
-                }
-            }
+            )
 
             Row(modifier = Modifier.padding(top = RegularPadding, bottom = RegularSpacing)) {
                 Header(Modifier.weight(NarrowWeight), "Set")
@@ -206,20 +207,7 @@ fun TrainingScreen(
                             .size(CompactIconSize)
                             .weight(NarrowWeight),
                             checked = set.doneTs != null,
-                            onCheckedChange = {
-                                val set = if (it) set.copy(
-                                    doneTs = Instant.now(),
-
-                                    weight = if (set.weight != 0f) set.weight
-                                    else lastPerformedSet?.weight ?: 0f,
-
-                                    actualPerfVar = if (set.actualPerfVar != 0f) set.actualPerfVar
-                                    else lastPerformedSet?.actualPerfVar ?: 0f
-                                )
-                                else set.copy(doneTs = null)
-
-                                trainViewModel.setExerciseSet(exerciseIndex, setIndex, set)
-                            })
+                            onCheckedChange = { trainViewModel.toggleCompletion(it, exerciseIndex, setIndex) })
                     }
                 }
             }

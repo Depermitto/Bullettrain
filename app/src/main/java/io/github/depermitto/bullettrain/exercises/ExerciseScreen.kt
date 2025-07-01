@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.BasicTable
@@ -24,7 +25,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun ExerciseScreen(modifier: Modifier = Modifier, historyDao: HistoryDao, settingsDao: SettingsDao, exercise: Exercise) {
-    val loggedExercises by historyDao.where(exercise).collectAsStateWithLifecycle(initialValue = emptyList())
+    val exercises by historyDao.where(exercise).collectAsStateWithLifecycle(initialValue = emptyList())
     val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMM dd yyyy")
 
     LazyColumn(
@@ -33,7 +34,7 @@ fun ExerciseScreen(modifier: Modifier = Modifier, historyDao: HistoryDao, settin
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(RegularSpacing),
     ) {
-        items(loggedExercises) { exercise ->
+        items(exercises) { exercise ->
             val sets = exercise.getPerformedSets()
             val doneDate = sets.firstOrNull()?.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
             GhostCard {
@@ -41,10 +42,15 @@ fun ExerciseScreen(modifier: Modifier = Modifier, historyDao: HistoryDao, settin
                     headers = Pair("Set", "Completed"), list = sets, separateHeadersAndContent = false,
                     headlineContent = { Text(dateFormatter.format(doneDate), style = MaterialTheme.typography.titleMedium) },
                 ) { setIndex, set ->
-                    Pair(
-                        "${setIndex + 1}",
-                        "${set.actualPerfVar.encodeToStringOutput()} x ${set.weight.encodeToStringOutput()} ${settingsDao.weightUnit()}"
-                    )
+                    Pair(first = {
+                        Text("${setIndex + 1}", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }, second = {
+                        Text(
+                            "${set.actualPerfVar.encodeToStringOutput()} x ${set.weight.encodeToStringOutput()} ${settingsDao.weightUnit()}",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    })
                 }
             }
         }

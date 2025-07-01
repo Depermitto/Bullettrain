@@ -38,11 +38,12 @@ fun HomeScreen(
             trainViewModel = trainViewModel,
             settingsDao = settingsDao,
             historyDao = historyDao,
-            programDao = programDao
+            programDao = programDao,
+            navController = navController
         )
 
         Tab.Train -> TrainTab(
-            modifier = modifier, trainViewModel = trainViewModel, programDao = programDao
+            modifier = modifier, trainViewModel = trainViewModel, programDao = programDao, navController = navController
         )
 
         Tab.Programs -> ProgramsTab(
