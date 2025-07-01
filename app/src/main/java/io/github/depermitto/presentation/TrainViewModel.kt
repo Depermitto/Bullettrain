@@ -38,7 +38,7 @@ class TrainViewModel(day: Day) : ViewModel() {
     fun startWorkoutOnce() {
         if (workoutState != WorkoutState.Started) {
             now = Instant.now()
-            if (!this::start.isInitialized) start = now
+            start = now
             workoutState = WorkoutState.Started
 
             countingJob = viewModelScope.launch {
@@ -53,7 +53,7 @@ class TrainViewModel(day: Day) : ViewModel() {
     fun stopWorkoutOnce() {
         if (workoutState == WorkoutState.Started) {
             countingJob.cancel("Workout Finished")
-            workoutState = WorkoutState.Done
+            workoutState = WorkoutState.NotStartedYet
         }
     }
 

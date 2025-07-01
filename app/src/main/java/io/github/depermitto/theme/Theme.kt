@@ -39,6 +39,7 @@ private val LightColorScheme = lightColorScheme(
 
 val ItemPadding = 8.dp
 val ItemSpacing = 4.dp
+val ExerciseSetSpacing = 2.dp
 
 @Composable
 fun adaptiveIconTint() = if (isSystemInDarkTheme()) Color.White else Color.Black

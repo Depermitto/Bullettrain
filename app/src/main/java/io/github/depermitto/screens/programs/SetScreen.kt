@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.depermitto.components.NumberField
 import io.github.depermitto.data.ExerciseSet
-import io.github.depermitto.replaceAt
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 
@@ -32,15 +31,13 @@ fun SetScreen(set: List<ExerciseSet>, onSetChange: (List<ExerciseSet>?) -> Unit)
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(ItemSpacing)
             ) {
-                NumberField(value = i + 1f, onValueChange = { }, label = { Text("Set") }, readOnly = true)
+                NumberField(value = i + 1f, label = { Text("Set") }, readOnly = true)
                 NumberField(
                     value = exercise.reps,
-                    onValueChange = { onSetChange(set.replaceAt(i, exercise.copy(reps = it))) },
                     label = { Text("Reps") }
                 )
                 NumberField(
                     value = exercise.rpe,
-                    onValueChange = { onSetChange(set.replaceAt(i, exercise.copy(rpe = it))) },
                     label = { Text("RPE") }
                 )
             }

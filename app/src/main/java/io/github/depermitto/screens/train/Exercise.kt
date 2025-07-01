@@ -22,10 +22,11 @@ import io.github.depermitto.presentation.SettingsViewModel
 import io.github.depermitto.presentation.TrainViewModel
 import io.github.depermitto.presentation.WorkoutState
 import io.github.depermitto.screens.exercises.exerciseChooser
+import io.github.depermitto.theme.ExerciseSetSpacing
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
-import kotlin.math.min
+import java.time.Instant
 
 // TODO don't depend on TrainViewModel
 @RequiresApi(Build.VERSION_CODES.O)
@@ -78,14 +79,16 @@ fun Exercise(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .offset(y = 2 * ItemSpacing),
-                horizontalArrangement = Arrangement.Center
+                    .offset(y = 2 * ItemSpacing), horizontalArrangement = Arrangement.Center
             ) {
                 Header("Set", 0.3f)
-                Header("Previous")
-                Header("Reps")
-                Header("Weight")
-                Header("RPE")
+                Header("Previous", 1f)
+                Header("Reps", 0.9f)
+                Header(settingsViewModel.settings.unitSystem.weightUnit(), 0.9f)
+                Header("RPE", 0.9f)
+                if (trainViewModel.workoutState == WorkoutState.Started) {
+                    Header("", 0.4f)
+                }
             }
             HorizontalDivider()
 
@@ -97,29 +100,37 @@ fun Exercise(
                 ) {
                     Text(modifier = Modifier.weight(0.3f), text = (j + 1).toString(), textAlign = TextAlign.Center)
                     Text(
-                        modifier = Modifier.weight(1f), text = "15 x 10 kg", // TODO take this data from "history"
+                        modifier = Modifier.weight(1f), text = "5 x 10 kg", // TODO take this data from "history"
                         textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium
                     )
                     NumberField(
                         Modifier
-                            .weight(1f)
-                            .padding(horizontal = ItemSpacing),
+                            .weight(0.9f)
+                            .padding(horizontal = ExerciseSetSpacing),
                         value = set.reps,
-                        onValueChange = { sets[j] = set.copy(reps = it) })
-                    NumberField(
-                        Modifier
-                            .weight(1f)
-                            .padding(horizontal = ItemSpacing),
-                        value = set.weight,
-                        onValueChange = { sets[j] = set.copy(weight = it) },
-                        trailingText = settingsViewModel.settings.unitSystem.weightUnit()
                     )
                     NumberField(
                         Modifier
-                            .weight(1f)
-                            .padding(horizontal = ItemSpacing),
-                        value = set.rpe,
-                        onValueChange = { sets[j] = set.copy(rpe = min(10f, it)) })
+                            .weight(0.9f)
+                            .padding(horizontal = ExerciseSetSpacing),
+                        value = set.weight
+                    )
+                    NumberField(
+                        Modifier
+                            .weight(0.9f)
+                            .padding(horizontal = ExerciseSetSpacing),
+                        value = set.rpe
+                    )
+
+                    if (trainViewModel.workoutState == WorkoutState.Started) {
+                        Checkbox(modifier = Modifier
+                            .size(20.dp)
+                            .weight(0.4f),
+                            checked = set.date != null,
+                            onCheckedChange = {
+                                sets[j] = set.copy(date = if (it) Instant.now() else null)
+                            })
+                    }
                 }
             }
         }
@@ -136,7 +147,7 @@ fun Exercise(
 @Composable
 fun RowScope.Header(
     text: String,
-    weight: Float = 1f,
+    weight: Float,
 ) = Text(
     modifier = Modifier.weight(weight),
     text = text,
