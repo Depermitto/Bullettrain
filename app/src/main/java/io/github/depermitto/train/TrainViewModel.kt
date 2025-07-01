@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
-import io.github.depermitto.Screen
+import io.github.depermitto.home.Screen
 import io.github.depermitto.database.Day
 import io.github.depermitto.database.Exercise
 import io.github.depermitto.database.ExerciseSet
@@ -71,7 +71,7 @@ class TrainViewModel(
         createState(record)
 
         navController.navigate(Screen.TrainingScreen.route) {
-            popUpTo(Screen.MainScreen.route) { inclusive = true }
+            popUpTo(Screen.HomeScreen.route) { inclusive = true }
             launchSingleTop = true
         }
     }
@@ -82,7 +82,7 @@ class TrainViewModel(
             createState(session)
             return true
         }
-        return false
+        return session != null
     }
 
     fun completeWorkout() = endWorkout { state ->
@@ -114,8 +114,8 @@ class TrainViewModel(
         workoutState = null
         exercises.clear()
 
-        if (!navController.popBackStack(Screen.MainScreen.route, false)) {
-            navController.navigate(route = Screen.MainScreen.passTab(tab = Screen.MainScreen.Tabs.Train)) {
+        if (!navController.popBackStack(Screen.HomeScreen.route, false)) {
+            navController.navigate(route = Screen.HomeScreen.passTab(tab = Screen.HomeScreen.Tabs.Train)) {
                 popUpTo(Screen.TrainingScreen.route) { inclusive = true }
                 launchSingleTop = true
             }

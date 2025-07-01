@@ -3,12 +3,15 @@ package io.github.depermitto.programs
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.sharp.KeyboardArrowDown
 import androidx.compose.material3.*
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,7 +27,7 @@ import io.github.depermitto.components.Header
 import io.github.depermitto.components.NumberField
 import io.github.depermitto.components.SwipeToDeleteBox
 import io.github.depermitto.database.*
-import io.github.depermitto.exercises.AddExerciseButton
+import io.github.depermitto.exercises.exerciseChooser
 import io.github.depermitto.theme.*
 import io.github.depermitto.util.*
 
@@ -57,8 +60,7 @@ fun ProgramScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(ItemPadding),
-                verticalArrangement = Arrangement.spacedBy(ItemSpacing)
+                    .padding(ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
             ) {
                 day.exercises.forEachIndexed { exerciseIndex, exercise ->
                     // TODO reorder exercises, reorder sets maybe?
@@ -75,8 +77,11 @@ fun ProgramScreen(
                     )
                 }
 
-                AddExerciseButton(exerciseDao = exerciseDao,
+                val exerciseChooserToggle = exerciseChooser(exerciseDao = exerciseDao,
                     onChoose = { programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises + it)) })
+                OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { exerciseChooserToggle() }) {
+                    Text(text = "Add Exercise")
+                }
             }
         }
 
@@ -201,8 +206,7 @@ fun ProgramExercise(
         }
 
         OutlinedButton(modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors()
-                .copy(contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
+            colors = ButtonDefaults.outlinedButtonColors().copy(contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
             onClick = {
                 onExerciseChange(
                     exercise.copy(
@@ -229,27 +233,18 @@ fun ExerciseTargetField(
 
     is PerfVar.Time -> Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         NumberField(
-            modifier = modifier,
-            value = value.time,
-            onValueChange = { onValueChange(value.copy(it)) },
-            readOnly = readOnly
+            modifier = modifier, value = value.time, onValueChange = { onValueChange(value.copy(it)) }, readOnly = readOnly
         )
         Text(text = "min")
     }
 
     is PerfVar.RepRange -> Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         NumberField(
-            modifier = modifier,
-            value = value.min,
-            onValueChange = { onValueChange(value.copy(min = it)) },
-            readOnly = readOnly
+            modifier = modifier, value = value.min, onValueChange = { onValueChange(value.copy(min = it)) }, readOnly = readOnly
         )
         Text(text = "-")
         NumberField(
-            modifier = modifier,
-            value = value.max,
-            onValueChange = { onValueChange(value.copy(max = it)) },
-            readOnly = readOnly
+            modifier = modifier, value = value.max, onValueChange = { onValueChange(value.copy(max = it)) }, readOnly = readOnly
         )
     }
 }

@@ -1,7 +1,9 @@
-package io.github.depermitto
+package io.github.depermitto.home
+
+import io.github.depermitto.R
 
 sealed class Screen(val route: String) {
-    data object MainScreen : Screen("main/{tab}") {
+    data object HomeScreen : Screen("home/{tab}") {
         enum class Tabs(val icon: Int) {
             History(R.drawable.history),
             Train(R.drawable.weight_lifter),

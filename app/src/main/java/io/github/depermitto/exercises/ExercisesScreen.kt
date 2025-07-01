@@ -54,8 +54,11 @@ fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) {
         }
 
         var showDialog by remember { mutableStateOf(false) }
-        AnchoredFloatingActionButton(onClick = { showDialog = true },
-            icon = { Icon(Icons.Default.Add, contentDescription = "Add") })
+        AnchoredFloatingActionButton(
+            onClick = { showDialog = true },
+            icon = { Icon(Icons.Default.Add, contentDescription = "Add Exercise") },
+            text = { Text(text = "Add") },
+        )
 
         if (showDialog) {
             BasicAlertDialog(

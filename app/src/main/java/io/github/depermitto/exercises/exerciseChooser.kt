@@ -1,23 +1,13 @@
 package io.github.depermitto.exercises
 
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import io.github.depermitto.database.Exercise
 import io.github.depermitto.database.ExerciseDao
-
-@Composable
-fun AddExerciseButton(exerciseDao: ExerciseDao, onChoose: (Exercise) -> Unit) {
-    val toggle = exerciseChooser(exerciseDao = exerciseDao, onChoose = onChoose)
-    OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { toggle() }) {
-        Text(text = "Add Exercise")
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
