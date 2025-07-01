@@ -2,6 +2,7 @@ package io.github.depermitto.bullettrain
 
 import kotlinx.serialization.Serializable
 
+@Serializable
 sealed interface Destination {
   @Serializable
   data object Home : Destination {

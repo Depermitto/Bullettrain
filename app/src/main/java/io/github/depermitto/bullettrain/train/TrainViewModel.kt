@@ -24,7 +24,6 @@ import java.util.Timer
 import kotlin.concurrent.timer
 import kotlin.math.max
 import kotlin.properties.Delegates
-import kotlinx.coroutines.flow.first
 
 /**
  * [ViewModel] for creating and editing a [Workout]. When the class is initialized, some of its
@@ -39,11 +38,8 @@ import kotlinx.coroutines.flow.first
  * Both variants need a [HistoryDao] to store its data as a [HistoryRecord] and a [ProgramDao] to
  * fetch the related [Program].
  */
-class TrainViewModel(
-  private val historyDao: HistoryDao,
-  private val programDao: ProgramDao,
-  private val navController: NavController,
-) : ViewModel() {
+class TrainViewModel(private val historyDao: HistoryDao, private val programDao: ProgramDao) :
+  ViewModel() {
   // HistoryRecord-related
   private var id by Delegates.notNull<Int>()
   private var relatedProgramId: Int? = null
@@ -187,11 +183,16 @@ class TrainViewModel(
     setExerciseSet(exerciseIndex, setIndex, builder)
   }
 
-  fun startWorkout(workout: Workout, programId: Int?, workoutStartTs: Timestamp) {
+  fun startWorkout(
+    workout: Workout,
+    programId: Int?,
+    workoutStart: Instant,
+    navController: NavController,
+  ) {
     val record =
       HistoryRecord.newBuilder()
         .setWorkout(workout)
-        .setWorkoutStartTs(workoutStartTs)
+        .setWorkoutStartTs(workoutStart.toTimestamp())
         .setWorkoutPhase(Phase.During)
         .apply { programId?.let { setRelatedProgramId(it) } }
         .build()
@@ -208,45 +209,46 @@ class TrainViewModel(
     return false
   }
 
-  fun editWorkout(recordId: Int) {
+  fun editWorkout(recordId: Int, navController: NavController) {
     init(historyDao.where(recordId))
     navController.navigate(Destination.HistoryRecord(recordId))
   }
 
-  private fun endWorkout(destination: Destination = Destination.Home, deinit: () -> Unit) {
+  private fun endWorkout(navController: NavController, deinit: () -> Unit) {
     timer.cancel()
     deinit()
     exercises.clear()
-    if (!navController.popBackStack(destination, false)) {
-      navController.navigate(route = destination) {
+    if (!navController.popBackStack(Destination.Home, false)) {
+      navController.navigate(route = Destination.Home) {
         popUpTo(Destination.Training) { inclusive = true }
         launchSingleTop = true
       }
     }
   }
 
-  fun completeWorkout() = endWorkout {
-    historyDao.upsert(getRecord().toBuilder().setWorkoutPhase(Phase.Completed).build())
+  fun completeWorkout(navController: NavController) =
+    endWorkout(navController) {
+      historyDao.upsert(getRecord().toBuilder().setWorkoutPhase(Phase.Completed).build())
 
-    val relatedProgram = programDao.where(relatedProgramId ?: return@endWorkout)
-    val nextDayIndex =
-      (relatedProgram.workoutsList.indexOfFirst { workoutName == it.name } + 1) %
-        relatedProgram.workoutsCount
-    programDao.upsert(
-      relatedProgram
-        .toBuilder()
-        .setNextDayIndex(nextDayIndex)
-        .setLastWorkoutTs(date.atTimeNow().toTimestamp())
-        .build()
-    )
-  }
+      val relatedProgram = programDao.where(relatedProgramId ?: return@endWorkout)
+      val nextDayIndex =
+        (relatedProgram.workoutsList.indexOfFirst { workoutName == it.name } + 1) %
+          relatedProgram.workoutsCount
+      programDao.upsert(
+        relatedProgram
+          .toBuilder()
+          .setNextDayIndex(nextDayIndex)
+          .setLastWorkoutTs(date.atTimeNow().toTimestamp())
+          .build()
+      )
+    }
 
-  fun cancelWorkout() = endWorkout { historyDao.delete(id) }
+  fun cancelWorkout(navController: NavController) =
+    endWorkout(navController) { historyDao.delete(id) }
 
   companion object {
-    fun Factory(historyDao: HistoryDao, programDao: ProgramDao, navController: NavController) =
-      viewModelFactory {
-        initializer { TrainViewModel(historyDao, programDao, navController) }
-      }
+    fun Factory(historyDao: HistoryDao, programDao: ProgramDao) = viewModelFactory {
+      initializer { TrainViewModel(historyDao, programDao) }
+    }
   }
 }

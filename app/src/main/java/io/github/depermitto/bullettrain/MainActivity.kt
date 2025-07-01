@@ -47,6 +47,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -95,6 +96,7 @@ import io.github.depermitto.bullettrain.util.toZonedDateTime
 import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 class MainActivity : ComponentActivity() {
   @RequiresApi(Build.VERSION_CODES.S)
@@ -143,9 +145,7 @@ fun App(db: Db) = MaterialTheme {
     )
   val settings by db.settingsDao.get.collectAsStateWithLifecycle()
   val trainViewModel =
-    viewModel<TrainViewModel>(
-      factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController)
-    )
+    viewModel<TrainViewModel>(factory = TrainViewModel.Factory(db.historyDao, db.programDao))
   var programViewModel =
     viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program.getDefaultInstance()))
 
@@ -157,7 +157,15 @@ fun App(db: Db) = MaterialTheme {
   NavHost(
     navController = navController,
     startDestination =
-      if (trainViewModel.restoreWorkout()) Destination.Training else Destination.Home,
+      rememberSaveable(
+        saver =
+          Saver(
+            save = { original -> Json.encodeToString(original) },
+            restore = { saveable -> Json.decodeFromString(saveable) },
+          )
+      ) {
+        if (trainViewModel.restoreWorkout()) Destination.Training else Destination.Home
+      },
     modifier =
       Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
     enterTransition = { scaleIntoContainer() },
@@ -259,7 +267,7 @@ fun App(db: Db) = MaterialTheme {
           onDismissRequest = { showDiscardOrDeleteDialog = false },
           text = "All sets will be lost forever. Do you definitely want to drop the workout?",
           onConfirm = {
-            trainViewModel.cancelWorkout()
+            trainViewModel.cancelWorkout(navController)
             showDiscardOrDeleteDialog = false
           },
         )
@@ -276,7 +284,7 @@ fun App(db: Db) = MaterialTheme {
           confirmButton = {
             TextButton(
               onClick = {
-                trainViewModel.completeWorkout()
+                trainViewModel.completeWorkout(navController)
                 showFinishDialog = false
               }
             ) {

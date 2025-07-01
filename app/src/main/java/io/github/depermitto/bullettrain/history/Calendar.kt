@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.db.ProgramDao
@@ -33,7 +34,6 @@ import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.util.DateFormatters
 import io.github.depermitto.bullettrain.util.atTimeNow
 import io.github.depermitto.bullettrain.util.date
-import io.github.depermitto.bullettrain.util.toTimestamp
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -49,6 +49,7 @@ fun Calendar(
   homeViewModel: HomeViewModel,
   trainViewModel: TrainViewModel,
   programDao: ProgramDao,
+  navController: NavController,
 ) {
   Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
     val today = LocalDate.now()
@@ -125,7 +126,8 @@ fun Calendar(
             trainViewModel.startWorkout(
               Workout.getDefaultInstance(),
               -1,
-              longClickedDate.atTimeNow().toTimestamp(),
+              longClickedDate.atTimeNow(),
+              navController,
             )
           } else {
             selectedProgram = program
@@ -145,7 +147,7 @@ fun Calendar(
         list = program.workoutsList,
         onClick = { day ->
           selectedProgram = null
-          trainViewModel.startWorkout(day, program.id, longClickedDate.atTimeNow().toTimestamp())
+          trainViewModel.startWorkout(day, program.id, longClickedDate.atTimeNow(), navController)
         },
       ) { day ->
         ExtendedListItem(

@@ -106,12 +106,13 @@ fun HistoryTab(
       }
 
       Calendar(
+        modifier = Modifier.heightIn(0.dp, 400.dp),
         date = homeViewModel.calendarPage,
         records = historyRecords,
         homeViewModel = homeViewModel,
         trainViewModel = trainViewModel,
         programDao = programDao,
-        modifier = Modifier.heightIn(0.dp, 400.dp),
+        navController = navController,
       )
 
       for (record in historyRecords) {
@@ -152,7 +153,7 @@ fun HistoryTab(
                     leadingIcon = { Icon(Icons.Filled.Edit, "Edit workout") },
                     onClick = {
                       showDropdown = false
-                      trainViewModel.editWorkout(record.id)
+                      trainViewModel.editWorkout(record.id, navController)
                     },
                   )
                   DropdownMenuItem(

@@ -34,7 +34,6 @@ import io.github.depermitto.bullettrain.theme.ExtraLarge
 import io.github.depermitto.bullettrain.theme.Large
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.focalGround
-import io.github.depermitto.bullettrain.util.toTimestamp
 import java.time.Instant
 import kotlinx.coroutines.launch
 
@@ -117,7 +116,10 @@ fun TrainTab(
             onClick = { day ->
               showChangeDayIndexDialog = false
               programDao.update(
-                program.toBuilder().setNextDayIndex(program.workoutsList.indexOf(day)).build()
+                program
+                  .toBuilder()
+                  .setNextDayIndex(program.workoutsList.indexOfFirst { it.name == day.name })
+                  .build()
               )
             },
           ) { day ->
@@ -145,7 +147,8 @@ fun TrainTab(
               trainViewModel.startWorkout(
                 program.getWorkouts(program.nextDayIndex),
                 program.id,
-                Instant.now().toTimestamp(),
+                Instant.now(),
+                navController,
               )
             },
             colors =
@@ -184,7 +187,8 @@ fun TrainTab(
           trainViewModel.startWorkout(
             Workout.getDefaultInstance(),
             null,
-            Instant.now().toTimestamp(),
+            Instant.now(),
+            navController,
           )
         },
         shape = RoundedCornerShape(16.dp, 16.dp, 4.dp, 4.dp),
