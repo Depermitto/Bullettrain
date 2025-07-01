@@ -194,7 +194,7 @@ fun TrainTab(
           },
           shape = RoundedCornerShape(4.dp, 4.dp, 4.dp, 16.dp),
         ) {
-          Text(text = "Review Last Workout", maxLines = 1)
+          Text(text = "Review Last Workout", maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Spacer(modifier = Modifier.width(2.dp))
         ElevatedButton(
@@ -202,7 +202,7 @@ fun TrainTab(
           onClick = { navController.navigate(Destination.ProgramCreation) },
           shape = RoundedCornerShape(4.dp, 4.dp, 16.dp, 4.dp),
         ) {
-          Text(text = "Create a Program", maxLines = 1)
+          Text(text = "Create a Program", maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
       }
     }
