@@ -6,9 +6,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.depermitto.data.Day
 import io.github.depermitto.data.Exercise
 import kotlinx.coroutines.Job
@@ -25,7 +27,7 @@ enum class WorkoutState { NotStartedYet, Started, Done }
 @RequiresApi(Build.VERSION_CODES.O)
 class TrainViewModel(day: Day) : ViewModel() {
     var name by mutableStateOf(day.name)
-    var sets = mutableStateListOf<List<Exercise>>()
+    var exercises = mutableStateListOf<SnapshotStateList<Exercise>>()
 
     private lateinit var countingJob: Job
     private lateinit var start: Instant
@@ -58,14 +60,8 @@ class TrainViewModel(day: Day) : ViewModel() {
         return if (workoutState == WorkoutState.NotStartedYet) ""
         else formatter.format(now.minusMillis(min(instant.toEpochMilli(), now.toEpochMilli())))
     }
-}
 
-class TrainViewModelFactory(private val day: Day) : ViewModelProvider.Factory {
-    @RequiresApi(Build.VERSION_CODES.O)
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(TrainViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST") return TrainViewModel(day) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
+    companion object {
+        fun Factory(day: Day) = viewModelFactory { initializer { TrainViewModel(day) } }
     }
 }

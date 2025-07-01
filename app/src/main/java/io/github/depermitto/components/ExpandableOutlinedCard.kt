@@ -19,7 +19,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import io.github.depermitto.theme.ItemPadding
 
-// TODO fix title padding
 @Composable
 fun ExpandableOutlinedCard(
     title: @Composable () -> Unit,

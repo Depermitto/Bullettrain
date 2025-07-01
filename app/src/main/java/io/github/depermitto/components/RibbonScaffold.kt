@@ -28,9 +28,6 @@ fun BoxScope.BackButton(navController: NavController, modifier: Modifier = Modif
     }
 }
 
-// TODO Is this necessary? Maybe should somehow control 
-//  the state of application instead of just deciding 
-//  whether to render or not the scaffold
 @Composable
 fun RibbonScaffold(
     ribbon: @Composable BoxScope.() -> Unit,

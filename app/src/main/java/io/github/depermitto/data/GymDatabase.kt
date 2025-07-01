@@ -14,7 +14,7 @@ import kotlinx.serialization.json.Json
 import java.time.Instant
 
 @Database(
-    entities = [Exercise::class, HistoryEntry::class, Program::class], version = 9, exportSchema = true
+    entities = [Exercise::class, HistoryEntry::class, Program::class], version = 10, exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class GymDatabase : RoomDatabase() {
@@ -42,7 +42,7 @@ data class Exercise(
     val superset: Exercise? = null,
     val alternatives: List<Exercise>? = null,
     val notes: String = "",
-    @Contextual val done: Instant? = null,
+    @Contextual val date: Instant? = null,
 )
 
 @Dao
@@ -87,7 +87,7 @@ data class Program(
 @Serializable
 data class Day(
     val name: String = "Day 1",
-    val sets: List<List<Exercise>> = listOf(),
+    val exercises: List<List<Exercise>> = listOf(),
 )
 
 @Dao

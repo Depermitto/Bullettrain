@@ -16,8 +16,8 @@ import io.github.depermitto.data.Program
 import io.github.depermitto.data.ProgramDao
 import io.github.depermitto.presentation.ProgramViewModel
 import io.github.depermitto.screens.Screen
-import io.github.depermitto.theme.notUnderlinedTextFieldColors
 import io.github.depermitto.theme.ItemPadding
+import io.github.depermitto.theme.notUnderlinedTextFieldColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -43,7 +43,7 @@ fun ProgramCreationScreen(
             colors = notUnderlinedTextFieldColors()
         )
         Box(modifier = Modifier.weight(1f)) {
-            ProgramScreen(viewModel = viewModel, exerciseDao = exerciseDao)
+            ProgramScreen(programViewModel = viewModel, exerciseDao = exerciseDao)
             AnchoredFloatingActionButton(text = { Text(text = "Complete Program") }, onClick = {
                 if (viewModel.name.isBlank()) {
                     Toast.makeText(context, "Blank Program Name", Toast.LENGTH_SHORT).show()

@@ -19,7 +19,7 @@ import io.github.depermitto.theme.ItemSpacing
 
 @Composable
 fun ProgramScreen(
-    viewModel: ProgramViewModel,
+    programViewModel: ProgramViewModel,
     exerciseDao: ExerciseDao,
 ) {
     LazyColumn(
@@ -28,18 +28,18 @@ fun ProgramScreen(
         verticalArrangement = Arrangement.spacedBy(ItemSpacing),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        itemsIndexed(viewModel.days) { i, day ->
+        itemsIndexed(programViewModel.days) { i, day ->
             DayScreen(
                 day = day, onDayChange = {
-                    if (it != null) viewModel.days = viewModel.days.replaceAt(i, it)
-                    else viewModel.days -= day
+                    if (it != null) programViewModel.days = programViewModel.days.replaceAt(i, it)
+                    else programViewModel.days -= day
                 }, exerciseDao = exerciseDao
             )
         }
         item {
             Button(
-                onClick = { viewModel.days += (Day("Day ${viewModel.days.size + 1}")) },
-                enabled = viewModel.days.size < 7,
+                onClick = { programViewModel.days += (Day("Day ${programViewModel.days.size + 1}")) },
+                enabled = programViewModel.days.size < 7,
             ) {
                 Text("Add Day")
             }

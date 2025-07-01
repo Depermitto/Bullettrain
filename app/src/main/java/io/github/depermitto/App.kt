@@ -19,9 +19,7 @@ import io.github.depermitto.data.Day
 import io.github.depermitto.data.GymDatabase
 import io.github.depermitto.data.Program
 import io.github.depermitto.presentation.ProgramViewModel
-import io.github.depermitto.presentation.ProgramViewModelFactory
 import io.github.depermitto.presentation.TrainViewModel
-import io.github.depermitto.presentation.TrainViewModelFactory
 import io.github.depermitto.screens.MainScreen
 import io.github.depermitto.screens.Screen
 import io.github.depermitto.screens.SettingsScreen
@@ -41,13 +39,13 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
     val exerciseDao = db.getExerciseDao()
     val programDao = db.getProgramDao()
 
-    val programViewModel = viewModel<ProgramViewModel>()
-    val trainViewModel = viewModel<TrainViewModel>(factory = TrainViewModelFactory(Day()))
+    val globalProgramVM = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program()))
+    val globalTrainVM = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(Day()))
 
     NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
         composable(Screen.MainScreen.route) {
             MainScreen(
-                trainViewModel = trainViewModel,
+                trainViewModel = globalTrainVM,
                 programDao = programDao,
                 exerciseDao = exerciseDao,
                 navController = navController
@@ -57,24 +55,31 @@ fun App(db: GymDatabase, dbFile: File, fallbackBytes: ByteArray) = MaterialTheme
         composable(Screen.ProgramCreationScreen.route) {
             RibbonScaffold(ribbon = { Ribbon(navController = navController, title = "New Program") }) {
                 ProgramCreationScreen(
-                    programViewModel, programDao = programDao, exerciseDao = exerciseDao, navController = navController
+                    globalProgramVM, programDao = programDao, exerciseDao = exerciseDao, navController = navController
                 )
             }
         }
 
         composable(Screen.ProgramScreen.route) { navBackStackEntry ->
             val programId = navBackStackEntry.arguments?.getString("programId") ?: return@composable
-            val programMaybe: Program? by programDao.whereId(id = programId.toLong())
+            val program: Program? by programDao.whereId(id = programId.toLong())
                 .collectAsStateWithLifecycle(initialValue = null)
 
-            programMaybe?.let {
-                val program = viewModel<ProgramViewModel>(factory = ProgramViewModelFactory(it))
+            program?.let {
+                val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(it))
 
-                RibbonScaffold(ribbon = { Ribbon(navController = navController, title = program.name) }) {
-                    ProgramScreen(program, exerciseDao = exerciseDao)
-                    if (program.days != it.days) {
+                RibbonScaffold(ribbon = { Ribbon(navController = navController, title = programViewModel.name) }) {
+                    ProgramScreen(programViewModel, exerciseDao = exerciseDao)
+                    if (programViewModel.days != it.days) {
                         AnchoredFloatingActionButton(text = { Text("Finish Edit") }, onClick = {
-                            scope.launch { programDao.upsert(Program(name = program.name, days = program.days)) }
+                            scope.launch {
+                                programDao.upsert(
+                                    Program(
+                                        name = programViewModel.name,
+                                        days = programViewModel.days
+                                    )
+                                )
+                            }
                             navController.popBackStack(Screen.MainScreen.route, inclusive = false)
                         })
                     }

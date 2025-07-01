@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.components.AnchoredFloatingActionButton
@@ -47,7 +48,7 @@ fun ProgramsScreen(modifier: Modifier = Modifier, programDao: ProgramDao, navCon
                             Text(text = program.name, style = MaterialTheme.typography.titleLarge)
                             Text(text = "${program.days.size} day program", style = MaterialTheme.typography.bodyMedium)
                             Text(
-                                text = "${program.days.sumOf { day -> day.sets.sumOf { set -> set.size } }} total sets",
+                                text = "${program.days.sumOf { day -> day.exercises.sumOf { set -> set.size } }} total sets",
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -60,6 +61,7 @@ fun ProgramsScreen(modifier: Modifier = Modifier, programDao: ProgramDao, navCon
         }
 
         AnchoredFloatingActionButton(
+            modifier = modifier.offset(x = ItemPadding),
             icon = { Icon(Icons.Filled.Add, contentDescription = null) },
             onClick = { navController.navigate(Screen.ProgramCreationScreen.route) },
         )

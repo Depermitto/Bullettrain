@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,36 +18,32 @@ import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.data.ExerciseDao
 import io.github.depermitto.presentation.TrainViewModel
 import io.github.depermitto.presentation.WorkoutState
-import io.github.depermitto.replaceAt
 import io.github.depermitto.screens.exercises.ExerciseChooser
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
 import java.time.Instant
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.*
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TrainScreen(viewModel: TrainViewModel, exerciseDao: ExerciseDao) {
+fun TrainScreen(trainViewModel: TrainViewModel, exerciseDao: ExerciseDao) {
     RibbonScaffold(ribbon = {
         OutlinedCard(modifier = Modifier.padding(start = ItemPadding, end = ItemPadding, bottom = ItemPadding)) {
-            when (viewModel.workoutState) {
+            when (trainViewModel.workoutState) {
                 WorkoutState.NotStartedYet -> {
                     TextButton(
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = { viewModel.startWorkoutOnce() },
+                        onClick = { trainViewModel.startWorkoutOnce() },
                         colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
                     ) { Text(text = "Start") }
                 }
 
                 WorkoutState.Started -> {
                     Row(Modifier.padding(horizontal = ItemPadding), verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = viewModel.elapsedSince(), style = MaterialTheme.typography.titleMedium)
+                        Text(text = trainViewModel.elapsedSince(), style = MaterialTheme.typography.titleMedium)
                         Spacer(modifier = Modifier.weight(1f))
                         TextButton(
-                            onClick = { viewModel.stopWorkoutOnce() },
+                            onClick = { trainViewModel.stopWorkoutOnce() },
                             colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
                         ) { Text(text = "Finish") }
                     }
@@ -55,9 +52,14 @@ fun TrainScreen(viewModel: TrainViewModel, exerciseDao: ExerciseDao) {
                 WorkoutState.Done -> {
                     TextButton(
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = { viewModel.startWorkoutOnce() },
+                        onClick = { trainViewModel.startWorkoutOnce() },
                         colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
-                    ) { Text(text = "Workout Done") }
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = "Workout Done")
+                            Text(text = "(Click To Undo)", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
                 }
             }
         }
@@ -66,7 +68,7 @@ fun TrainScreen(viewModel: TrainViewModel, exerciseDao: ExerciseDao) {
             modifier = Modifier.padding(horizontal = ItemPadding),
             verticalArrangement = Arrangement.spacedBy(ItemSpacing)
         ) {
-            itemsIndexed(viewModel.sets) { i, set ->
+            itemsIndexed(trainViewModel.exercises) { setIndex, set ->
                 Card(colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
                     Column(
                         modifier = Modifier.padding(ItemPadding),
@@ -75,15 +77,15 @@ fun TrainScreen(viewModel: TrainViewModel, exerciseDao: ExerciseDao) {
                         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 modifier = Modifier.weight(1f),
-                                text = "${i + 1}. ${set.first().name}",
+                                text = "${setIndex + 1}. ${set.first().name}",
                                 style = MaterialTheme.typography.titleMedium,
                             )
-                            set.lastOrNull { it.done != null }?.let { exercise ->
+                            set.lastOrNull { it.date != null }?.let { exercise ->
                                 Card {
                                     Text(
                                         modifier = Modifier.padding(4.dp),
-                                        text = if (set.all { it.done != null }) "Done"
-                                        else viewModel.elapsedSince(exercise.done!!),
+                                        text = if (set.all { it.date != null }) "Done"
+                                        else trainViewModel.elapsedSince(exercise.date!!),
                                         style = MaterialTheme.typography.titleMedium
                                     )
                                 }
@@ -93,28 +95,28 @@ fun TrainScreen(viewModel: TrainViewModel, exerciseDao: ExerciseDao) {
                             }
                         }
 
-                        set.forEachIndexed { j, exercise ->
+                        set.forEachIndexed { exerciseIndex, exercise ->
                             Column {
-                                Text(text = "Set ${j + 1}\t", style = MaterialTheme.typography.titleSmall)
+                                Text(text = "Set ${exerciseIndex + 1}\t", style = MaterialTheme.typography.titleSmall)
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(ItemSpacing)
                                 ) {
                                     NumberField(
                                         modifier = Modifier.weight(0.4f), value = exercise.reps, onValueChange = {
-                                            viewModel.sets[i] = viewModel.sets[i].replaceAt(j, exercise.copy(reps = it))
+                                            trainViewModel.exercises[setIndex][exerciseIndex] = exercise.copy(reps = it)
                                         }, label = "Reps"
                                     )
                                     NumberField(
                                         modifier = Modifier.weight(0.4f), value = exercise.rpe, onValueChange = {
-                                            viewModel.sets[i] = viewModel.sets[i].replaceAt(j, exercise.copy(rpe = it))
+                                            trainViewModel.exercises[setIndex][exerciseIndex] = exercise.copy(rpe = it)
                                         }, label = "RPE"
                                     )
                                     Checkbox(modifier = Modifier.weight(0.1f),
-                                        checked = viewModel.sets[i][j].done != null,
+                                        checked = trainViewModel.exercises[setIndex][exerciseIndex].date != null,
                                         onCheckedChange = {
-                                            viewModel.sets[i] = viewModel.sets[i].replaceAt(
-                                                j, exercise.copy(done = if (it) Instant.now() else null)
+                                            trainViewModel.exercises[setIndex][exerciseIndex] = exercise.copy(
+                                                date = if (it) Instant.now() else null
                                             )
                                         })
                                 }
@@ -126,8 +128,7 @@ fun TrainScreen(viewModel: TrainViewModel, exerciseDao: ExerciseDao) {
                             colors = ButtonDefaults.outlinedButtonColors()
                                 .copy(contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
                             onClick = {
-                                viewModel.sets[i] =
-                                    viewModel.sets[i] + set.first().copy(rpe = 0f, reps = 0f, done = null)
+                                trainViewModel.exercises[setIndex] += set.first().copy(rpe = 0f, reps = 0f, date = null)
                             },
                         ) {
                             Text(text = "Add Set")
@@ -138,12 +139,10 @@ fun TrainScreen(viewModel: TrainViewModel, exerciseDao: ExerciseDao) {
 
 
             item {
-                ExerciseChooser(exerciseDao = exerciseDao, onChoose = { viewModel.sets.add(listOf(it)) })
+                ExerciseChooser(exerciseDao = exerciseDao, onChoose = {
+                    trainViewModel.exercises += mutableStateListOf(mutableStateListOf(it))
+                })
             }
         }
     }
 }
-
-@RequiresApi(Build.VERSION_CODES.O)
-fun Instant.format(pattern: String): String =
-    LocalDateTime.ofInstant(this, TimeZone.getDefault().toZoneId()).format(DateTimeFormatter.ofPattern(pattern))

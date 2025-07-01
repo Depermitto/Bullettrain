@@ -18,6 +18,7 @@ import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.transparentTextFieldColors
 
+@Deprecated(message = "Do something akin to TrainScreen")
 @Composable
 fun DayScreen(day: Day, onDayChange: (Day?) -> Unit, exerciseDao: ExerciseDao) {
     ExpandableOutlinedCard(title = {
@@ -38,18 +39,18 @@ fun DayScreen(day: Day, onDayChange: (Day?) -> Unit, exerciseDao: ExerciseDao) {
                 .padding(ItemPadding),
             verticalArrangement = Arrangement.spacedBy(ItemSpacing)
         ) {
-            day.sets.forEachIndexed { i, exercises ->
+            day.exercises.forEachIndexed { i, exercises ->
                 ExpandableOutlinedCard(title = { Text(text = "${i + 1}. ${exercises.first().name}") }) {
                     SetScreen(set = exercises, onSetChange = {
-                        if (it == null) onDayChange(day.copy(sets = day.sets - setOf(exercises)))
-                        else onDayChange(day.copy(sets = day.sets.replaceAt(i, it)))
+                        if (it == null) onDayChange(day.copy(exercises = day.exercises - setOf(exercises)))
+                        else onDayChange(day.copy(exercises = day.exercises.replaceAt(i, it)))
                     })
                 }
             }
 
             ExerciseChooser(
                 exerciseDao = exerciseDao,
-                onChoose = { onDayChange(day.copy(sets = day.sets + setOf(listOf(it)))) })
+                onChoose = { onDayChange(day.copy(exercises = day.exercises + setOf(listOf(it)))) })
         }
     }
 }

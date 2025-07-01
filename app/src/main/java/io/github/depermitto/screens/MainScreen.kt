@@ -62,7 +62,7 @@ fun MainScreen(
                 }
 
                 MainScreen.Tabs.History -> HistoryScreen()
-                MainScreen.Tabs.Train -> TrainScreen(viewModel = trainViewModel, exerciseDao = exerciseDao)
+                MainScreen.Tabs.Train -> TrainScreen(trainViewModel = trainViewModel, exerciseDao = exerciseDao)
             }
         }
     }

@@ -17,7 +17,8 @@ import io.github.depermitto.replaceAt
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 
-// TODO Remove sets, make supersets, duplicate exercises, duplicate days, obviously BETTER UI
+// TODO Remove sets, make supersets, duplicate exercises, duplicate days
+@Deprecated(message = "Do something akin to TrainScreen")
 @Composable
 fun SetScreen(set: List<Exercise>, onSetChange: (List<Exercise>?) -> Unit) {
     LazyColumn(
