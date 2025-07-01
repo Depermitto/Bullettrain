@@ -20,12 +20,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.depermitto.components.DropdownButton
@@ -45,6 +47,7 @@ import io.github.depermitto.theme.ExerciseSetWideWeight
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
+import io.github.depermitto.theme.numberFieldTextStyle
 import io.github.depermitto.util.SwapIcon
 import java.time.Instant
 
@@ -128,26 +131,27 @@ fun TrainingScreen(
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.bodyMedium
                             )
-                            Text(
-                                modifier = Modifier.weight(ExerciseSetNarrowWeight + 0.1f),
-                                text = set.targetPerfVar.encodeToStringOutput().takeUnless(String::isEmpty) ?: "--",
+                            Text(modifier = Modifier.weight(ExerciseSetNarrowWeight + 0.1f),
+                                text = set.targetPerfVar.encodeToStringOutput()
+                                    .takeIf { it.isNotBlank() && set.targetPerfVar.category == exercise.perfVarCategory } ?: "--",
                                 textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            NumberField(
-                                Modifier
-                                    .weight(ExerciseSetWideWeight)
-                                    .padding(horizontal = ExerciseSetSpacing),
+                                style = MaterialTheme.typography.bodyMedium)
+                            CompletableNumberField(modifier = Modifier
+                                .weight(ExerciseSetWideWeight)
+                                .padding(horizontal = ExerciseSetSpacing),
                                 value = set.actualPerfVar,
                                 onValueChange = { trainViewModel.setExerciseSet(i, setIndex, set.copy(actualPerfVar = it)) },
+                                completed = set.completed,
                                 placeholder = { lastPerformedSet?.let { Placeholder(it.actualPerfVar.encodeToStringOutput()) } })
-                            NumberField(
-                                Modifier
+                            CompletableNumberField(
+                                modifier = Modifier
                                     .weight(ExerciseSetWideWeight)
                                     .padding(horizontal = ExerciseSetSpacing),
                                 value = set.weight,
                                 onValueChange = { trainViewModel.setExerciseSet(i, setIndex, set.copy(weight = it)) },
-                                placeholder = { lastPerformedSet?.let { Placeholder(it.weight.encodeToStringOutput()) } })
+                                completed = set.completed,
+                                placeholder = { lastPerformedSet?.let { Placeholder(it.weight.encodeToStringOutput()) } },
+                            )
                             Checkbox(modifier = Modifier
                                 .size(20.dp)
                                 .weight(ExerciseSetNarrowWeight),
@@ -188,9 +192,43 @@ fun TrainingScreen(
     }
 
     item {
-        val exerciseChooserToggle = exerciseChooser(exerciseDao = exerciseDao, onChoose = { trainViewModel.addExercise(it) })
+        val exerciseChooserToggle = exerciseChooser(exerciseDao = exerciseDao, onChoose = {
+            trainViewModel.addExercise(it.copy(sets = listOf(ExerciseSet(targetPerfVar = PerfVar.of(it.perfVarCategory)))))
+        })
         OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { exerciseChooserToggle() }) {
             Text(text = "Add Exercise")
         }
     }
+}
+
+@Composable
+fun CompletableNumberField(
+    modifier: Modifier = Modifier,
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    completed: Boolean,
+    placeholder: @Composable () -> Unit,
+) {
+    val (textStyle, unfocusedBorderThickness, colors) = if (completed) Triple(
+        numberFieldTextStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold),
+        OutlinedTextFieldDefaults.FocusedBorderThickness,
+        OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.primary,
+            disabledBorderColor = MaterialTheme.colorScheme.primary,
+        )
+    ) else Triple(
+        numberFieldTextStyle(), OutlinedTextFieldDefaults.UnfocusedBorderThickness, OutlinedTextFieldDefaults.colors()
+    )
+
+    NumberField(
+        modifier = modifier,
+        value = value,
+        onValueChange = onValueChange,
+        enabled = !completed,
+        placeholder = placeholder,
+        textStyle = textStyle,
+        unfocusedBorderThickness = unfocusedBorderThickness,
+        colors = colors
+    )
 }

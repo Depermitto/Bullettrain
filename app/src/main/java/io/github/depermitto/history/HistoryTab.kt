@@ -1,5 +1,10 @@
 package io.github.depermitto.history
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseInCubic
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -8,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -97,7 +101,8 @@ fun HistoryTab(
                         program = record.relatedProgram,
                         exerciseInfo = { exercise ->
                             val scroll = rememberScrollState(0)
-                            Text(modifier = Modifier.horizontalScroll(scroll),
+                            Text(
+                                modifier = Modifier.horizontalScroll(scroll),
                                 text = exercise.sets.groupBy { it.weight }.map { (weight, sets) ->
                                     "${sets.size} x ${weight.encodeToStringOutput().ifBlank { 0 }}"
                                 }.joinToString(", ") + " " + settingsDao.weightUnit(),
@@ -110,16 +115,21 @@ fun HistoryTab(
     }
 
     val today = LocalDate.now()
-    if (homeViewModel.date.month != today.month || homeViewModel.date.year != today.year) TextButton(
-        modifier = Modifier
-            .align(Alignment.BottomCenter)
-            .padding(bottom = ItemPadding),
-        onClick = { homeViewModel.date = today },
-        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-        elevation = ButtonDefaults.buttonElevation()
+    AnimatedVisibility(
+        modifier = Modifier.align(Alignment.BottomCenter),
+        visible = homeViewModel.date.month != today.month || homeViewModel.date.year != today.year,
+        enter = slideInVertically(animationSpec = tween(durationMillis = 400, easing = EaseInCubic), initialOffsetY = { it }),
+        exit = slideOutVertically(animationSpec = tween(durationMillis = 400, easing = EaseInCubic), targetOffsetY = { it }),
     ) {
-        Icon(modifier = Modifier.size(ButtonDefaults.IconSize), imageVector = Icons.Filled.Refresh, contentDescription = null)
-        Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-        Text("Reset Date")
+        TextButton(
+            modifier = Modifier.padding(bottom = ItemPadding),
+            onClick = { homeViewModel.date = today },
+            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+            elevation = ButtonDefaults.buttonElevation()
+        ) {
+            Icon(modifier = Modifier.size(ButtonDefaults.IconSize), imageVector = Icons.Filled.Refresh, contentDescription = null)
+            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+            Text("Reset Date")
+        }
     }
 }

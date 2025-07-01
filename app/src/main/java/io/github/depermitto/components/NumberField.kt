@@ -4,12 +4,17 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.github.depermitto.theme.numberFieldTextStyle
 import kotlin.math.roundToInt
 
 @Composable
@@ -21,6 +26,11 @@ fun NumberField(
     placeholder: @Composable (() -> Unit)? = null,
     singleLine: Boolean = true,
     readOnly: Boolean = false,
+    enabled: Boolean = true,
+    textStyle: TextStyle = numberFieldTextStyle(),
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
+    focusedBorderThickness: Dp = OutlinedTextFieldDefaults.FocusedBorderThickness,
+    unfocusedBorderThickness: Dp = OutlinedTextFieldDefaults.UnfocusedBorderThickness,
     contentPadding: PaddingValues = PaddingValues(3.dp),
 ) {
     val textValue = if (value == 0f) "" else value.toString().removeSuffix(".0")
@@ -36,6 +46,7 @@ fun NumberField(
     LaunchedEffect(isFocused) {
         if (isFocused) textFieldValue = textFieldValue.copy(selection = TextRange(0, textFieldValue.text.length))
     }
+    if (!enabled) textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
 
     OutlinedTextField(
         modifier = modifier,
@@ -49,13 +60,18 @@ fun NumberField(
             if (it.text.isBlank()) onValueChange(0f)
             else it.text.toFloatOrNull()?.let { value -> onValueChange(value) }
         },
+        textStyle = textStyle,
         label = label,
         placeholder = placeholder,
         singleLine = singleLine,
-        readOnly = readOnly,
+        readOnly = readOnly || !enabled,
+        enabled = enabled,
+        colors = colors,
         contentPadding = contentPadding,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        interactionSource = interactionSource
+        interactionSource = interactionSource,
+        focusedBorderThickness = focusedBorderThickness,
+        unfocusedBorderThickness = unfocusedBorderThickness,
     )
 }
 

@@ -76,7 +76,9 @@ data class ExerciseSet(
     val intensity: Float? = null,
     val weight: Float = 0f,
     @Serializable(with = InstantSerializer::class) val date: Instant? = null,
-)
+) {
+    val completed = date != null
+}
 
 @Serializable
 enum class IntensityCategory { RPE, AMRAP, RIR }
@@ -90,15 +92,15 @@ enum class PerfVarCategory {
 }
 
 @Serializable
-sealed class PerfVar() {
+sealed class PerfVar(val category: PerfVarCategory) {
     @Serializable
-    data class Reps(val reps: Float = 0f) : PerfVar()
+    data class Reps(val reps: Float = 0f) : PerfVar(PerfVarCategory.Reps)
 
     @Serializable
-    data class Time(val time: Float = 0f) : PerfVar()
+    data class Time(val time: Float = 0f) : PerfVar(PerfVarCategory.Time)
 
     @Serializable
-    data class RepRange(val min: Float = 0f, val max: Float = 0f) : PerfVar()
+    data class RepRange(val min: Float = 0f, val max: Float = 0f) : PerfVar(PerfVarCategory.RepRange)
 
     companion object {
         fun of(category: PerfVarCategory) = when (category) {
@@ -109,8 +111,8 @@ sealed class PerfVar() {
     }
 
     fun encodeToStringOutput(): String = when (this) {
-        is RepRange -> "${min.encodeToStringOutput()}-${max.encodeToStringOutput()}"
-        is Reps -> reps.encodeToStringOutput()
-        is Time -> time.encodeToStringOutput() + " min"
+        is RepRange -> if (this == RepRange()) "" else "${min.encodeToStringOutput()}-${max.encodeToStringOutput()} reps"
+        is Reps -> if (this == Reps()) "" else reps.encodeToStringOutput() + " reps"
+        is Time -> if (this == Time()) "" else time.encodeToStringOutput() + " min"
     }
 }

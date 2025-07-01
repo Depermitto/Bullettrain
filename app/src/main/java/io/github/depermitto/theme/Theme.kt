@@ -82,39 +82,3 @@ fun GymAppTheme(
         )
     )
 }
-
-@Composable
-fun transparentTextFieldColors() = TextFieldDefaults.colors(
-    focusedContainerColor = Color.Transparent,
-    unfocusedContainerColor = Color.Transparent,
-    errorContainerColor = Color.Transparent,
-    disabledContainerColor = Color.Transparent,
-    focusedIndicatorColor = Color.Transparent,
-    unfocusedIndicatorColor = Color.Transparent,
-    disabledIndicatorColor = Color.Transparent
-)
-
-@Composable
-fun notUnderlinedTextFieldColors() = TextFieldDefaults.colors(
-    focusedIndicatorColor = Color.Transparent,
-    unfocusedIndicatorColor = Color.Transparent,
-    disabledIndicatorColor = Color.Transparent
-)
-
-@Composable
-fun filledContainerColor() = if (isSystemInDarkTheme())
-    Color(
-        ColorUtils.blendARGB(
-            MaterialTheme.colorScheme.background.toArgb(),
-            MaterialTheme.colorScheme.surfaceBright.toArgb(),
-            0.5F
-        )
-    )
-else
-    Color(
-        ColorUtils.blendARGB(
-            MaterialTheme.colorScheme.background.toArgb(),
-            MaterialTheme.colorScheme.surfaceDim.toArgb(),
-            0.5F
-        )
-    )

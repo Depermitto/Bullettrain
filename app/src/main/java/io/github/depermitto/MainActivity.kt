@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// TODO P3 make tests and benchmarks, mostly for backend probably
+// TODO make tests and benchmarks, mostly for backend probably
 @Composable
 fun App(db: Database) = MaterialTheme {
     val navController = rememberNavController()

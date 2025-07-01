@@ -17,7 +17,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import io.github.depermitto.theme.numberFieldTextStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,9 +26,7 @@ fun OutlinedTextField(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     modifier: Modifier = Modifier,
-    textStyle: TextStyle = TextStyle(LocalContentColor.current).copy(
-        textAlign = TextAlign.Center, fontStyle = MaterialTheme.typography.bodyLarge.fontStyle
-    ),
+    textStyle: TextStyle = numberFieldTextStyle(),
     visualTransformation: VisualTransformation = VisualTransformation.None,
     singleLine: Boolean = true,
     enabled: Boolean = true,
@@ -38,6 +37,8 @@ fun OutlinedTextField(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
     cursorBrush: Brush = SolidColor(MaterialTheme.colorScheme.primary),
+    focusedBorderThickness: Dp = OutlinedTextFieldDefaults.FocusedBorderThickness,
+    unfocusedBorderThickness: Dp = OutlinedTextFieldDefaults.UnfocusedBorderThickness,
     contentPadding: PaddingValues,
 ) {
     BasicTextField(
@@ -63,6 +64,16 @@ fun OutlinedTextField(
             enabled = enabled,
             interactionSource = interactionSource,
             contentPadding = contentPadding,
+            container = {
+                OutlinedTextFieldDefaults.ContainerBox(
+                    enabled = enabled,
+                    isError = false,
+                    interactionSource = interactionSource,
+                    colors = colors,
+                    focusedBorderThickness = focusedBorderThickness,
+                    unfocusedBorderThickness = unfocusedBorderThickness
+                )
+            }
         )
     }
 }
