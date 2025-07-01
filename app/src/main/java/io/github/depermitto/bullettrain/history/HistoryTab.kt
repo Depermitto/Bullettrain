@@ -131,7 +131,7 @@ fun HistoryTab(
         modifier = Modifier.align(Alignment.BottomCenter),
         visible = homeViewModel.calendarDate.month != today.month || homeViewModel.calendarDate.year != today.year,
         enter = slideInVertically(animationSpec = tween(durationMillis = 600, easing = EaseInCubic), initialOffsetY = { it }),
-        exit = slideOutVertically(animationSpec = tween(durationMillis = 600, easing = EaseInCubic), targetOffsetY = { it }),
+        exit = slideOutVertically(animationSpec = tween(durationMillis = 200), targetOffsetY = { it }),
     ) {
         TextButton(
             modifier = Modifier.padding(bottom = RegularPadding),
