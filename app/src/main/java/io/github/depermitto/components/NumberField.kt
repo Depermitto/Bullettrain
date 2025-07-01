@@ -16,6 +16,7 @@ import kotlin.math.roundToInt
 fun NumberField(
     modifier: Modifier = Modifier,
     value: Float,
+    onValueChange: (Float) -> Unit,
     label: @Composable (() -> Unit)? = null,
     singleLine: Boolean = true,
     readOnly: Boolean = false,
@@ -33,7 +34,13 @@ fun NumberField(
     OutlinedTextField(
         modifier = modifier,
         value = textFieldValue,
-        onValueChange = { if (!it.text.contains(" ") && it.text.parseFromNumericInput() != null) textFieldValue = it },
+        onValueChange = {
+            val validNumber = it.text.parseFromNumericInput()
+            if (!it.text.contains(" ") && validNumber != null) {
+                textFieldValue = it
+                onValueChange(validNumber)
+            }
+        },
         label = label,
         singleLine = singleLine,
         readOnly = readOnly,

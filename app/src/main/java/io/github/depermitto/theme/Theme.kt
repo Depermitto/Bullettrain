@@ -41,6 +41,9 @@ val ItemPadding = 8.dp
 val ItemSpacing = 4.dp
 val ExerciseSetSpacing = 2.dp
 
+const val ExerciseSetNumberFieldWeight = 0.9f
+const val ExerciseSetSetWeight = 0.3f
+
 @Composable
 fun adaptiveIconTint() = if (isSystemInDarkTheme()) Color.White else Color.Black
 

@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
-import io.github.depermitto.screens.Screen
+import io.github.depermitto.screen.Screen
 
 @Composable
 fun BoxScope.SettingsGear(modifier: Modifier = Modifier, navController: NavController) {

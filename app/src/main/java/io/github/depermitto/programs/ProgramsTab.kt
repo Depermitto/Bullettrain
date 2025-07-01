@@ -1,4 +1,4 @@
-package io.github.depermitto.screens.programs
+package io.github.depermitto.programs
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,7 +16,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.data.ProgramDao
-import io.github.depermitto.screens.Screen
+import io.github.depermitto.screen.Screen
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
@@ -24,7 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun ProgramsScreen(modifier: Modifier = Modifier, programDao: ProgramDao, navController: NavController) = Box(
+fun ProgramsTab(modifier: Modifier = Modifier, programDao: ProgramDao, navController: NavController) = Box(
     modifier = modifier
         .fillMaxSize()
         .padding(horizontal = ItemPadding)

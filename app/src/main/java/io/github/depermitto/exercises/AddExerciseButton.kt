@@ -1,4 +1,4 @@
-package io.github.depermitto.screens.exercises
+package io.github.depermitto.exercises
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.*

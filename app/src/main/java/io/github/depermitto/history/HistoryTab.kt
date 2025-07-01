@@ -1,8 +1,8 @@
-package io.github.depermitto.screens
+package io.github.depermitto.history
 
 import androidx.compose.runtime.Composable
 
 @Composable
-fun HistoryScreen() {
+fun HistoryTab() {
     TODO("Not yet implemented")
 }

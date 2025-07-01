@@ -1,10 +1,8 @@
-package io.github.depermitto.screens.train
+package io.github.depermitto.train
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
@@ -12,16 +10,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.data.ExerciseDao
-import io.github.depermitto.presentation.SettingsViewModel
-import io.github.depermitto.presentation.TrainViewModel
-import io.github.depermitto.presentation.WorkoutState
-import io.github.depermitto.screens.exercises.AddExerciseButton
+import io.github.depermitto.exercises.AddExerciseButton
+import io.github.depermitto.exercises.TrainExercise
+import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TrainScreen(
+fun TrainTab(
     trainViewModel: TrainViewModel, settingsViewModel: SettingsViewModel, exerciseDao: ExerciseDao,
 ) = RibbonScaffold(ribbon = {
     OutlinedCard(modifier = Modifier.padding(start = ItemPadding, end = ItemPadding, bottom = ItemPadding)) {
@@ -64,18 +60,18 @@ fun TrainScreen(
         modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
     ) {
         // TODO add colors for supersets here
-        items(trainViewModel.exercises) { sets ->
-            Exercise(
-                trainViewModel = trainViewModel,
+        itemsIndexed(trainViewModel.trainDay.exercises) { i, _ ->
+            TrainExercise(
                 settingsViewModel = settingsViewModel,
-                sets = sets,
+                trainViewModel = trainViewModel,
+                exerciseIndex = i,
                 exerciseDao = exerciseDao
             )
         }
 
         item {
             AddExerciseButton(exerciseDao = exerciseDao, onChoose = {
-                trainViewModel.exercises += mutableStateListOf(mutableStateListOf(it))
+                trainViewModel.trainDay.exercises += mutableStateListOf(mutableStateListOf(it))
             })
         }
     }

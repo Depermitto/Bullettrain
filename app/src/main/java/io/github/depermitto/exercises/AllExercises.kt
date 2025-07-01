@@ -1,4 +1,4 @@
-package io.github.depermitto.screens.exercises
+package io.github.depermitto.exercises
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

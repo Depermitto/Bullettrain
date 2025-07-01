@@ -1,4 +1,4 @@
-package io.github.depermitto.screens.programs
+package io.github.depermitto.programs
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -11,13 +11,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.data.ExerciseDao
-import io.github.depermitto.presentation.ProgramViewModel
-import io.github.depermitto.screens.Screen
+import io.github.depermitto.screen.Screen
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.notUnderlinedTextFieldColors
 
 @Composable
-fun ProgramCreationScreen(
+fun ProgramCreation(
     programViewModel: ProgramViewModel,
     exerciseDao: ExerciseDao,
     navController: NavController,
@@ -36,7 +35,7 @@ fun ProgramCreationScreen(
             colors = notUnderlinedTextFieldColors()
         )
         Box(modifier = Modifier.weight(1f)) {
-            ProgramScreen(programViewModel = programViewModel, exerciseDao = exerciseDao)
+            Program(programViewModel = programViewModel, exerciseDao = exerciseDao)
             AnchoredFloatingActionButton(text = { Text(text = "Complete Program") }, onClick = {
                 if (programViewModel.name.isBlank()) {
                     Toast.makeText(context, "Blank Program Name", Toast.LENGTH_SHORT).show()

@@ -1,4 +1,4 @@
-package io.github.depermitto.screens
+package io.github.depermitto.screen
 
 import io.github.depermitto.R
 
