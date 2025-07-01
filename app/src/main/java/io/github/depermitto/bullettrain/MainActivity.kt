@@ -189,7 +189,7 @@ fun App(db: Database) = MaterialTheme {
 
                 if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
                     text = "All sets will be lost forever. Do you definitely want to discard the workout?",
-                    onConfirm = { trainViewModel.cancelWorkout() })
+                    onConfirm = { trainViewModel.cancelWorkout(); showDiscardDialog = false })
 
                 if (showFinishDialog) AlertDialog(text = { Text("Do you truly want to conclude the workout?") },
                     onDismissRequest = { showFinishDialog = false },
@@ -197,7 +197,7 @@ fun App(db: Database) = MaterialTheme {
                         TextButton(onClick = { showFinishDialog = false }) { Text("No, One More Set \uD83D\uDCAA") }
                     },
                     confirmButton = {
-                        TextButton(onClick = { trainViewModel.completeWorkout() }) { Text("Conclude") }
+                        TextButton(onClick = { trainViewModel.completeWorkout(); showFinishDialog = false }) { Text("Conclude") }
                     })
             }
 

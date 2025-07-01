@@ -36,8 +36,7 @@ fun WorkoutInfo(
     program: Program,
     exercisesToSetsRatio: Float = 0.5f
 ) = Column(modifier = modifier) {
-    assert(exercisesToSetsRatio <= 1f)
-    assert(exercisesToSetsRatio >= 0f)
+    assert(exercisesToSetsRatio <= 1f && exercisesToSetsRatio >= 0f)
 
     if (program == ProgramDao.EmptyWorkout) ListItem(
         headlineContent = { Text(text = "Impromptu Workout", style = MaterialTheme.typography.titleLarge) },
@@ -45,7 +44,7 @@ fun WorkoutInfo(
     ) else ListItem(
         // values taken from https://m3.material.io/components/lists/specs#eeeb78e0-265d-4e81-96ba-c2340c348a90
         headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
-        supportingContent = { Text(text = "${workout.name}, Week ${program.weekStreak}") },
+        supportingContent = { Text(text = workout.name) },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     )
 

@@ -22,7 +22,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.time.Month
-import java.time.ZoneId
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
@@ -195,10 +194,7 @@ class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
             ?.firstOrNull()
 
     fun where(month: Month, year: Int): Flow<List<HistoryRecord>> = getAll.map { records ->
-        records.filter { record ->
-            val date = record.date.atZone(ZoneId.systemDefault())
-            date.month == month && date.year == year
-        }
+        records.filter { record -> record.date.month == month && record.date.year == year }
     }
 }
 

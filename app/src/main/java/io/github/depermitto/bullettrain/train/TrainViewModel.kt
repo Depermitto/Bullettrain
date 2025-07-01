@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -65,8 +66,8 @@ class TrainViewModel(
             workout = day,
             relatedProgram = program,
             workoutPhase = WorkoutPhase.During,
-            date = Instant.now(),
-            workoutStartTime = Instant.now(),
+            date = LocalDate.now(),
+            workoutStartTs = Instant.now(),
         )
         createState(record)
 
@@ -97,7 +98,7 @@ class TrainViewModel(
             program.copy(
                 nextDay = nextDay,
                 weekStreak = program.weekStreak + if (nextDay == 0) 1 else 0,
-                mostRecentWorkoutDate = Instant.now()
+                mostRecentWorkoutDate = LocalDate.now()
             )
         )
     }
@@ -124,7 +125,7 @@ class TrainViewModel(
         val formatter = DateTimeFormatter.ofPattern("m:ss").withZone(ZoneId.systemDefault())
         val hourFormatter = DateTimeFormatter.ofPattern("mm:ss").withZone(ZoneId.systemDefault())
 
-        val millis = instant?.toEpochMilli() ?: workoutState?.historyRecord?.workoutStartTime?.toEpochMilli() ?: return ""
+        val millis = instant?.toEpochMilli() ?: workoutState?.historyRecord?.workoutStartTs?.toEpochMilli() ?: return ""
         val differenceMillis = max(0, clock.toEpochMilli() - millis)
         val hours = differenceMillis / (1000 * 60 * 60)
 

@@ -35,37 +35,32 @@ import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.home.HomeViewModel
+import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.ItemPadding
-import io.github.depermitto.bullettrain.theme.ItemSpacing
 import io.github.depermitto.bullettrain.theme.filledContainerColor
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun HistoryTab(
     modifier: Modifier = Modifier, homeViewModel: HomeViewModel, settingsDao: SettingsDao, historyDao: HistoryDao
 ) = Box(modifier = modifier.fillMaxSize()) {
-    val historyRecords by historyDao.where(homeViewModel.date.month, homeViewModel.date.year)
+    val historyRecords by historyDao.where(homeViewModel.calendarDate.month, homeViewModel.calendarDate.year)
         .collectAsStateWithLifecycle(initialValue = emptyList())
-    LaunchedEffect(historyRecords) { homeViewModel.selectedRecord = historyRecords.lastOrNull() }
+    LaunchedEffect(historyRecords) { homeViewModel.selectedDate = historyRecords.lastOrNull()?.date }
 
-    fun findWorkout(calendarDay: LocalDate) = historyRecords.find { record ->
-        val recordDate = record.date.atZone(ZoneId.systemDefault())
-        calendarDay.dayOfMonth == recordDate.dayOfMonth && calendarDay.month == recordDate.month
-    }
-
+    val verticalScrollState = rememberScrollState(0)
     Scaffold(modifier = Modifier.padding(horizontal = ItemPadding), topBar = {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { homeViewModel.date = homeViewModel.date.minusMonths(1) }) {
+            IconButton(onClick = { homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1) }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
             }
             Text(
                 modifier = Modifier.weight(1f),
-                text = homeViewModel.date.format(DateTimeFormatter.ofPattern("MMM yyyy")),
+                text = homeViewModel.calendarDate.format(DateTimeFormatter.ofPattern("MMM yyyy")),
                 textAlign = TextAlign.Center
             )
-            IconButton(onClick = { homeViewModel.date = homeViewModel.date.plusMonths(1) }) {
+            IconButton(onClick = { homeViewModel.calendarDate = homeViewModel.calendarDate.plusMonths(1) }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowForward, null)
             }
         }
@@ -73,29 +68,30 @@ fun HistoryTab(
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState(0)),
+                .verticalScroll(verticalScrollState)
+                .padding(bottom = 100.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(ItemSpacing),
+            verticalArrangement = Arrangement.spacedBy(CardSpacing)
         ) {
             var dragDirection by remember { mutableFloatStateOf(0f) }
             Calendar(
-                date = homeViewModel.date,
+                date = homeViewModel.calendarDate,
                 modifier = Modifier
                     .heightIn(0.dp, 350.dp)
                     .pointerInput(Unit) {
                         detectDragGestures(onDragEnd = {
                             when {
-                                dragDirection > 0 -> homeViewModel.date = homeViewModel.date.minusMonths(1)
-                                dragDirection < 0 -> homeViewModel.date = homeViewModel.date.plusMonths(1)
+                                dragDirection > 0 -> homeViewModel.calendarDate = homeViewModel.calendarDate.minusMonths(1)
+                                dragDirection < 0 -> homeViewModel.calendarDate = homeViewModel.calendarDate.plusMonths(1)
                             }
                         }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
                     },
-                onItemClick = { homeViewModel.selectedRecord = findWorkout(it) },
-                ifHighlightItem = { findWorkout(it) != null },
-                ifSuperHighlightItem = { homeViewModel.selectedRecord != null && homeViewModel.selectedRecord == findWorkout(it) },
+                onItemClick = { calendarDay -> homeViewModel.selectedDate = calendarDay },
+                ifHighlightItem = { calendarDay -> historyRecords.any { it.date == calendarDay } },
+                ifSuperHighlightItem = { calendarDay -> homeViewModel.selectedDate == calendarDay },
             )
 
-            homeViewModel.selectedRecord?.let { record ->
+            historyRecords.filter { record -> record.date == homeViewModel.selectedDate }.forEach { record ->
                 Card(
                     modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = filledContainerColor())
                 ) {
@@ -120,13 +116,13 @@ fun HistoryTab(
     val today = LocalDate.now()
     AnimatedVisibility(
         modifier = Modifier.align(Alignment.BottomCenter),
-        visible = homeViewModel.date.month != today.month || homeViewModel.date.year != today.year,
+        visible = homeViewModel.calendarDate.month != today.month || homeViewModel.calendarDate.year != today.year,
         enter = slideInVertically(animationSpec = tween(durationMillis = 600, easing = EaseInCubic), initialOffsetY = { it }),
         exit = slideOutVertically(animationSpec = tween(durationMillis = 600, easing = EaseInCubic), targetOffsetY = { it }),
     ) {
         TextButton(
             modifier = Modifier.padding(bottom = ItemPadding),
-            onClick = { homeViewModel.date = today },
+            onClick = { homeViewModel.calendarDate = today },
             colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
             elevation = ButtonDefaults.buttonElevation()
         ) {

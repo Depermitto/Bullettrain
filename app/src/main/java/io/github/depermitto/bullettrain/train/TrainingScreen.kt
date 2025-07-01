@@ -99,8 +99,8 @@ fun TrainingScreen(
                         Card {
                             Text(
                                 modifier = Modifier.padding(4.dp),
-                                text = if (exercise.sets.all<ExerciseSet> { it.date != null }) "Done"
-                                else trainViewModel.elapsedSince(exerciseSet.date!!),
+                                text = if (exercise.sets.all<ExerciseSet> { it.doneTs != null }) "Done"
+                                else trainViewModel.elapsedSince(exerciseSet.doneTs!!),
                                 style = MaterialTheme.typography.titleMedium
                             )
                         }
@@ -198,10 +198,10 @@ fun TrainingScreen(
                             Checkbox(modifier = Modifier
                                 .size(CompactIconSize)
                                 .weight(ExerciseSetNarrowWeight),
-                                checked = set.date != null,
+                                checked = set.doneTs != null,
                                 onCheckedChange = {
                                     val set = if (it) set.copy(
-                                        date = Instant.now(),
+                                        doneTs = Instant.now(),
 
                                         weight = if (set.weight != 0f) set.weight
                                         else lastPerformedSet?.weight ?: 0f,
@@ -209,7 +209,7 @@ fun TrainingScreen(
                                         actualPerfVar = if (set.actualPerfVar != 0f) set.actualPerfVar
                                         else lastPerformedSet?.actualPerfVar ?: 0f
                                     )
-                                    else set.copy(date = null)
+                                    else set.copy(doneTs = null)
 
                                     trainViewModel.setExerciseSet(exerciseIndex, setIndex, set)
                                 })

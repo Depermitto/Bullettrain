@@ -31,7 +31,6 @@ import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.filledContainerColor
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -76,8 +75,7 @@ fun ProgramsTab(
                                     text = "${program.days.sumOf { day -> day.exercises.sumOf { it.sets.size } }} total sets",
                                     style = MaterialTheme.typography.bodyMedium
                                 )
-                                program.mostRecentWorkoutDate?.let { instant ->
-                                    val date = instant.atZone(ZoneId.systemDefault())
+                                program.mostRecentWorkoutDate?.let { date ->
                                     val formatter = DateTimeFormatter.ofPattern("d MMM yyyy")
                                     Text(
                                         text = "Most recent workout: ${formatter.format(date)}",

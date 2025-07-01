@@ -5,6 +5,7 @@ import io.github.depermitto.bullettrain.train.WorkoutPhase
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant
+import java.time.LocalDate
 
 interface Entity {
     val id: Int
@@ -22,8 +23,8 @@ data class HistoryRecord(
     val relatedProgram: Program,
     val workout: Day,
     val workoutPhase: WorkoutPhase,
-    @Serializable(with = InstantSerializer::class) val date: Instant,
-    @Serializable(with = InstantSerializer::class) val workoutStartTime: Instant,
+    @Serializable(with = LocalDateSerializer::class) val date: LocalDate,
+    @Serializable(with = InstantSerializer::class) val workoutStartTs: Instant,
 ) : Entity {
     override fun clone(id: Int) = copy(id = id)
 }
@@ -36,7 +37,7 @@ data class Program(
     val followed: Boolean = false,
     val nextDay: Int = 0,
     val weekStreak: Int = 1,
-    @Serializable(with = InstantSerializer::class) val mostRecentWorkoutDate: Instant? = null,
+    @Serializable(with = LocalDateSerializer::class) val mostRecentWorkoutDate: LocalDate? = null,
 ) : Entity {
     override fun clone(id: Int) = copy(id = id)
 }
@@ -62,7 +63,7 @@ data class Exercise(
         get() = intensityCategory != null
 
     val lastPerformedSet: ExerciseSet?
-        get() = sets.lastOrNull { it.date != null }
+        get() = sets.lastOrNull { it.doneTs != null }
 
     override fun clone(id: Int) = copy(id = id)
 }
@@ -74,9 +75,9 @@ data class ExerciseSet(
     // val targetIntensity
     val intensity: Float? = null,
     val weight: Float = 0f,
-    @Serializable(with = InstantSerializer::class) val date: Instant? = null,
+    @Serializable(with = InstantSerializer::class) val doneTs: Instant? = null,
 ) {
-    val completed = date != null
+    val completed = doneTs != null
 }
 
 @Serializable
@@ -108,10 +109,10 @@ sealed class PerfVar(val category: PerfVarCategory) {
             PerfVarCategory.RepRange -> RepRange()
         }
 
-        fun of(category: PerfVarCategory, vararg performance: Float) = when {
-            category == PerfVarCategory.Reps && performance.size == 1 -> Reps(performance[0])
-            category == PerfVarCategory.Time && performance.size == 1 -> Time(performance[0])
-            category == PerfVarCategory.RepRange && performance.size == 2 -> RepRange(performance[0], performance[1])
+        fun of(category: PerfVarCategory, vararg perf: Float) = when {
+            category == PerfVarCategory.Reps && perf.size == 1 -> Reps(perf[0])
+            category == PerfVarCategory.Time && perf.size == 1 -> Time(perf[0])
+            category == PerfVarCategory.RepRange && perf.size == 2 -> RepRange(perf[0], perf[1])
             else -> of(category)
         }
     }

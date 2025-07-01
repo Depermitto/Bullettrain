@@ -74,7 +74,7 @@ fun TrainTab(
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 ) {
-                    Text(text = "Start ${program.days[program.nextDay].name}, Week ${program.weekStreak}")
+                    Text(text = "Start ${program.days[program.nextDay].name}")
                 }
             }
         }

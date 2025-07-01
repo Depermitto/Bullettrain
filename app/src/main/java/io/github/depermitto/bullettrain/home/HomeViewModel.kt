@@ -7,14 +7,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.depermitto.bullettrain.Destinations.Home.Tabs
-import io.github.depermitto.bullettrain.database.HistoryRecord
 import java.time.LocalDate
 
 class HomeViewModel(startingTab: Tabs) : ViewModel() {
     var activeBar by mutableStateOf(startingTab)
         private set
-    var date by mutableStateOf(LocalDate.now())
-    var selectedRecord by mutableStateOf<HistoryRecord?>(null)
+    var calendarDate by mutableStateOf(LocalDate.now())
+    var selectedDate by mutableStateOf<LocalDate?>(null)
 
     fun switchTab(tab: Tabs) {
         activeBar = tab

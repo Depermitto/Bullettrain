@@ -44,7 +44,6 @@ fun ProgramDaysScreen(
 ) {
     val view = LocalView.current
     val days = programViewModel.getDays()
-    println(days)
     ReorderableColumn(
         list = days,
         modifier = Modifier.verticalScroll(rememberScrollState(0)),

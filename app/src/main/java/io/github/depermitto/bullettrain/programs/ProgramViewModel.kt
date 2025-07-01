@@ -18,6 +18,10 @@ class ProgramViewModel(program: Program) : ViewModel() {
     private var days = mutableStateListOf<Day>().apply { addAll(program.days) }
     var followed by mutableStateOf(program.followed)
         private set
+    var nextDay = program.nextDay
+        private set
+    var weekStreak = program.weekStreak
+        private set
 
     fun getDays(): List<Day> = days.toList()
     fun getDay(dayIndex: Int) = days[dayIndex]
@@ -40,11 +44,23 @@ class ProgramViewModel(program: Program) : ViewModel() {
         } else days.isNotEmpty()
     }
 
-    fun constructProgram(): Program = Program(id = programId, name = programName, days = getDays(), followed = followed)
+    fun constructProgram(): Program = Program(
+        id = programId,
+        name = programName,
+        days = getDays(),
+        followed = followed,
+        nextDay = nextDay,
+        weekStreak = weekStreak,
+        mostRecentWorkoutDate = null
+    )
+
     fun clear() {
         programName = ""
         days.clear()
         days.add(Day())
+        followed = false
+        nextDay = 0
+        weekStreak = 1
     }
 
     companion object {
