@@ -380,8 +380,7 @@ fun App(db: Database) = MaterialTheme {
                 // This is a essentially copy from ExercisesListScreen.kt
                 if (showRenameDialog) {
                     var errorMessage by rememberSaveable { mutableStateOf("") }
-                    TextFieldAlertDialog(
-                        onDismissRequest = { showRenameDialog = false },
+                    TextFieldAlertDialog(onDismissRequest = { showRenameDialog = false },
                         startingText = exercise.name,
                         label = { Text("Exercise Name") },
                         dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },

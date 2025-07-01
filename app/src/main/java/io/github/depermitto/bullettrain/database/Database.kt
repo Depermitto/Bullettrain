@@ -63,7 +63,7 @@ class Database(private val databaseDirectory: File, private val context: Context
 
 
     /**
-     * launch file picker and export the zipped database to it. Returns name the file the database was exported to  if successful.
+     * Launch file picker and export the zipped database to it. Returns name the file the database was exported to  if successful.
      * @see [importDatabase]
      */
     suspend fun exportDatabase(): String? {
@@ -87,7 +87,7 @@ class Database(private val databaseDirectory: File, private val context: Context
     }
 
     /**
-     * launch file picker and import database from the zipFile. Returns true if successful.
+     * Launch file picker and import database from the zipFile. Returns true if successful.
      * @see [exportDatabase]
      */
     suspend fun importDatabase(importType: ImportType): String? {
@@ -136,7 +136,7 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
     val getAll: StateFlow<List<T>> = items.asStateFlow()
 
     /**
-     * Update the item and return a boolean indicating if the operation was successful.
+     * @return Boolean indicating if the operation was successful.
      */
     open fun update(item: T): Boolean {
         val existingIndex = items.value.indexOfFirst { it.id == item.id }
@@ -148,7 +148,7 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
     }
 
     /**
-     * return id of the inserted item.
+     * @return Id of the inserted item.
      */
     @Suppress("UNCHECKED_CAST")
     open fun insert(item: T): Int {
@@ -161,7 +161,7 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
     }
 
     /**
-     * return id of the inserted item or -1 if it was updated.
+     * @return Id of the inserted item or -1 if it was updated.
      */
     open fun upsert(item: T): Int = if (update(item)) -1 else insert(item)
 
