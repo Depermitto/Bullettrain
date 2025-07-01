@@ -46,8 +46,6 @@ import io.github.depermitto.bullettrain.exercises.Exercise
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
 import io.github.depermitto.bullettrain.protos.ExercisesProto.*
 import io.github.depermitto.bullettrain.theme.*
-import kotlin.math.max
-import kotlin.math.min
 import kotlinx.coroutines.launch
 
 @Composable
@@ -315,14 +313,12 @@ fun DayScreen(
                       exerciseIndex,
                       exercise
                         .toBuilder()
-                        .setSets(
-                          setIndex,
-                          set.toBuilder().setIntensity(max(min(it.toInt(), 10), 0)),
-                        )
+                        .setSets(setIndex, set.toBuilder().setIntensity(it.toInt()))
                         .build(),
                     )
                   },
                   floatingPoint = false,
+                  bounds = 0F..10F,
                 )
               IconButton(
                 modifier = Modifier.weight(0.2F).size(20.dp),

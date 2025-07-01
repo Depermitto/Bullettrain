@@ -8,8 +8,13 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.KeyboardActionHandler
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -30,7 +35,7 @@ fun OutlinedTextField(
   textStyle: TextStyle = TextStyle.numeric(),
   inputTransformation: InputTransformation? = null,
   visualTransformation: VisualTransformation = VisualTransformation.None,
-  singleLine: Boolean = true,
+  lineLimits: TextFieldLineLimits = TextFieldLineLimits.Default,
   enabled: Boolean = true,
   readOnly: Boolean = false,
   label: @Composable (() -> Unit)? = null,
@@ -49,6 +54,7 @@ fun OutlinedTextField(
     modifier = modifier,
     enabled = enabled,
     readOnly = readOnly,
+    lineLimits = lineLimits,
     textStyle = textStyle,
     inputTransformation = inputTransformation,
     keyboardOptions = keyboardOptions,
@@ -63,7 +69,7 @@ fun OutlinedTextField(
         placeholder = placeholder,
         innerTextField = innerTextField,
         colors = colors,
-        singleLine = singleLine,
+        singleLine = false,
         enabled = enabled,
         interactionSource = interactionSource,
         contentPadding = contentPadding,

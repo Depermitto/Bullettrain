@@ -1,8 +1,12 @@
 package io.github.depermitto.bullettrain.train
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -21,9 +25,11 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,11 +52,15 @@ import io.github.depermitto.bullettrain.db.ExerciseDao
 import io.github.depermitto.bullettrain.db.HistoryDao
 import io.github.depermitto.bullettrain.exercises.Exercise
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
-import io.github.depermitto.bullettrain.protos.SettingsProto.*
-import io.github.depermitto.bullettrain.theme.*
+import io.github.depermitto.bullettrain.protos.SettingsProto.Settings
+import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
+import io.github.depermitto.bullettrain.theme.Medium
+import io.github.depermitto.bullettrain.theme.NumberedListIcon
+import io.github.depermitto.bullettrain.theme.Small
+import io.github.depermitto.bullettrain.theme.SwapIcon
+import io.github.depermitto.bullettrain.theme.numeric
 import io.github.depermitto.bullettrain.util.lastCompletedSet
 import io.github.depermitto.bullettrain.util.weightUnit
-import kotlin.collections.all
 
 @Composable
 fun TrainingScreen(
