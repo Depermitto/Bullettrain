@@ -79,8 +79,10 @@ fun ProgramScreen(
                     )
                 }
 
-                val exerciseChooserToggle = exerciseChooser(exerciseDao = exerciseDao,
-                    onChoose = { programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises + it)) })
+                val exerciseChooserToggle = exerciseChooser(exerciseDao = exerciseDao, onChoose = {
+                    val exercise = it.copy(sets = it.sets + ExerciseSet(targetPerfVar = PerfVar.of(it.perfVarCategory)))
+                    programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises + exercise))
+                })
                 OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { exerciseChooserToggle() }) {
                     Text(text = "Add Exercise")
                 }
@@ -92,7 +94,9 @@ fun ProgramScreen(
         Button(
             onClick = { programViewModel.addDay() },
             enabled = programViewModel.days.size < 7,
-        ) { Text("Add Day") }
+        ) {
+            Text("Add Day")
+        }
     }
 }
 

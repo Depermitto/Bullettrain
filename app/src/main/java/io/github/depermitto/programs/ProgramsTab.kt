@@ -1,5 +1,8 @@
 package io.github.depermitto.programs
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
@@ -14,27 +17,27 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.components.AnchoredFloatingActionButton
+import io.github.depermitto.components.TextFieldDialogTemplate
 import io.github.depermitto.database.Program
 import io.github.depermitto.database.ProgramDao
 import io.github.depermitto.home.Screen
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.filledContainerColor
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.runBlocking
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ProgramsTab(
     modifier: Modifier = Modifier,
     programDao: ProgramDao,
     navController: NavController,
 ) = Box(modifier = modifier.fillMaxSize()) {
-    val programs = runBlocking { programDao.getAlmostAll.firstOrNull() ?: emptyList() }
+    val programs by programDao.getAlmostAll.collectAsStateWithLifecycle(initialValue = emptyList())
 
     LazyColumn(
         modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
@@ -53,14 +56,29 @@ fun ProgramsTab(
                         .align(Alignment.Center), program = program
                 )
 
+                var showDialog by remember { mutableStateOf(false) }
                 DropdownMenu(expanded = showDropdown, onDismissRequest = { showDropdown = false }) {
-                    // TODO edit name
                     DropdownMenuItem(text = { Text(text = "Edit Name") },
                         leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
-                        onClick = { navController.navigate(Screen.ProgramScreen.passId(program.id)) })
+                        onClick = { showDialog = true })
                     DropdownMenuItem(text = { Text(text = "Delete") },
                         leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
                         onClick = { programDao.delete(program) })
+                }
+
+                AnimatedVisibility(visible = showDialog, enter = scaleIn(), exit = scaleOut()) {
+                    BasicAlertDialog(onDismissRequest = { showDialog = false }) {
+                        var name by remember { mutableStateOf("") }
+                        TextFieldDialogTemplate(value = name,
+                            onValueChange = { name = it },
+                            label = { Text("Program Name") },
+                            onDismiss = { showDialog = false },
+                            onConfirm = {
+                                programDao.update(program.copy(name = name))
+                                showDialog = false
+                                true
+                            })
+                    }
                 }
             }
         }
@@ -74,24 +92,22 @@ fun ProgramsTab(
 }
 
 @Composable
-fun ProgramInfo(modifier: Modifier = Modifier, program: Program) =
-    ListItem(modifier = modifier.clip(MaterialTheme.shapes.medium),
-        colors = ListItemDefaults.colors(containerColor = filledContainerColor()),
-        headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
-        supportingContent = {
-            Column {
-                Text(text = "${program.days.size} day program", style = MaterialTheme.typography.bodyMedium)
+fun ProgramInfo(modifier: Modifier = Modifier, program: Program) = ListItem(modifier = modifier.clip(MaterialTheme.shapes.medium),
+    colors = ListItemDefaults.colors(containerColor = filledContainerColor()),
+    headlineContent = { Text(text = program.name, style = MaterialTheme.typography.titleLarge) },
+    supportingContent = {
+        Column {
+            Text(text = "${program.days.size} day program", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = "${program.days.sumOf { day -> day.exercises.sumOf { it.sets.size } }} total sets",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            program.mostRecentWorkoutDate?.let { instant ->
+                val date = instant.atZone(ZoneId.systemDefault())
+                val formatter = DateTimeFormatter.ofPattern("dd MM yyyy")
                 Text(
-                    text = "${program.days.sumOf { day -> day.exercises.sumOf { it.sets.size } }} total sets",
-                    style = MaterialTheme.typography.bodyMedium
+                    text = "Most recent workout: ${formatter.format(date)}", style = MaterialTheme.typography.bodyMedium
                 )
-                program.mostRecentWorkoutDate?.let { instant ->
-                    val date = instant.atZone(ZoneId.systemDefault())
-                    val formatter = DateTimeFormatter.ofPattern("dd MM yyyy")
-                    Text(
-                        text = "Most recent workout: ${formatter.format(date)}",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
             }
-        })
+        }
+    })

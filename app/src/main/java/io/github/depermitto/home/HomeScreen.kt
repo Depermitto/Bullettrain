@@ -34,7 +34,9 @@ fun HomeScreen(
         Screen.HomeScreen.Tabs.entries.forEach { tab ->
             NavigationBarItem(selected = homeViewModel.activeBar == tab, onClick = { homeViewModel.activeBar = tab }, icon = {
                 Image(
-                    painterResource(id = tab.icon), contentDescription = null, colorFilter = ColorFilter.tint(adaptiveIconTint())
+                    painterResource(id = tab.icon),
+                    contentDescription = tab.name,
+                    colorFilter = ColorFilter.tint(adaptiveIconTint())
                 )
             }, label = { Text(text = tab.name) })
         }
