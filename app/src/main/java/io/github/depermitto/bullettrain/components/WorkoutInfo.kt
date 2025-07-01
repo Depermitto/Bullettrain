@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -18,17 +19,19 @@ import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.CardPadding
+import io.github.depermitto.bullettrain.theme.ItemPadding
 
 @Composable
 fun WorkoutInfo(
     modifier: Modifier = Modifier,
-    exerciseInfo: @Composable (Exercise) -> Unit,
+    map: (List<Exercise>) -> List<String>,
     workout: Day,
     program: Program,
 ) = Column(modifier = modifier) {
@@ -42,6 +45,18 @@ fun WorkoutInfo(
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     )
 
+    val processedExercises = map(workout.exercises)
+    if (processedExercises.isEmpty()) {
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(ItemPadding),
+            text = "Empty Workout",
+            textAlign = TextAlign.Center
+        )
+        return@Column
+    }
+
     // This weird padding is for equalizing padding for ListItem
     Column(modifier = Modifier.padding(CardPadding)) {
         Row {
@@ -51,7 +66,7 @@ fun WorkoutInfo(
         }
         HorizontalDivider()
 
-        workout.exercises.forEach { exercise ->
+        workout.exercises.zip(processedExercises).forEach { (exercise, info) ->
             Row {
                 Box(modifier = Modifier.weight(0.5f), contentAlignment = CenterStart) {
                     val scroll = rememberScrollState(0)
@@ -59,7 +74,12 @@ fun WorkoutInfo(
                 }
                 Spacer(modifier = Modifier.width(20.dp))
                 Box(modifier = Modifier.weight(0.5f), contentAlignment = CenterEnd) {
-                    exerciseInfo(exercise)
+                    val scroll = rememberScrollState(0)
+                    Text(
+                        modifier = Modifier.horizontalScroll(scroll),
+                        text = info,
+                        maxLines = 1,
+                    )
                 }
             }
         }

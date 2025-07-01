@@ -24,7 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destinations
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
-import io.github.depermitto.bullettrain.components.ConfirmAlertDialog
+import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.ProgramDao
@@ -87,7 +87,7 @@ fun ProgramsTab(
                         })
                 }
 
-                if (showProgramDeleteDialog) ConfirmAlertDialog(text = "Do you definitely want to delete ${program.name}?",
+                if (showProgramDeleteDialog) DiscardConfirmationAlertDialog(text = "Do you definitely want to delete ${program.name}?",
                     onDismissRequest = { showProgramDeleteDialog = false },
                     onConfirm = { programDao.delete(program) })
 

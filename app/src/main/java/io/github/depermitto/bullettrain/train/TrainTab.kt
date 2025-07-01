@@ -52,7 +52,7 @@ fun TrainTab(
                     .align(Alignment.TopStart),
                     workout = program.days[program.nextDay],
                     program = program,
-                    exerciseInfo = { Text(text = it.sets.size.toString()) })
+                    map = { exercises -> exercises.map { exercise -> exercise.sets.size.toString() } })
                 ElevatedButton(
                     modifier = Modifier.align(Alignment.BottomCenter),
                     onClick = { trainViewModel.startWorkout(program.days[program.nextDay], program) },
@@ -60,7 +60,9 @@ fun TrainTab(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )
-                ) { Text(text = "Start Week ${program.weekStreak}, ${program.days[program.nextDay].name}") }
+                ) {
+                    Text(text = "Start Week ${program.weekStreak}, ${program.days[program.nextDay].name}")
+                }
             }
         }
     }

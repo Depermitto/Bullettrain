@@ -5,7 +5,6 @@ import androidx.compose.animation.core.EaseInCubic
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
@@ -88,30 +87,23 @@ fun HistoryTab(
                 Card(
                     modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = filledContainerColor())
                 ) {
-                    if (record.workout.exercises.isEmpty()) {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(ItemPadding),
-                            text = "Empty Workout",
-                            textAlign = TextAlign.Center
-                        )
-                        return@Card
-                    }
-
-                    WorkoutInfo(modifier = Modifier.fillMaxWidth(),
+                    WorkoutInfo(
+                        modifier = Modifier.fillMaxWidth(),
                         workout = record.workout,
                         program = record.relatedProgram,
-                        exerciseInfo = { exercise ->
-                            val scroll = rememberScrollState(0)
-                            Text(
-                                modifier = Modifier.horizontalScroll(scroll),
-                                text = exercise.sets.groupBy { it.weight }.filter { (weight, _) -> weight != 0f }
+                        map = { exercises ->
+                            val summaries = exercises.map { exercise ->
+                                val setsGroupedByWeight = exercise.sets
+                                    .groupBy { it.weight }
+                                    .filter { (weight, _) -> weight != 0f }
+                                if (setsGroupedByWeight.isNotEmpty()) setsGroupedByWeight
                                     .map { (weight, sets) -> "${sets.size}x${weight.encodeToStringOutput()}" }
-                                    .joinToString(", ") + " " + settingsDao.weightUnit(),
-                                maxLines = 1,
-                            )
-                        })
+                                    .joinToString(", ", postfix = " " + settingsDao.weightUnit())
+                                else ""
+                            }
+                            summaries.filter { it.isNotBlank() }
+                        }
+                    )
                 }
             }
         }

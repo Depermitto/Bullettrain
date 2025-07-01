@@ -14,7 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destinations
-import io.github.depermitto.bullettrain.components.ConfirmAlertDialog
+import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
@@ -58,7 +58,7 @@ fun ProgramDaysScreen(
                     })
             }
 
-            if (showDayDeleteDialog) ConfirmAlertDialog(text = "Do you definitely want to delete ${day.name}?",
+            if (showDayDeleteDialog) DiscardConfirmationAlertDialog(text = "Do you definitely want to delete ${day.name}?",
                 onDismissRequest = { showDayDeleteDialog = false },
                 onConfirm = { programViewModel.removeDayAt(dayIndex) })
 

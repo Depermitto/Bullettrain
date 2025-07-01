@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,7 +33,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import io.github.depermitto.bullettrain.components.ConfirmAlertDialog
+import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.Ribbon
 import io.github.depermitto.bullettrain.components.RibbonScaffold
 import io.github.depermitto.bullettrain.database.BackgroundSlave
@@ -92,7 +93,8 @@ fun App(db: Database) = MaterialTheme {
 
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { paddingValues ->
-        var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
+        var showDiscardDialog by rememberSaveable { mutableStateOf(false) }
+        var showFinishDialog by rememberSaveable { mutableStateOf(false) }
         NavHost(
             modifier = Modifier.padding(paddingValues),
             navController = navController,
@@ -136,7 +138,7 @@ fun App(db: Database) = MaterialTheme {
                         ) {
                             TextButton(
                                 modifier = Modifier.align(Alignment.CenterStart),
-                                onClick = { showConfirmDialog = true },
+                                onClick = { showDiscardDialog = true },
                                 colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
                             ) {
                                 Icon(
@@ -145,7 +147,7 @@ fun App(db: Database) = MaterialTheme {
                                     modifier = Modifier.size(ButtonDefaults.IconSize)
                                 )
                                 Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                                Text("Stop")
+                                Text("Discard")
                             }
                             Text(
                                 modifier = Modifier.align(Alignment.Center),
@@ -154,9 +156,11 @@ fun App(db: Database) = MaterialTheme {
                             )
                             TextButton(
                                 modifier = Modifier.align(Alignment.CenterEnd),
-                                onClick = { trainViewModel.completeWorkout() },
+                                onClick = { showFinishDialog = true },
                                 colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
-                            ) { Text(text = "Finish") }
+                            ) {
+                                Text(text = "Finish")
+                            }
                         }
                     }
                 }) {
@@ -167,9 +171,14 @@ fun App(db: Database) = MaterialTheme {
                     )
                 }
 
-                if (showConfirmDialog) ConfirmAlertDialog(onDismissRequest = { showConfirmDialog = false },
+                if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
                     text = "All sets will be lost forever. Do you definitely want to discard the workout?",
                     onConfirm = { trainViewModel.cancelWorkout() })
+
+                if (showFinishDialog) AlertDialog(text = { Text("Do you truly want to conclude the workout?") },
+                    onDismissRequest = { showFinishDialog = false },
+                    dismissButton = { TextButton(onClick = { showFinishDialog = false }) { Text("One More Set \uD83D\uDCAA") } },
+                    confirmButton = { TextButton(onClick = { trainViewModel.completeWorkout() }) { Text("Finish") } })
             }
 
             composable<Destinations.ProgramCreation> {
@@ -188,12 +197,12 @@ fun App(db: Database) = MaterialTheme {
                     )
                 }
 
-                if (showConfirmDialog) ConfirmAlertDialog(onDismissRequest = { showConfirmDialog = false },
+                if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
                     text = "Do you want to discard ${programViewModel.programName.ifBlank { "new program" }}?",
                     onConfirm = { navController.navigateUp(); programViewModel.clear() })
 
                 if (!programViewModel.isEmpty() && programViewModel.getDays().toList() != listOf(Day())) {
-                    BackHandler { showConfirmDialog = true }
+                    BackHandler { showDiscardDialog = true }
                 }
             }
 
@@ -210,11 +219,11 @@ fun App(db: Database) = MaterialTheme {
                     )
                 }
 
-                if (showConfirmDialog) ConfirmAlertDialog(onDismissRequest = { showConfirmDialog = false },
+                if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
                     text = "Do you want to discard changes made to ${programViewModel.programName}?",
                     onConfirm = { navController.navigateUp() })
 
-                if (!programViewModel.isEqual(program)) BackHandler { showConfirmDialog = true }
+                if (!programViewModel.isEqual(program)) BackHandler { showDiscardDialog = true }
             }
 
             composable<Destinations.Day> { navBackStackEntry ->
