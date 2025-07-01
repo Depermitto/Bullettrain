@@ -18,7 +18,6 @@ import java.util.zip.GZIPOutputStream
 import java.util.zip.ZipException
 import kotlin.Result.Companion.failure
 import kotlin.Result.Companion.success
-import kotlin.time.measureTime
 import kotlinx.coroutines.flow.update
 
 class Db(dir: File, private val context: Context) {
@@ -47,15 +46,17 @@ class Db(dir: File, private val context: Context) {
     return success(file.name)
   }
 
+  fun getDb(): DbProto.Db =
+    DbProto.Db.newBuilder()
+      .addAllDescriptors(exerciseDao.items.value)
+      .addAllPrograms(programDao.items.value)
+      .addAllRecords(historyDao.items.value)
+      .setSettings(settingsDao.item.value)
+      .build()
+
   fun exportDatabase() {
-    val db =
-      DbProto.Db.newBuilder()
-        .addAllDescriptors(exerciseDao.items.value)
-        .addAllPrograms(programDao.items.value)
-        .addAllRecords(historyDao.items.value)
-        .setSettings(settingsDao.item.value)
-        .build()
-    measureTime { FileOutputStream(dbFile).use { db.writeTo(it) } }
+    val db = getDb()
+    FileOutputStream(dbFile).use { db.writeTo(it) }
   }
 
   private fun importDatabase(inputStream: InputStream): Result<Unit> {

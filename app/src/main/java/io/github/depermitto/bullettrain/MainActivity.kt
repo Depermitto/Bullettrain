@@ -1,5 +1,6 @@
 package io.github.depermitto.bullettrain
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -7,6 +8,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -80,7 +82,7 @@ import io.github.depermitto.bullettrain.programs.DayScreen
 import io.github.depermitto.bullettrain.programs.ProgramCreationScreen
 import io.github.depermitto.bullettrain.programs.ProgramScreen
 import io.github.depermitto.bullettrain.programs.ProgramViewModel
-import io.github.depermitto.bullettrain.protos.ProgramsProto.*
+import io.github.depermitto.bullettrain.protos.ProgramsProto.Program
 import io.github.depermitto.bullettrain.settings.SettingsScreen
 import io.github.depermitto.bullettrain.theme.BullettrainTheme
 import io.github.depermitto.bullettrain.theme.ScaleTransitionDirection
@@ -98,6 +100,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 class MainActivity : ComponentActivity() {
+  @RequiresApi(Build.VERSION_CODES.S)
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
     super.onCreate(savedInstanceState)
@@ -119,7 +122,7 @@ class MainActivity : ComponentActivity() {
       }
 
       val settings by db.settingsDao.get.collectAsStateWithLifecycle()
-      BullettrainTheme(settings) {
+      BullettrainTheme(applicationContext, settings) {
         // this is for color flashing during navigating
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
           App(db)
@@ -141,11 +144,11 @@ fun App(db: Db) = MaterialTheme {
     viewModel<HomeViewModel>(
       factory = HomeViewModel.Factory(initialPage = Tab.Train, historyDao = db.historyDao)
     )
-  val settings by db.settingsDao.get.collectAsStateWithLifecycle()
   val trainViewModel =
     viewModel<TrainViewModel>(factory = TrainViewModel.Factory(db.historyDao, db.programDao))
   var programViewModel =
     viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program.getDefaultInstance()))
+  val settings by db.settingsDao.get.collectAsStateWithLifecycle()
 
   // Used across every NavHost.composable
   var showDiscardOrDeleteDialog by rememberSaveable { mutableStateOf(false) }
@@ -175,6 +178,7 @@ fun App(db: Db) = MaterialTheme {
       val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
       Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = { HomeTopBar(navController = navController, scrollBehavior = scrollBehavior) },
         bottomBar = {
           NavigationBar(tonalElevation = 8.dp) {
@@ -205,6 +209,7 @@ fun App(db: Db) = MaterialTheme {
           historyDao = db.historyDao,
           settings = settings,
           navController = navController,
+          snackbarHostState = snackbarHostState,
         )
       }
     }

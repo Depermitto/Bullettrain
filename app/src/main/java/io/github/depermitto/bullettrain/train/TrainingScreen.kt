@@ -14,9 +14,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -174,10 +174,12 @@ fun TrainingScreen(
                     )
                   }
 
-                  FilledTonalIconButton(
-                    onClick = { trainViewModel.addExerciseSet(exerciseIndex) }
-                  ) {
-                    Icon(Icons.Filled.Add, "Add exercise set")
+                  OutlinedIconButton(onClick = { trainViewModel.addExerciseSet(exerciseIndex) }) {
+                    Icon(
+                      Icons.Filled.Add,
+                      "Add exercise set",
+                      tint = MaterialTheme.colorScheme.primary,
+                    )
                   }
                 }
               },

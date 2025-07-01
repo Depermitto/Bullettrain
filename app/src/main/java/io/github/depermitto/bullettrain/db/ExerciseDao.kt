@@ -7,7 +7,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.protos.ExercisesProto.Exercise
 import io.github.depermitto.bullettrain.util.BKTree
 import io.github.depermitto.bullettrain.util.bigListSet
-import io.github.depermitto.bullettrain.util.capwords
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -74,7 +73,7 @@ class ExerciseDao(descriptors: List<Exercise.Descriptor>) {
       state +
         descriptor
           .toBuilder()
-          .setName(descriptor.name.capwords().also { name -> bkTree.insert(name) })
+          .setName(descriptor.name.also { name -> bkTree.insert(name) })
           .setId(idTrack)
           .build()
     }
@@ -90,4 +89,9 @@ class ExerciseDao(descriptors: List<Exercise.Descriptor>) {
     items
       .map { descriptors -> descriptors[id - 1] }
       .collectAsStateWithLifecycle(items.value[id - 1])
+
+  fun where(id: Int): Exercise.Descriptor = items.value[id - 1]
+
+  fun whereOrNull(name: String): Exercise.Descriptor? =
+    items.value.firstOrNull { d -> d.name == name }
 }

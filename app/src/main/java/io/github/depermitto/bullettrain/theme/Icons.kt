@@ -32,3 +32,11 @@ val HeartRemoveIcon: @Composable () -> Unit = {
 val MergeIcon: @Composable () -> Unit = { Icon(painterResource(id = R.drawable.merge), "Merge") }
 
 val SplitIcon: @Composable () -> Unit = { Icon(painterResource(id = R.drawable.split), "Split") }
+
+val FileImportIcon: @Composable () -> Unit = {
+  Icon(painterResource(id = R.drawable.file_import), "File import")
+}
+
+val FileExportIcon: @Composable () -> Unit = {
+  Icon(painterResource(id = R.drawable.file_export), "File export")
+}

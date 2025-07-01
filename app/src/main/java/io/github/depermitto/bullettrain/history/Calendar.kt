@@ -4,15 +4,13 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,109 +49,108 @@ fun Calendar(
   programDao: ProgramDao,
   navController: NavController,
 ) {
-  Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
-    val today = LocalDate.now()
-    val programs by programDao.getPerformable.collectAsStateWithLifecycle(emptyList())
+  val today = LocalDate.now()
+  val programs by programDao.getPerformable.collectAsStateWithLifecycle(emptyList())
 
-    var longClickedDate by rememberSaveable { mutableStateOf(today) }
-    var showProgramListDialog by rememberSaveable { mutableStateOf(false) }
-    Column {
-      val days = generateDays(date).iterator()
-      for (row in 0..<7) {
-        Row {
-          for (col in 0..<7) {
-            if (row == 0) {
-              CalendarItem(
-                text = DayOfWeek.of(col + 1).getDisplayName(TextStyle.NARROW, Locale.getDefault()),
-                modifier = Modifier.weight(1F),
-                textAlpha = 0.6F,
-              )
-              continue
+  var longClickedDate by rememberSaveable { mutableStateOf(today) }
+  var showProgramListDialog by rememberSaveable { mutableStateOf(false) }
+  Column(modifier = modifier) {
+    val days = generateDays(date).iterator()
+    for (row in 0..<7) {
+      Row {
+        for (col in 0..<7) {
+          if (row == 0) {
+            CalendarItem(
+              text = DayOfWeek.of(col + 1).getDisplayName(TextStyle.NARROW, Locale.getDefault()),
+              modifier = Modifier.weight(1F),
+              textColor = LocalContentColor.current.copy(alpha = 0.6F),
+            )
+            continue
+          }
+
+          val day = days.next()
+
+          val alpha = if (day.month == date.month) 1F else 0.3F
+          val (backgroundColor, textColor) =
+            when {
+              homeViewModel.selectedDate == day ->
+                Pair(
+                  MaterialTheme.colorScheme.primary.copy(alpha = alpha + 0.2F),
+                  MaterialTheme.colorScheme.onPrimary,
+                )
+
+              records.binarySearch { ChronoUnit.DAYS.between(it.date, day).toInt() } >= 0 ->
+                Pair(
+                  MaterialTheme.colorScheme.secondary.copy(alpha = alpha),
+                  MaterialTheme.colorScheme.onSecondary,
+                )
+
+              else -> Pair(Color.Unspecified, LocalContentColor.current)
             }
 
-            val day = days.next()
-            val alpha = if (day.month == date.month) 1F else 0.3F
-            CalendarItem(
-              text = day.dayOfMonth.toString(),
-              onClick = { homeViewModel.selectedDate = day },
-              onLongClick = {
-                if (programs.isNotEmpty()) {
-                  longClickedDate = day
-                  showProgramListDialog = true
-                }
-              },
-              backgroundColor =
-                when {
-                  homeViewModel.selectedDate == day ->
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = alpha)
-
-                  records.binarySearch { ChronoUnit.DAYS.between(it.date, day).toInt() } >= 0 ->
-                    MaterialTheme.colorScheme.secondary.copy(alpha = alpha)
-
-                  else -> Color.Transparent
-                },
-              underline = day == today,
-              modifier = Modifier.weight(1F),
-              textAlpha = alpha,
-            )
-          }
+          CalendarItem(
+            text = day.dayOfMonth.toString(),
+            textColor = textColor,
+            onClick = { homeViewModel.selectedDate = day },
+            onLongClick = {
+              if (programs.isNotEmpty()) {
+                longClickedDate = day
+                showProgramListDialog = true
+              }
+            },
+            backgroundColor = backgroundColor,
+            underline = day == today,
+            modifier = Modifier.weight(1F),
+          )
         }
-        if (!days.hasNext()) break
       }
+      if (!days.hasNext()) break
+    }
+  }
+
+  var selectedProgram: Program? by remember { mutableStateOf(null) }
+
+  if (showProgramListDialog)
+    ListAlertDialog(
+      title = "Starting a workout on ${DateFormatters.MMM_dd.format(longClickedDate)}...",
+      onDismissRequest = { showProgramListDialog = false },
+      list = programs,
+      dismissButton = {
+        TextButton(onClick = { showProgramListDialog = false }) { Text("Cancel") }
+      },
+      onClick = { program ->
+        showProgramListDialog = false
+        if (program.id == -1) {
+          trainViewModel.startWorkout(
+            Workout.getDefaultInstance(),
+            -1,
+            longClickedDate.atTimeNow(),
+            navController,
+          )
+        } else {
+          selectedProgram = program
+        }
+      },
+    ) { program ->
+      ExtendedListItem(
+        headlineContent = { Text(program.name, maxLines = 2, overflow = TextOverflow.Ellipsis) }
+      )
     }
 
-    var selectedProgram: Program? by
-      rememberSaveable(
-        saver =
-          Saver(
-            save = { original -> original.value?.toByteArray() },
-            restore = { saveable -> mutableStateOf(Program.parseFrom(saveable)) },
-          ),
-        init = { mutableStateOf(null) },
+  selectedProgram?.let { program ->
+    ListAlertDialog(
+      title = "Which one would you like to perform?",
+      onDismissRequest = { selectedProgram = null },
+      dismissButton = { TextButton(onClick = { selectedProgram = null }) { Text("Cancel") } },
+      list = program.workoutsList,
+      onClick = { day ->
+        selectedProgram = null
+        trainViewModel.startWorkout(day, program.id, longClickedDate.atTimeNow(), navController)
+      },
+    ) { day ->
+      ExtendedListItem(
+        headlineContent = { Text(day.name, maxLines = 2, overflow = TextOverflow.Ellipsis) }
       )
-
-    if (showProgramListDialog)
-      ListAlertDialog(
-        title = "Starting a workout on ${DateFormatters.MMM_dd.format(longClickedDate)}...",
-        onDismissRequest = { showProgramListDialog = false },
-        list = programs,
-        dismissButton = {
-          TextButton(onClick = { showProgramListDialog = false }) { Text("Cancel") }
-        },
-        onClick = { program ->
-          showProgramListDialog = false
-          if (program.id == -1) {
-            trainViewModel.startWorkout(
-              Workout.getDefaultInstance(),
-              -1,
-              longClickedDate.atTimeNow(),
-              navController,
-            )
-          } else {
-            selectedProgram = program
-          }
-        },
-      ) { program ->
-        ExtendedListItem(
-          headlineContent = { Text(program.name, maxLines = 2, overflow = TextOverflow.Ellipsis) }
-        )
-      }
-
-    selectedProgram?.let { program ->
-      ListAlertDialog(
-        title = "Which one would you like to perform?",
-        onDismissRequest = { selectedProgram = null },
-        dismissButton = { TextButton(onClick = { selectedProgram = null }) { Text("Cancel") } },
-        list = program.workoutsList,
-        onClick = { day ->
-          selectedProgram = null
-          trainViewModel.startWorkout(day, program.id, longClickedDate.atTimeNow(), navController)
-        },
-      ) { day ->
-        ExtendedListItem(
-          headlineContent = { Text(day.name, maxLines = 2, overflow = TextOverflow.Ellipsis) }
-        )
-      }
     }
   }
 }
@@ -165,9 +162,9 @@ private fun CalendarItem(
   text: String,
   onClick: (() -> Unit)? = null,
   onLongClick: (() -> Unit)? = null,
-  textAlpha: Float = 1F,
-  underline: Boolean = false,
   backgroundColor: Color = Color.Unspecified,
+  textColor: Color = contentColorFor(backgroundColor),
+  underline: Boolean = false,
 ) {
   Box(modifier = modifier.wrapContentSize().padding(4.dp), contentAlignment = Alignment.Center) {
     Surface(
@@ -182,11 +179,7 @@ private fun CalendarItem(
     )
     Text(
       text,
-      color =
-        MaterialTheme.colorScheme
-          .contentColorFor(backgroundColor)
-          .takeOrElse { MaterialTheme.colorScheme.onBackground }
-          .copy(alpha = textAlpha),
+      color = textColor.takeOrElse { MaterialTheme.colorScheme.onBackground },
       modifier = Modifier.padding(10.dp),
       textAlign = TextAlign.Center,
       textDecoration = if (underline) TextDecoration.Underline else null,

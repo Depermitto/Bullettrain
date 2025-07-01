@@ -50,12 +50,12 @@ fun SwipeToDeleteBox(
       backgroundContent = {
         Box(
           contentAlignment = Alignment.CenterEnd,
-          modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.errorContainer),
+          modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.error),
           content = {
             Text(
               text,
               modifier = Modifier.padding(horizontal = Dp.Medium),
-              color = MaterialTheme.colorScheme.onErrorContainer,
+              color = MaterialTheme.colorScheme.onError,
             )
           },
         )
