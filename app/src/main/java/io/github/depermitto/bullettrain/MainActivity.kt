@@ -5,8 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -40,14 +39,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -79,13 +77,12 @@ import io.github.depermitto.bullettrain.theme.GymAppTheme
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.ScaleTransitionDirection
 import io.github.depermitto.bullettrain.theme.WideSpacing
-import io.github.depermitto.bullettrain.theme.adaptiveIconTint
-import io.github.depermitto.bullettrain.theme.lightFocalGround
 import io.github.depermitto.bullettrain.theme.scaleIntoContainer
 import io.github.depermitto.bullettrain.theme.scaleOutOfContainer
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.train.TrainingScreen
 import io.github.vinceglb.filekit.core.FileKit
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
@@ -118,8 +115,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun App(db: Database) = MaterialTheme {
     val navController = rememberNavController()
+    val scope = rememberCoroutineScope()
 
-    val homeViewModel = viewModel<HomeViewModel>(factory = HomeViewModel.Factory(Tab.Train))
+    val homeViewModel = viewModel<HomeViewModel>(factory = HomeViewModel.Factory())
     val trainViewModel = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController))
     var programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program()))
 
@@ -140,33 +138,22 @@ fun App(db: Database) = MaterialTheme {
         popEnterTransition = { scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS) },
         popExitTransition = { scaleOutOfContainer() }) {
         composable<Destination.Home> {
-            var dragDirection by remember { mutableFloatStateOf(0f) }
-            Scaffold(modifier = Modifier.pointerInput(Unit) {
-                detectDragGestures(onDragEnd = {
-                    when {
-                        dragDirection > 20 -> homeViewModel.switchTab(tab = homeViewModel.activeTab.prev())
-                        dragDirection < 20 -> homeViewModel.switchTab(tab = homeViewModel.activeTab.next())
-                    }
-                }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
-            }, topBar = {
-                if (homeViewModel.activeTab == Tab.Train || homeViewModel.activeTab == Tab.Programs) TopBarWithSettingsButton(
-                    navController = navController, title = "Home"
-                )
-            }, bottomBar = {
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.lightFocalGround, contentColor = MaterialTheme.colorScheme.primary
-                ) {
-                    Tab.entries.forEach { tab ->
-                        NavigationBarItem(selected = homeViewModel.activeTab == tab,
-                            onClick = { homeViewModel.switchTab(tab) },
-                            icon = {
-                                Image(
-                                    painterResource(id = tab.icon),
-                                    contentDescription = tab.name,
-                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.adaptiveIconTint)
-                                )
-                            },
-                            label = { Text(text = tab.name) })
+            val pager = rememberPagerState(initialPage = Tab.Train.ordinal) { Tab.entries.size }
+            Scaffold(topBar = { TopBarWithSettingsButton(navController = navController, title = "Home") }, bottomBar = {
+                NavigationBar(tonalElevation = 8.dp) {
+                    Tab.entries.forEachIndexed { tabIndex, tab ->
+                        val isSelected = pager.currentPage == tabIndex
+                        NavigationBarItem(selected = isSelected, onClick = {
+                            if (!isSelected) {
+                                scope.launch {
+                                    pager.animateScrollToPage(tabIndex)
+                                }
+                            }
+                        }, icon = {
+                            Icon(painter = painterResource(id = tab.icon), contentDescription = tab.name)
+                        }, label = {
+                            Text(text = tab.name)
+                        }, alwaysShowLabel = false)
                     }
                 }
             }) { paddingValues ->
@@ -181,6 +168,7 @@ fun App(db: Database) = MaterialTheme {
                     programDao = db.programDao,
                     historyDao = db.historyDao,
                     settingsDao = db.settingsDao,
+                    pagerState = pager,
                     navController = navController
                 )
             }
@@ -391,8 +379,7 @@ fun App(db: Database) = MaterialTheme {
                 // This is a essentially copy from ExercisesListScreen.kt
                 if (showRenameDialog) {
                     var errorMessage by rememberSaveable { mutableStateOf("") }
-                    TextFieldAlertDialog(
-                        onDismissRequest = { showRenameDialog = false },
+                    TextFieldAlertDialog(onDismissRequest = { showRenameDialog = false },
                         startingText = exercise.name,
                         dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Discard") } },
                         confirmButton = { name ->

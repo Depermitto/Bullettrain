@@ -1,5 +1,7 @@
 package io.github.depermitto.bullettrain.home
 
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
@@ -21,19 +23,17 @@ fun HomeScreen(
     homeViewModel: HomeViewModel,
     trainViewModel: TrainViewModel,
     programViewModel: ProgramViewModel,
+    pagerState: PagerState,
     exerciseDao: ExerciseDao,
     programDao: ProgramDao,
     historyDao: HistoryDao,
     settingsDao: SettingsDao,
     navController: NavController,
-) {
-    when (homeViewModel.activeTab) {
-        Tab.Exercises -> ExerciseTab(
-            modifier = modifier, exerciseDao = exerciseDao, historyDao = historyDao, navController = navController
-        )
+) = HorizontalPager(modifier = modifier, state = pagerState) { page ->
+    when (Tab.entries[page]) {
+        Tab.Exercises -> ExerciseTab(exerciseDao = exerciseDao, historyDao = historyDao, navController = navController)
 
         Tab.History -> HistoryTab(
-            modifier = modifier,
             homeViewModel = homeViewModel,
             trainViewModel = trainViewModel,
             settingsDao = settingsDao,
@@ -42,15 +42,8 @@ fun HomeScreen(
             navController = navController
         )
 
-        Tab.Train -> TrainTab(
-            modifier = modifier, trainViewModel = trainViewModel, programDao = programDao, navController = navController
-        )
+        Tab.Train -> TrainTab(trainViewModel = trainViewModel, programDao = programDao, navController = navController)
 
-        Tab.Programs -> ProgramsTab(
-            modifier = modifier,
-            programViewModel = programViewModel,
-            programDao = programDao,
-            navController = navController,
-        )
+        Tab.Programs -> ProgramsTab(programViewModel = programViewModel, programDao = programDao, navController = navController)
     }
 }

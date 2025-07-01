@@ -22,17 +22,16 @@ import io.github.depermitto.bullettrain.theme.focalGround
 fun TrainTab(
     modifier: Modifier = Modifier, trainViewModel: TrainViewModel, programDao: ProgramDao, navController: NavController
 ) = Column(
-    modifier = modifier.padding(horizontal = RegularPadding),
+    modifier = modifier
+        .fillMaxSize()
+        .padding(horizontal = RegularPadding),
     horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.Center,
 ) {
     val programs by programDao.getAlmostAll.collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedProgramIndex by rememberSaveable { mutableIntStateOf(0) }
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(0.dp, 400.dp),
+        modifier = Modifier.heightIn(0.dp, 400.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround)
     ) {
         Box(
@@ -47,25 +46,25 @@ fun TrainTab(
             )
 
             programs.getOrNull(selectedProgramIndex)?.let { program ->
-                WorkoutTable(
-                    modifier = Modifier.align(Alignment.TopCenter),
+                WorkoutTable(modifier = Modifier.align(Alignment.TopCenter),
                     program = program,
                     workout = program.nextDay(),
                     headers = Pair("Exercise", "Sets"),
                     exstractor = { exercise -> exercise.sets.size.toString() },
                     ratio = Ratio.Strict(0.9f),
-                    navController = navController
-                )
-                ElevatedButton(
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                    onClick = { trainViewModel.startWorkout(program.nextDay(), program) },
-                    colors = ButtonDefaults.elevatedButtonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                ) {
-                    Text(text = "Start ${program.nextDay().name}")
-                }
+                    navController = navController,
+                    overlayingContent = {
+                        ElevatedButton(
+                            modifier = Modifier.align(Alignment.BottomCenter),
+                            onClick = { trainViewModel.startWorkout(program.nextDay(), program) },
+                            colors = ButtonDefaults.elevatedButtonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        ) {
+                            Text(text = "Start ${program.nextDay().name}")
+                        }
+                    })
             }
         }
     }
@@ -84,7 +83,8 @@ fun TrainTab(
             )
         }
     }
-    OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { trainViewModel.startWorkout(Day(), Program.EmptyWorkout) }) {
+
+    OutlinedButton(modifier = Modifier.width(220.dp), onClick = { trainViewModel.startWorkout(Day(), Program.EmptyWorkout) }) {
         Text(text = "Start Empty Workout")
     }
 }
