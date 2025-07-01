@@ -34,10 +34,11 @@ fun ExerciseScreen(modifier: Modifier = Modifier, historyDao: HistoryDao, settin
         verticalArrangement = Arrangement.spacedBy(RegularSpacing),
     ) {
         items(loggedExercises) { exercise ->
-            val doneDate = exercise.sets.getOrElse(0) { return@items }.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
+            val sets = exercise.getPerformedSets()
+            val doneDate = sets.firstOrNull()?.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
             GhostCard {
                 BasicTable(
-                    headers = Pair("Set", "Completed"), list = exercise.sets, separateHeadersAndContent = false,
+                    headers = Pair("Set", "Completed"), list = sets, separateHeadersAndContent = false,
                     headlineContent = { Text(dateFormatter.format(doneDate), style = MaterialTheme.typography.titleMedium) },
                 ) { setIndex, set ->
                     Pair(

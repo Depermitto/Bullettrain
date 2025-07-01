@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 sealed interface Destination {
     @Serializable
-    data class Home(val tab: Tab) : Destination {
+    data object Home : Destination {
         enum class Tab(val icon: Int) {
             Exercises(R.drawable.database_search),
             History(R.drawable.history),

@@ -111,7 +111,7 @@ fun HistoryTab(
                     workout = record.workout,
                     program = record.relatedProgram,
                     exstractor = { exercise ->
-                        val setsGroupedByWeight = exercise.sets.groupBy { it.weight }.filter { (weight, _) -> weight != 0f }
+                        val setsGroupedByWeight = exercise.getPerformedSets().groupBy { it.weight }.filter { (weight, _) -> weight != 0f }
                         if (setsGroupedByWeight.isNotEmpty()) setsGroupedByWeight.map { (weight, sets) -> "${sets.size}x${weight.encodeToStringOutput()}" }
                             .joinToString(", ", postfix = " " + settingsDao.weightUnit())
                         else null

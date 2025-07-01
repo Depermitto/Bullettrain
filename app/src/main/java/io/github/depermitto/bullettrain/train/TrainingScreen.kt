@@ -51,15 +51,15 @@ import io.github.depermitto.bullettrain.database.ExerciseSet
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
-import io.github.depermitto.bullettrain.theme.WideSpacing
 import io.github.depermitto.bullettrain.theme.CompactIconSize
 import io.github.depermitto.bullettrain.theme.NarrowWeight
-import io.github.depermitto.bullettrain.theme.SmallSpacing
-import io.github.depermitto.bullettrain.theme.WideWeight
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.RegularSpacing
+import io.github.depermitto.bullettrain.theme.SmallSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.SwapIcon
+import io.github.depermitto.bullettrain.theme.WideSpacing
+import io.github.depermitto.bullettrain.theme.WideWeight
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.theme.numeric
 import kotlinx.coroutines.launch
@@ -91,7 +91,7 @@ fun TrainingScreen(
                 onDismissRequest = { showSwapExerciseChooser = false },
                 onChoose = { it -> trainViewModel.setExercise(exerciseIndex, exercise.copy(name = it.name, id = it.id)) })
 
-            val lastPerformedSet = exercise.lastPerformedSet()
+            val lastPerformedSet = exercise.sets.lastOrNull { it.doneTs != null }
             Row(
                 modifier = Modifier
                     .padding(RegularPadding)
@@ -189,9 +189,7 @@ fun TrainingScreen(
                             .padding(horizontal = SmallSpacing),
                             value = set.actualPerfVar,
                             onValueChange = {
-                                trainViewModel.setExerciseSet(
-                                    exerciseIndex, setIndex, set.copy(actualPerfVar = it)
-                                )
+                                trainViewModel.setExerciseSet(exerciseIndex, setIndex, set.copy(actualPerfVar = it))
                             },
                             completed = set.completed,
                             placeholder = { lastPerformedSet?.let { Placeholder(it.actualPerfVar.encodeToStringOutput()) } })

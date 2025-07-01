@@ -119,6 +119,7 @@ class MainActivity : ComponentActivity() {
 fun App(db: Database) = MaterialTheme {
     val navController = rememberNavController()
 
+    val homeViewModel = viewModel<HomeViewModel>(factory = HomeViewModel.Factory(Tab.Train))
     val trainViewModel = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController))
     var programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program()))
 
@@ -128,11 +129,7 @@ fun App(db: Database) = MaterialTheme {
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
     NavHost(navController = navController,
-        startDestination = if (runBlocking { trainViewModel.restoreWorkout() }) {
-            Destination.Training
-        } else {
-            Destination.Home(Tab.Exercises)
-        },
+        startDestination = if (runBlocking { trainViewModel.restoreWorkout() }) Destination.Training else Destination.Home,
         modifier = Modifier.pointerInput(Unit) {
             detectTapGestures(onTap = {
                 focusManager.clearFocus()
@@ -142,11 +139,7 @@ fun App(db: Database) = MaterialTheme {
         exitTransition = { scaleOutOfContainer(direction = ScaleTransitionDirection.INWARDS) },
         popEnterTransition = { scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS) },
         popExitTransition = { scaleOutOfContainer() }) {
-        composable<Destination.Home> { navBackStackEntry ->
-            val homeViewModel = viewModel<HomeViewModel>(
-                factory = HomeViewModel.Factory(tab = navBackStackEntry.toRoute<Destination.Home>().tab)
-            )
-
+        composable<Destination.Home> {
             var dragDirection by remember { mutableFloatStateOf(0f) }
             Scaffold(modifier = Modifier.pointerInput(Unit) {
                 detectDragGestures(onDragEnd = {
@@ -393,7 +386,7 @@ fun App(db: Database) = MaterialTheme {
                         exercise = exercise
                     )
                 }
-                
+
                 // This is a essentially copy from ExercisesListScreen.kt
                 if (showRenameDialog) {
                     var errorMessage by rememberSaveable { mutableStateOf("") }

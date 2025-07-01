@@ -6,7 +6,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
-import io.github.depermitto.bullettrain.Destination.Home.Tab
 import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Day
 import io.github.depermitto.bullettrain.database.Exercise
@@ -21,39 +20,48 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.Timer
 import kotlin.concurrent.timer
 import kotlin.math.max
 
 @Serializable
 enum class WorkoutPhase { During, Completed, Editing }
 
-data class WorkoutState(
-    val historyRecord: HistoryRecord,
-    val timer: Timer,
-)
-
 class TrainViewModel(
     private val historyDao: HistoryDao,
     private val programDao: ProgramDao,
     private val navController: NavController,
 ) : ViewModel() {
-    private var workoutState: WorkoutState? = null
+    private lateinit var timer: Timer
+    private var workoutState: HistoryRecord? = null
     private var exercises = mutableStateListOf<Exercise>()
     private var clock: Instant by mutableStateOf(Instant.ofEpochMilli(0))
 
-    fun isWorkoutRunning(): Boolean = workoutState?.historyRecord?.workoutPhase != WorkoutPhase.Completed
-    fun isWorkoutEditing(): Boolean = workoutState?.historyRecord?.workoutPhase == WorkoutPhase.Editing
+    fun isWorkoutRunning(): Boolean = workoutState?.workoutPhase != WorkoutPhase.Completed
+    fun isWorkoutEditing(): Boolean = workoutState?.workoutPhase == WorkoutPhase.Editing
 
-    fun setExercise(index: Int, exercise: Exercise) = exercises.set(index, exercise)
+    fun setExercise(index: Int, exercise: Exercise) {
+        exercises[index] = exercise
+        backup()
+    }
+
     fun setExerciseSet(exerciseIndex: Int, setIndex: Int, set: ExerciseSet) = setExercise(
         exerciseIndex, getExercise(exerciseIndex).copy(sets = getExercise(exerciseIndex).sets.smallListSet(setIndex, set))
     )
 
     fun getExercise(index: Int) = exercises[index]
     fun getExercises() = exercises
-    fun addExercise(exercise: Exercise) = exercises.add(exercise)
-    fun removeExercise(index: Int) = exercises.removeAt(index)
+
+    fun addExercise(exercise: Exercise) {
+        exercises.add(exercise)
+        backup()
+    }
+
+    fun removeExercise(index: Int) {
+        exercises.removeAt(index)
+        backup()
+    }
+
     fun removeExerciseSet(exerciseIndex: Int, setIndex: Int) = setExercise(
         exerciseIndex,
         getExercise(exerciseIndex).copy(sets = getExercise(exerciseIndex).sets.filterIndexed { i, _ -> i != setIndex })
@@ -96,8 +104,8 @@ class TrainViewModel(
     }
 
     fun completeWorkout() = endWorkout { state ->
-        val record = state.historyRecord.copy(
-            workoutPhase = WorkoutPhase.Completed, workout = state.historyRecord.workout.copy(exercises = exercises.toList())
+        val record = state.copy(
+            workoutPhase = WorkoutPhase.Completed, workout = state.workout.copy(exercises = exercises.toList())
         )
         val nextDay = (record.relatedProgram.nextDayIndex + 1) % record.relatedProgram.days.size
 
@@ -107,16 +115,16 @@ class TrainViewModel(
 
     fun cancelWorkout() {
         if (isWorkoutEditing()) {
-            endWorkout(Destination.Home(Tab.History)) { state -> historyDao.update(state.historyRecord.copy(workoutPhase = WorkoutPhase.Completed)) }
+            endWorkout(Destination.Home) { state -> historyDao.update(state.copy(workoutPhase = WorkoutPhase.Completed)) }
         } else {
-            endWorkout { state -> historyDao.delete(state.historyRecord) }
+            endWorkout { state -> historyDao.delete(state) }
         }
     }
 
     private fun endWorkout(
-        destination: Destination = Destination.Home(Tab.Train), deinit: (WorkoutState) -> Unit
+        destination: Destination = Destination.Home, deinit: (HistoryRecord) -> Unit
     ) = workoutState?.let { state ->
-        state.timer.cancel()
+        timer.cancel()
 
         deinit(state)
 
@@ -137,7 +145,7 @@ class TrainViewModel(
 
         if (isWorkoutEditing()) return "Editing"
 
-        val millis = instant?.toEpochMilli() ?: workoutState?.historyRecord?.workoutStartTs?.toEpochMilli() ?: return ""
+        val millis = instant?.toEpochMilli() ?: workoutState?.workoutStartTs?.toEpochMilli() ?: return ""
         val differenceMillis = max(0, clock.toEpochMilli() - millis)
         val hours = differenceMillis / (1000 * 60 * 60)
 
@@ -148,23 +156,23 @@ class TrainViewModel(
         }
     }
 
+    private fun backup() = BackgroundSlave.enqueue {
+        workoutState = workoutState?.let { state ->
+            state.copy(workout = state.workout.copy(exercises = exercises.toList())).also { historyDao.upsert(it) }
+        }
+    }
+
     private fun createState(historyRecord: HistoryRecord) {
         if (workoutState == null) {
             val newId = historyDao.upsert(historyRecord)
             val record = if (newId == -1) historyRecord else historyRecord.copy(id = newId)
 
-            clock = Instant.now()
-            exercises = record.workout.exercises.toMutableStateList()
-            workoutState = WorkoutState(historyRecord = record, timer = timer(initialDelay = 1000L, period = 1000L) {
+            timer = timer(initialDelay = 1000L, period = 1000L) {
                 clock = Instant.now()
-                BackgroundSlave.enqueue {
-                    workoutState = workoutState?.let {
-                        it.copy(historyRecord = it.historyRecord.copy(workout = it.historyRecord.workout.copy(exercises = exercises.toList())))
-                    }
-
-                    historyDao.upsert(workoutState?.historyRecord ?: return@enqueue)
-                }
-            })
+            }
+            exercises = record.workout.exercises.toMutableStateList()
+            workoutState = record
+            backup()
         } else throw UnsupportedOperationException("WorkoutState Is Not Null")
     }
 
