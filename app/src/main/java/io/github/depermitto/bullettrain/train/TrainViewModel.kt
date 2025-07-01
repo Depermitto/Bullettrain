@@ -104,19 +104,14 @@ class TrainViewModel(
         val nextDay = (record.relatedProgram.nextDayIndex + 1) % record.relatedProgram.days.size
 
         historyDao.upsert(record)
-        programDao.upsert(
-            record.relatedProgram.copy(
-                nextDayIndex = nextDay,
-                mostRecentWorkoutDate = LocalDate.now()
-            )
-        )
+        programDao.upsert(record.relatedProgram.copy(nextDayIndex = nextDay, mostRecentWorkoutDate = LocalDate.now()))
     }
 
     fun cancelWorkout() {
         if (workoutState?.historyRecord?.workoutPhase == WorkoutPhase.Editing) {
-            endWorkout(Destination.Home(Tab.History), deinit = {})
+            endWorkout(Destination.Home(Tab.History)) { state -> historyDao.update(state.historyRecord.copy(workoutPhase = WorkoutPhase.Completed)) }
         } else {
-            endWorkout { historyDao.delete(it.historyRecord) }
+            endWorkout { state -> historyDao.delete(state.historyRecord) }
         }
     }
 

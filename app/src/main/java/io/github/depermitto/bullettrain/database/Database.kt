@@ -190,7 +190,7 @@ class SettingsDao(private val file: SettingsFile) {
 
 class HistoryDao(file: HistoryFile) : Dao<HistoryRecord>(file) {
     suspend fun getUnfinishedBusiness(): HistoryRecord? =
-        getAll.map { records -> records.filter { record -> record.workoutPhase == WorkoutPhase.During } }.firstOrNull()
+        getAll.map { records -> records.filter { record -> record.workoutPhase != WorkoutPhase.Completed } }.firstOrNull()
             ?.firstOrNull()
 
     fun where(month: Month, year: Int): Flow<List<HistoryRecord>> = getAll.map { records ->
