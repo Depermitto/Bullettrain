@@ -17,12 +17,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
+import io.github.depermitto.bullettrain.Destination.Home.Tab.*
 import io.github.depermitto.bullettrain.R
 import io.github.depermitto.bullettrain.components.DataPanel
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.db.ExerciseDao
 import io.github.depermitto.bullettrain.db.ProgramDao
+import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.protos.ProgramsProto.Workout
 import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.ExtraLarge
@@ -31,16 +33,19 @@ import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.focalGround
 import io.github.depermitto.bullettrain.util.toTimestamp
 import java.time.Instant
+import kotlinx.coroutines.launch
 
 @Composable
 fun TrainTab(
   modifier: Modifier = Modifier,
+  homeViewModel: HomeViewModel,
   trainViewModel: TrainViewModel,
   programDao: ProgramDao,
   exerciseDao: ExerciseDao,
   settings: Settings,
   navController: NavController,
 ) {
+  val scope = rememberCoroutineScope()
   Column(modifier.fillMaxSize().padding(horizontal = Dp.Medium)) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       val programs by
@@ -95,6 +100,7 @@ fun TrainTab(
         }
 
         Spacer(Modifier.weight(1F))
+
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
           ElevatedButton(
             onClick = { showChangeDayIndexDialog = true },
@@ -164,18 +170,36 @@ fun TrainTab(
 
     Spacer(modifier = Modifier.height(Dp.ExtraLarge))
 
+    Text(modifier = Modifier.padding(start = 8.dp), text = "Other Options")
     Column {
-      Text(modifier = Modifier.padding(start = 8.dp), text = "No idea for a session?")
-      ElevatedButton(
+      OutlinedButton(
         modifier = Modifier.fillMaxWidth(),
         onClick = {
           trainViewModel.startWorkout(Workout.getDefaultInstance(), -1, Instant.now().toTimestamp())
         },
-        colors =
-          ButtonDefaults.elevatedButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(16.dp, 16.dp, 4.dp, 4.dp),
       ) {
-        Text("Impromptu Workout")
+        Text(text = "Start Empty Session", maxLines = 1)
+      }
+      Row(modifier = Modifier.offset(y = (-4).dp)) {
+        ElevatedButton(
+          modifier = Modifier.weight(1F),
+          onClick = {
+            homeViewModel.resetDate()
+            scope.launch { homeViewModel.screenPager.animateScrollToPage(History.ordinal) }
+          },
+          shape = RoundedCornerShape(4.dp, 4.dp, 4.dp, 16.dp),
+        ) {
+          Text(text = "Review Last Workout", maxLines = 1)
+        }
+        Spacer(modifier = Modifier.width(2.dp))
+        ElevatedButton(
+          modifier = Modifier.weight(1F),
+          onClick = { navController.navigate(Destination.ProgramCreation) },
+          shape = RoundedCornerShape(4.dp, 4.dp, 16.dp, 4.dp),
+        ) {
+          Text(text = "Create a Program", maxLines = 1)
+        }
       }
     }
   }

@@ -221,7 +221,7 @@ fun HistoryTab(
     ) {
       TextButton(
         modifier = Modifier.padding(bottom = Dp.Medium),
-        onClick = { homeViewModel.calendarDate = today },
+        onClick = { homeViewModel.resetDate() },
         colors =
           ButtonDefaults.textButtonColors(
             contentColor = MaterialTheme.colorScheme.onBackground,

@@ -1,7 +1,6 @@
 package io.github.depermitto.bullettrain.home
 
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
@@ -27,10 +26,9 @@ fun HomeScreen(
   programDao: ProgramDao,
   historyDao: HistoryDao,
   settings: Settings,
-  pagerState: PagerState,
   navController: NavController,
 ) {
-  HorizontalPager(modifier = modifier, state = pagerState) { page ->
+  HorizontalPager(modifier = modifier, state = homeViewModel.screenPager) { page ->
     when (Tab.entries[page]) {
       Tab.Exercises ->
         ExerciseTab(
@@ -53,6 +51,7 @@ fun HomeScreen(
       Tab.Train ->
         TrainTab(
           trainViewModel = trainViewModel,
+          homeViewModel = homeViewModel,
           programDao = programDao,
           exerciseDao = exerciseDao,
           settings = settings,

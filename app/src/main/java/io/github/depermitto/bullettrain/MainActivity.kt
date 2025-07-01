@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -133,8 +132,10 @@ fun App(db: Db) = MaterialTheme {
   val scope = rememberCoroutineScope()
   val snackbarHostState = remember { SnackbarHostState() }
 
-  val homeViewModel = viewModel<HomeViewModel>(factory = HomeViewModel.Factory())
-  val homeScreenPager = rememberPagerState(initialPage = Tab.Train.ordinal) { Tab.entries.size }
+  val homeViewModel =
+    viewModel<HomeViewModel>(
+      factory = HomeViewModel.Factory(initialPage = Tab.Train, historyDao = db.historyDao)
+    )
   val settings by db.settingsDao.get.collectAsStateWithLifecycle()
 
   val trainViewModel =
@@ -166,17 +167,17 @@ fun App(db: Db) = MaterialTheme {
         bottomBar = {
           NavigationBar(tonalElevation = 8.dp) {
             Tab.entries.forEachIndexed { tabIndex, tab ->
-              val isSelected = homeScreenPager.currentPage == tabIndex
+              val isSelected = homeViewModel.screenPager.currentPage == tabIndex
               NavigationBarItem(
                 selected = isSelected,
                 onClick = {
                   if (!isSelected) {
-                    scope.launch { homeScreenPager.animateScrollToPage(tabIndex) }
+                    scope.launch { homeViewModel.screenPager.animateScrollToPage(tabIndex) }
                   }
                 },
                 icon = { Icon(painterResource(id = tab.icon), tab.name) },
                 label = { Text(text = tab.name) },
-                alwaysShowLabel = false,
+                alwaysShowLabel = false
               )
             }
           }
@@ -191,7 +192,6 @@ fun App(db: Db) = MaterialTheme {
           programDao = db.programDao,
           historyDao = db.historyDao,
           settings = settings,
-          pagerState = homeScreenPager,
           navController = navController,
         )
       }
