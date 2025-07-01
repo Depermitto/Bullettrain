@@ -35,7 +35,6 @@ import io.github.depermitto.bullettrain.components.WorkoutTable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.home.HomeViewModel
-import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
 import io.github.depermitto.bullettrain.theme.focalGround
@@ -64,8 +63,7 @@ fun HistoryTab(
     Column(
         modifier = Modifier
             .padding(horizontal = Dp.Medium)
-            .verticalScroll(rememberScrollState())
-            .padding(bottom = Dp.EmptyScrollSpace),
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Dp.Small)
     ) {

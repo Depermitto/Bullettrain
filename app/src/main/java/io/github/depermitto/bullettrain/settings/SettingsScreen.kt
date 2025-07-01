@@ -34,7 +34,7 @@ fun SettingsScreen(
 
     SettingList(headline = "Palette",
         supporting = settings.palette.name,
-        list = listOfNotNull(dynamicPalette, RhinoButtercupPalette, FlamePeaPalette, WoodsmokePalette),
+        list = listOfNotNull(dynamicPalette, RhinoButtercupPalette, FlamePeaPalette, WoodsmokePalette, EmeraldPalette),
         onClick = { db.settingsDao.update { state -> state.copy(palette = it) } }) { palette ->
         ListItem(headlineContent = { Text(palette.name) }, selected = palette.name == settings.palette.name)
     }

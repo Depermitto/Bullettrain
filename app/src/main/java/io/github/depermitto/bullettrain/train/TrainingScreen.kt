@@ -10,12 +10,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -53,7 +54,6 @@ import io.github.depermitto.bullettrain.exercises.ExerciseChooser
 import io.github.depermitto.bullettrain.theme.*
 import kotlinx.coroutines.launch
 import kotlin.collections.all
-import kotlin.collections.plus
 
 @Composable
 fun TrainingScreen(
@@ -74,6 +74,7 @@ fun TrainingScreen(
     trainViewModel.getWorkoutEntries().forEachIndexed { exerciseIndex, exercise ->
         val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
         var showExerciseDeleteDialog by remember { mutableStateOf(false) }
+        // use Dp.Small for horizontal, Dp.Medium for vertical
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.focalGround(settings.theme))) {
             var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
             if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
@@ -116,6 +117,19 @@ fun TrainingScreen(
                             showDropdownButton = false
                             showSwapExerciseChooser = true
                         })
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    FilledTonalIconButton(modifier = Modifier.size(SqueezableIconSize), onClick = {
+                        trainViewModel.setExercise(
+                            exerciseIndex, exercise.copy(
+                                sets = exercise.sets + ExerciseSet(
+                                    actualIntensity = exercise.intensity?.let { 0f },
+                                    targetPerfVar = PerfVar.of(exercise.perfVarCategory),
+                                )
+                            )
+                        )
+                    }) {
+                        Icon(Icons.Filled.Add, null)
                     }
                 }
             })
@@ -198,23 +212,7 @@ fun TrainingScreen(
                     }
                 }
             }
-
-            OutlinedButton(modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dp.Medium),
-                colors = ButtonDefaults.outlinedButtonColors().copy(contentColor = MaterialTheme.colorScheme.tertiary),
-                onClick = {
-                    trainViewModel.setExercise(
-                        exerciseIndex, exercise.copy(
-                            sets = exercise.sets + ExerciseSet(
-                                actualIntensity = exercise.intensity?.let { 0f },
-                                targetPerfVar = PerfVar.of(exercise.perfVarCategory),
-                            )
-                        )
-                    )
-                }) {
-                Text(text = "Add Set")
-            }
+            Spacer(Modifier.height(Dp.Medium))
         }
 
         if (showExerciseDeleteDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showExerciseDeleteDialog = false },
