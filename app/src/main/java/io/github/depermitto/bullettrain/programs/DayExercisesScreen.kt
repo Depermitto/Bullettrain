@@ -63,10 +63,10 @@ import io.github.depermitto.bullettrain.theme.ItemPadding
 import io.github.depermitto.bullettrain.theme.ItemSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.filledContainerColor
-import io.github.depermitto.bullettrain.util.DragHandleIcon
-import io.github.depermitto.bullettrain.util.DuplicateIcon
-import io.github.depermitto.bullettrain.util.HeartPlusIcon
-import io.github.depermitto.bullettrain.util.HeartRemoveIcon
+import io.github.depermitto.bullettrain.theme.DragHandleIcon
+import io.github.depermitto.bullettrain.theme.DuplicateIcon
+import io.github.depermitto.bullettrain.theme.HeartPlusIcon
+import io.github.depermitto.bullettrain.theme.HeartRemoveIcon
 import io.github.depermitto.bullettrain.util.reorder
 import io.github.depermitto.bullettrain.util.smallListSet
 import kotlinx.coroutines.launch

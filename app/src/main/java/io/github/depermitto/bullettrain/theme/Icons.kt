@@ -1,11 +1,10 @@
-package io.github.depermitto.bullettrain.util
+package io.github.depermitto.bullettrain.theme
 
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import io.github.depermitto.bullettrain.R
-import io.github.depermitto.bullettrain.theme.adaptiveIconTint
 
 val SwapIcon: @Composable () -> Unit = {
     Image(

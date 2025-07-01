@@ -51,6 +51,9 @@ import io.github.depermitto.bullettrain.programs.ProgramViewModel
 import io.github.depermitto.bullettrain.settings.SettingsScreen
 import io.github.depermitto.bullettrain.theme.GymAppTheme
 import io.github.depermitto.bullettrain.theme.ItemPadding
+import io.github.depermitto.bullettrain.theme.ScaleTransitionDirection
+import io.github.depermitto.bullettrain.theme.scaleIntoContainer
+import io.github.depermitto.bullettrain.theme.scaleOutOfContainer
 import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.train.TrainingScreen
 import io.github.vinceglb.filekit.core.FileKit
@@ -107,6 +110,18 @@ fun App(db: Database) = MaterialTheme {
                 Destinations.Training
             } else {
                 Destinations.Home(Destinations.Home.Tabs.Programs)
+            },
+            enterTransition = {
+                scaleIntoContainer()
+            },
+            exitTransition = {
+                scaleOutOfContainer(direction = ScaleTransitionDirection.INWARDS)
+            },
+            popEnterTransition = {
+                scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS)
+            },
+            popExitTransition = {
+                scaleOutOfContainer()
             }
         ) {
             composable<Destinations.Home> { navBackStackEntry ->

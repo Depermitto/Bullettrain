@@ -57,7 +57,7 @@ import io.github.depermitto.bullettrain.theme.ItemSpacing
 import io.github.depermitto.bullettrain.theme.SqueezableIconSize
 import io.github.depermitto.bullettrain.theme.filledContainerColor
 import io.github.depermitto.bullettrain.theme.numberFieldTextStyle
-import io.github.depermitto.bullettrain.util.SwapIcon
+import io.github.depermitto.bullettrain.theme.SwapIcon
 import kotlinx.coroutines.launch
 import java.time.Instant
 import kotlin.collections.all

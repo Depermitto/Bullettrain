@@ -73,7 +73,11 @@ fun NumberField(
         colors = colors,
         contentPadding = contentPadding,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        keyboardActions = KeyboardActions(onDone = { focusManager.moveFocus(FocusDirection.Next) }),
+        keyboardActions = KeyboardActions(
+            onDone = { focusManager.moveFocus(FocusDirection.Next) },
+            onNext = { focusManager.moveFocus(FocusDirection.Next) },
+            onPrevious = { focusManager.moveFocus(FocusDirection.Previous) },
+        ),
         interactionSource = interactionSource,
         focusedBorderThickness = focusedBorderThickness,
         unfocusedBorderThickness = unfocusedBorderThickness,
