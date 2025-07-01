@@ -16,7 +16,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.BasicTable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.Exercise
-import io.github.depermitto.bullettrain.database.ExerciseDao
 import io.github.depermitto.bullettrain.database.HistoryDao
 import io.github.depermitto.bullettrain.database.SettingsDao
 import io.github.depermitto.bullettrain.theme.CardSpacing
@@ -26,9 +25,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun ExerciseScreen(
-    modifier: Modifier = Modifier, exerciseDao: ExerciseDao, historyDao: HistoryDao, settingsDao: SettingsDao, exercise: Exercise
-) {
+fun ExerciseScreen(modifier: Modifier = Modifier, historyDao: HistoryDao, settingsDao: SettingsDao, exercise: Exercise) {
     val loggedExercises by historyDao.where(exercise).collectAsStateWithLifecycle(initialValue = emptyList())
     val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMM dd yyyy")
 

@@ -11,9 +11,9 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun DropdownButton(
-    modifier: Modifier = Modifier,
     show: Boolean,
     onShowChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
     dropdownItems: @Composable () -> Unit,
 ) {
     Box(modifier = Modifier) {

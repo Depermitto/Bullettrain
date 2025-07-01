@@ -20,8 +20,11 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -57,6 +60,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import io.github.depermitto.bullettrain.Destination.Home.Tab
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
+import io.github.depermitto.bullettrain.components.DropdownButton
+import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.components.TopBarWithBackButton
 import io.github.depermitto.bullettrain.components.TopBarWithSettingsButton
 import io.github.depermitto.bullettrain.database.BackgroundSlave
@@ -197,7 +202,11 @@ fun App(db: Database) = MaterialTheme {
                         .windowInsetsPadding(TopAppBarDefaults.windowInsets)
                         .padding(start = ItemPadding, end = ItemPadding, bottom = CardSpacing)
                 ) {
-                    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp, horizontal = 4.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp, horizontal = 4.dp)
+                    ) {
                         TextButton(
                             modifier = Modifier.align(Alignment.CenterStart),
                             onClick = { showDiscardDialog = true },
@@ -357,24 +366,67 @@ fun App(db: Database) = MaterialTheme {
         }
 
         composable<Destination.Exercise> { navBackStackEntry ->
+            val exercises by db.exerciseDao.getAll.collectAsStateWithLifecycle()
             val exercise by db.exerciseDao.where(navBackStackEntry.toRoute<Destination.Exercise>().exerciseId)
                 .collectAsStateWithLifecycle(null)
             exercise?.let { exercise ->
+                var showDropdown by remember { mutableStateOf(false) }
+                var showRenameDialog by remember { mutableStateOf(false) }
                 Scaffold(topBar = {
-                    TopBarWithBackButton(
-                        navController = navController, title = exercise.name
-                    )
+                    TopBarWithBackButton(navController = navController, title = exercise.name, topEndContent = {
+                        DropdownButton(showDropdown, { showDropdown = it }) {
+                            DropdownMenuItem(text = { Text("Rename") },
+                                leadingIcon = { Icon(Icons.Filled.Edit, "Rename Exercise") },
+                                onClick = { showDropdown = false; showRenameDialog = true })
+                            DropdownMenuItem(text = { Text("Delete") },
+                                leadingIcon = { Icon(Icons.Filled.Delete, "Delete Exercise") },
+                                onClick = { showDropdown = false; showDiscardDialog = true })
+                        }
+                    })
                 }) { paddingValues ->
                     ExerciseScreen(
                         modifier = Modifier
                             .consumeWindowInsets(paddingValues)
                             .padding(paddingValues),
-                        exerciseDao = db.exerciseDao,
                         historyDao = db.historyDao,
                         settingsDao = db.settingsDao,
                         exercise = exercise
                     )
                 }
+                
+                // This is a essentially copy from ExercisesListScreen.kt
+                if (showRenameDialog) {
+                    var errorMessage by rememberSaveable { mutableStateOf("") }
+                    TextFieldAlertDialog(
+                        onDismissRequest = { showRenameDialog = false },
+                        startingText = exercise.name,
+                        dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Discard") } },
+                        confirmButton = { name ->
+                            TextButton(onClick = {
+                                if (name.isBlank()) {
+                                    errorMessage = "Empty Exercise Name"
+                                    return@TextButton
+                                }
+
+                                if (exercises.any { it.name.contentEquals(name.trim(), ignoreCase = true) }) {
+                                    errorMessage = "Duplicate Exercise Name"
+                                    return@TextButton
+                                }
+
+                                db.exerciseDao.update(exercise.copy(name = name))
+                                showRenameDialog = false
+                            }) {
+                                Text("Confirm")
+                            }
+                        },
+                        errorMessage = errorMessage,
+                        isError = errorMessage.isNotBlank()
+                    )
+                }
+
+                if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
+                    text = "All data associated with this exercise will be lost forever. Do you definitely want to remove ${exercise.name}?",
+                    onConfirm = { db.exerciseDao.delete(exercise); navController.navigateUp() })
             }
         }
 

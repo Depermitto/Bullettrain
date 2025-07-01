@@ -234,7 +234,19 @@ class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {
     }
 
     override fun insert(item: Exercise): Int {
+        val item = item.prep()
         bkTree.insert(item.name)
         return super.insert(item)
     }
+
+    override fun update(item: Exercise): Boolean {
+        return super.update(item.prep())
+    }
+
+    override fun upsert(item: Exercise): Int {
+        return super.upsert(item.prep())
+    }
+
+    private fun Exercise.prep() =
+        this.copy(name = name.trim().split(' ').joinToString(" ") { it.lowercase().replaceFirstChar { it.uppercaseChar() } })
 }

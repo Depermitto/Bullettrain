@@ -86,7 +86,7 @@ fun ExercisesListScreen(
                         return@TextButton
                     }
 
-                    exerciseDao.upsert(Exercise(name = name.trim()))
+                    exerciseDao.upsert(Exercise(name = name))
                     showDialog = false
                 }) {
                     Text("Confirm")
