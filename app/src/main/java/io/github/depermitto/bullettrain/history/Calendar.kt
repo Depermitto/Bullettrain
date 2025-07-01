@@ -12,19 +12,21 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.components.HeroTile
+import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.train.TrainViewModel
@@ -82,12 +84,14 @@ fun Calendar(
                                     .clip(shape = CircleShape)
                                     .aspectRatio(1f)
                                     .combinedClickable(onClick = { homeViewModel.selectedDate = day },
-                                        onLongClick = { showDropdown = true })
-                                    .background(
-                                        color = if (homeViewModel.selectedDate == day) MaterialTheme.colorScheme.tertiaryContainer
-                                        else if (currentHistoryRecords.any { it.date == day }) MaterialTheme.colorScheme.primaryContainer
-                                        else Color.Transparent
-                                    ), underline = day == today, text = dayOfMonth.toString()
+                                        onLongClick = { showDropdown = true }),
+                                backgroundColor = when {
+                                    homeViewModel.selectedDate == day -> MaterialTheme.colorScheme.tertiaryContainer
+                                    currentHistoryRecords.any { it.date == day } -> MaterialTheme.colorScheme.primaryContainer
+                                    else -> Color.Transparent
+                                },
+                                underline = day == today,
+                                text = dayOfMonth.toString()
                             )
 
                             DropdownMenu(expanded = showDropdown, onDismissRequest = { showDropdown = false }) {
@@ -162,10 +166,12 @@ private fun CalendarItem(
     text: String,
     textAlpha: Float = 1f,
     underline: Boolean = false,
-) = Box(modifier = modifier) {
+    backgroundColor: Color = Color.Unspecified
+) = Box(modifier = modifier.background(backgroundColor)) {
     Text(
         text = text,
-        color = MaterialTheme.colorScheme.onBackground.copy(alpha = textAlpha),
+        color = MaterialTheme.colorScheme.contentColorFor(backgroundColor).takeOrElse { MaterialTheme.colorScheme.onBackground }
+            .copy(alpha = textAlpha),
         modifier = Modifier
             .align(Alignment.Center)
             .padding(10.dp),
