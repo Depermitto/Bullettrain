@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.*
 import io.github.depermitto.bullettrain.R
 import io.github.depermitto.bullettrain.train.WorkoutPhase
+import io.github.depermitto.bullettrain.util.BKTree
 import io.github.depermitto.bullettrain.util.bigListSet
 import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerType
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.updateAndGet
@@ -24,6 +26,7 @@ import java.time.ZoneId
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
+import kotlin.text.contains
 
 private const val SETTINGS_FILENAME = "settings"
 private const val HISTORY_FILENAME = "history"
@@ -136,7 +139,7 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
      * Update the item and return a boolean indicating if the operation was successful.
      * i.e. return true if item is present in the database.
      */
-    fun update(item: T): Boolean {
+    open fun update(item: T): Boolean {
         val existingIndex = items.value.indexOfFirst { it.id == item.id }
         if (existingIndex == -1) return false
 
@@ -149,7 +152,7 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
      * return id of the inserted item.
      */
     @Suppress("UNCHECKED_CAST")
-    fun insert(item: T): Int {
+    open fun insert(item: T): Int {
         val state = items.updateAndGet { state ->
             newId += 1
             state + item.clone(id = newId) as T
@@ -161,14 +164,14 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
     /**
      * return id of the inserted item or -1 if it existed in the database.
      */
-    fun upsert(item: T): Int = if (update(item)) -1 else insert(item)
+    open fun upsert(item: T): Int = if (update(item)) -1 else insert(item)
 
-    fun delete(item: T) {
+    open fun delete(item: T) {
         val state = items.updateAndGet { state -> state - item }
         BackgroundSlave.enqueue { storageFile.write(state, log = true) }
     }
 
-    fun where(id: Int): Flow<T?> = items.map { it.filter { it.id == id }.firstOrNull() }
+    open fun where(id: Int): Flow<T?> = items.map { it.filter { it.id == id }.firstOrNull() }
 }
 
 class SettingsDao(private val file: SettingsFile) {
@@ -208,5 +211,34 @@ class ProgramDao(file: ProgramsFile) : Dao<Program>(file) {
 }
 
 class ExerciseDao(file: ExerciseFile) : Dao<Exercise>(file) {
+    private val bkTree = BKTree()
+
     val getSortedAlphabetically = getAll.map { it.sortedBy { it.name } }
+
+    /**
+     * Filter out exercises by name. This function provides an autocorrect/typo correcting algorithm that is
+     * controlled with the [errorTolerance] and [ignoreCase] parameters.
+     */
+    fun where(name: String, errorTolerance: Int = 0, ignoreCase: Boolean = false) = getAll.map { exercises ->
+        val words = name.trim().split(' ')
+        val predictedWords = words.mapNotNull { bkTree.search(it, errorTolerance, ignoreCase) }
+
+        exercises.filter { exercise ->
+            words.all { exercise.name.contains(it, ignoreCase) } || // not checking for empty string will show all exercises
+                    (predictedWords.isNotEmpty() && predictedWords.all { exercise.name.contains(it, ignoreCase) })
+        }
+    }
+
+    init {
+        BackgroundSlave.enqueue {
+            getSortedAlphabetically.first().forEach { exercise ->
+                exercise.name.trim().split(' ').filter { word -> word.all { char -> char.isLetter() } }.forEach(bkTree::insert)
+            }
+        }
+    }
+
+    override fun insert(item: Exercise): Int {
+        bkTree.insert(item.name)
+        return super.insert(item)
+    }
 }

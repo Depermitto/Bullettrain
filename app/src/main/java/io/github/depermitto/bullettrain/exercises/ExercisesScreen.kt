@@ -30,8 +30,9 @@ fun ExercisesScreen(
     exerciseDao: ExerciseDao,
     onSelection: (Exercise) -> Unit,
 ) = Box(modifier = modifier.fillMaxSize()) {
-    val exercises by exerciseDao.getSortedAlphabetically.collectAsStateWithLifecycle(initialValue = emptyList())
-    var searchText by rememberSaveable { mutableStateOf("") }
+    var searchText by remember { mutableStateOf("") }
+    val exercises by exerciseDao.where(name = searchText, errorTolerance = 2, ignoreCase = true)
+        .collectAsStateWithLifecycle(initialValue = emptyList())
 
     Column(
         modifier = Modifier
@@ -48,13 +49,13 @@ fun ExercisesScreen(
             maxLines = 1,
             singleLine = true,
             placeholder = { Text(text = "Search Exercises") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Exercises") },
         )
 
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(ItemSpacing), contentPadding = PaddingValues(bottom = ItemPadding)
         ) {
-            items(exercises.filter { it.name.lowercase().contains(searchText.lowercase().trim()) }) { exercise ->
+            items(exercises) { exercise ->
                 OutlinedCard(colors = CardDefaults.cardColors(containerColor = filledContainerColor()),
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { onSelection(exercise) }) {
@@ -85,8 +86,8 @@ fun ExercisesScreen(
 
                     exerciseDao.upsert(Exercise(name = name.trim()))
                     showDialog = false
-                }) { 
-                    Text("Confirm") 
+                }) {
+                    Text("Confirm")
                 }
             },
             errorMessage = "Duplicate Name",
