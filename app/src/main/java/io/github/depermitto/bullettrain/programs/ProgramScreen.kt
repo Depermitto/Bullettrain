@@ -23,8 +23,8 @@ import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.PerfVar
+import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.ItemPadding
-import io.github.depermitto.bullettrain.theme.ItemSpacing
 import io.github.depermitto.bullettrain.util.DuplicateIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,7 +34,7 @@ fun ProgramScreen(
 ) = LazyColumn(
     modifier = Modifier.fillMaxSize(),
     contentPadding = PaddingValues(ItemPadding),
-    verticalArrangement = Arrangement.spacedBy(ItemSpacing),
+    verticalArrangement = Arrangement.spacedBy(CardSpacing),
     horizontalAlignment = Alignment.CenterHorizontally
 ) {
     itemsIndexed(programViewModel.getDays()) { dayIndex, day ->

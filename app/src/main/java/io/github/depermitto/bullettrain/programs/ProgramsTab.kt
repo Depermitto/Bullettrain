@@ -30,8 +30,8 @@ import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.ProgramDao
+import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.ItemPadding
-import io.github.depermitto.bullettrain.theme.ItemSpacing
 import io.github.depermitto.bullettrain.theme.filledContainerColor
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -46,7 +46,7 @@ fun ProgramsTab(
     val programs by programDao.getAlmostAll.collectAsStateWithLifecycle(initialValue = emptyList())
 
     LazyColumn(
-        modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
+        modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(CardSpacing)
     ) {
         items(programs) { program ->
             var showRenameDialog by rememberSaveable { mutableStateOf(false) }

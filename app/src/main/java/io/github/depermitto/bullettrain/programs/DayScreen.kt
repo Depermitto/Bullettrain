@@ -34,6 +34,7 @@ import io.github.depermitto.bullettrain.database.ExerciseSet
 import io.github.depermitto.bullettrain.database.IntensityCategory
 import io.github.depermitto.bullettrain.database.PerfVar
 import io.github.depermitto.bullettrain.database.PerfVarCategory
+import io.github.depermitto.bullettrain.theme.CardSpacing
 import io.github.depermitto.bullettrain.theme.CompactIconSize
 import io.github.depermitto.bullettrain.theme.ExerciseSetNarrowWeight
 import io.github.depermitto.bullettrain.theme.ExerciseSetSpacing
@@ -60,7 +61,7 @@ fun DayScreen(
     val day = programViewModel.getDay(dayIndex)
     ReorderableColumn(modifier = modifier,
         list = day.exercises,
-        verticalArrangement = Arrangement.spacedBy(ItemSpacing),
+        verticalArrangement = Arrangement.spacedBy(CardSpacing),
         onSettle = { fromIndex, toIndex ->
             programViewModel.setDay(dayIndex, day.copy(exercises = day.exercises.reorder(fromIndex, toIndex)))
         }) { exerciseIndex, exercise, isDragging ->
@@ -83,8 +84,10 @@ fun DayScreen(
 
                             fun setIntensity(cat: IntensityCategory?) {
                                 val intensity = if (cat != null) 0f else null
-                                onExerciseChange(exercise.copy(intensityCategory = cat,
-                                    sets = exercise.sets.map<ExerciseSet, ExerciseSet> { it.copy(intensity = intensity) }))
+                                onExerciseChange(
+                                    exercise.copy(intensityCategory = cat,
+                                        sets = exercise.sets.map<ExerciseSet, ExerciseSet> { it.copy(intensity = intensity) })
+                                )
                             }
 
                             if (!exercise.hasIntensity) IconButton(modifier = Modifier.size(SqueezableIconSize),
