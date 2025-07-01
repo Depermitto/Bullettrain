@@ -29,6 +29,7 @@ private const val SETTINGS_FILENAME = "settings"
 private const val HISTORY_FILENAME = "history"
 private const val PROGRAMS_FILENAME = "programs"
 private const val EXERCISES_FILENAME = "exercises"
+internal const val LOG_TAG = "Database-Read/Write"
 
 class Database(private val databaseDirectory: File, private val context: Context) {
 
@@ -140,7 +141,7 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
         if (existingIndex == -1) return false
 
         val state = items.updateAndGet { state -> state.bigListSet(existingIndex, item) }
-        BackgroundSlave.enqueue { storageFile.write(state) }
+        BackgroundSlave.enqueue { storageFile.write(state, log = true) }
         return true
     }
 
@@ -153,7 +154,7 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
             newId += 1
             state + item.clone(id = newId) as T
         }
-        BackgroundSlave.enqueue { storageFile.write(state) }
+        BackgroundSlave.enqueue { storageFile.write(state, log = true) }
         return newId
     }
 
@@ -164,22 +165,22 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
 
     fun delete(item: T) {
         val state = items.updateAndGet { state -> state - item }
-        BackgroundSlave.enqueue { storageFile.write(state) }
+        BackgroundSlave.enqueue { storageFile.write(state, log = true) }
     }
 
     fun where(id: Int): Flow<T?> = items.map { it.filter { it.id == id }.firstOrNull() }
 }
 
 class SettingsDao(private val file: SettingsFile) {
-    private var settings by mutableStateOf(file.read())
+    private val items = MutableStateFlow(file.read())
+    var settings = items.asStateFlow()
 
-    var unitSystem: UnitSystem = settings.unitSystem
-        set(value) {
-            settings = settings.copy(unitSystem = value)
-            file.write(settings)
-        }
+    fun setUnitSystem(value: UnitSystem) {
+        val state = items.updateAndGet { state -> state.copy(unitSystem = value) }
+        BackgroundSlave.enqueue { file.write(state, log = true) }
+    }
 
-    fun weightUnit() = when (settings.unitSystem) {
+    fun weightUnit() = when (items.value.unitSystem) {
         UnitSystem.Metric -> "kg"
         UnitSystem.Imperial -> "lbs"
     }

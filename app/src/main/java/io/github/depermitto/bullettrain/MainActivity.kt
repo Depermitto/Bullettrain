@@ -138,9 +138,7 @@ fun App(db: Database) = MaterialTheme {
                 RibbonScaffold(ribbon = {
                     OutlinedCard(modifier = Modifier.padding(start = ItemPadding, end = ItemPadding, bottom = ItemPadding)) {
                         Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = ItemPadding)
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = ItemPadding)
                         ) {
                             TextButton(
                                 modifier = Modifier.align(Alignment.CenterStart),

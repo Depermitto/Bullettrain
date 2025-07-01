@@ -5,11 +5,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.times
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.database.Database
 import io.github.depermitto.bullettrain.database.UnitSystem
 import io.github.depermitto.bullettrain.theme.ItemPadding
@@ -24,6 +24,7 @@ fun SettingsScreen(
     snackbarHostState: SnackbarHostState,
 ) {
     val scope = rememberCoroutineScope()
+    val settings by db.settingsDao.settings.collectAsStateWithLifecycle()
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -34,12 +35,14 @@ fun SettingsScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(2 * ItemSpacing)
         ) {
-            Text(text = db.settingsDao.unitSystem.name)
-            Switch(checked = db.settingsDao.unitSystem == UnitSystem.Metric, onCheckedChange = {
-                db.settingsDao.unitSystem = when (db.settingsDao.unitSystem) {
-                    UnitSystem.Metric -> UnitSystem.Imperial
-                    UnitSystem.Imperial -> UnitSystem.Metric
-                }
+            Text(text = settings.unitSystem.name)
+            Switch(checked = settings.unitSystem == UnitSystem.Metric, onCheckedChange = {
+                db.settingsDao.setUnitSystem(
+                    when (settings.unitSystem) {
+                        UnitSystem.Metric -> UnitSystem.Imperial
+                        UnitSystem.Imperial -> UnitSystem.Metric
+                    }
+                )
             })
         }
 
@@ -50,20 +53,26 @@ fun SettingsScreen(
                     val msg = if (filename != null) "Successfully Imported \"$filename\"" else "Could Not Import"
                     snackbarHostState.showSnackbar(msg)
                 }
-            }) { Text(text = "Import") }
+            }) {
+                Text(text = "Import")
+            }
             Button(onClick = {
                 scope.launch(Dispatchers.IO) {
                     val filename: String? = db.exportDatabase()
                     val msg = if (filename != null) "Successfully Saved To \"$filename\"" else "Could Not Export"
                     snackbarHostState.showSnackbar(msg)
                 }
-            }) { Text(text = "Export") }
+            }) {
+                Text(text = "Export")
+            }
         }
         Button(modifier = Modifier.align(Alignment.BottomCenter), onClick = {
             scope.launch(Dispatchers.IO) {
                 db.factoryReset()
                 snackbarHostState.showSnackbar("Factory Reset Complete")
             }
-        }) { Text(text = "Factory Reset") }
+        }) {
+            Text(text = "Factory Reset")
+        }
     }
 } 
