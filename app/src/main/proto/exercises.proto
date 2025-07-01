@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option java_outer_classname = "ExercisesProto";
+option java_package = "io.github.depermitto.bullettrain.protos";
+
+import "google/protobuf/timestamp.proto";
+
+message Exercise {
+  uint32 descriptorId = 1;
+  repeated Set sets = 2;
+
+  message Descriptor {
+    uint32 id = 1;
+    string name = 2;
+    bool obsolete = 3;
+  }
+
+  message Set {
+    Type type = 1;
+    float target = 2;
+    optional float target2 = 3;
+    float actual = 4;
+    float weight = 5;
+    optional google.protobuf.Timestamp doneTs = 6;
+
+    enum Type {
+      Reps = 0;
+      Time = 1;
+    }
+  }
+}

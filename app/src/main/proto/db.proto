@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_outer_classname = "DbProto";
+option java_package = "io.github.depermitto.bullettrain.protos";
+
+import "exercises.proto";
+import "history.proto";
+import "programs.proto";
+import "settings.proto";
+
+message Db {
+  repeated Exercise.Descriptor exerciseDescriptors = 1;
+  repeated Program programs = 2;
+  repeated HistoryRecord records = 3;
+  Settings settings = 4;
+}

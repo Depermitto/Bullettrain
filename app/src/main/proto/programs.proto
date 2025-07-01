@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option java_outer_classname = "ProgramsProto";
+option java_package = "io.github.depermitto.bullettrain.protos";
+
+import "google/protobuf/timestamp.proto";
+import "exercises.proto";
+
+message Program {
+  uint32 id = 1;
+  bool obsolete = 2;
+  string name = 3;
+  repeated Workout workouts = 4;
+  uint32 nextDayIndex = 5;
+  optional google.protobuf.Timestamp lastWorkoutTs = 6;
+}
+
+message Workout {
+  string name = 1;
+  repeated Exercise exercises = 2;
+
+  enum Phase {
+    During = 0;
+    Completed = 1;
+  }
+}

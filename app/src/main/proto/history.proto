@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_outer_classname = "HistoryProto";
+option java_package = "io.github.depermitto.bullettrain.protos";
+
+import "google/protobuf/timestamp.proto";
+import "programs.proto";
+
+message HistoryRecord {
+  uint32 id = 1;
+  uint32 relatedProgramId = 2;
+  Workout workout = 3;
+  Workout.Phase workoutPhase = 4;
+  google.protobuf.Timestamp dateTs = 5;
+  google.protobuf.Timestamp workoutStartTs = 6;
+}

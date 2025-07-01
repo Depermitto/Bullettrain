@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.plugin.compose'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '2.0.10'
+    id "com.google.protobuf" version "0.9.4"
     id 'com.ncorti.ktfmt.gradle' version '0.21.0'
 }
 
@@ -59,17 +59,17 @@ dependencies {
     // Navigation
     implementation 'androidx.navigation:navigation-compose:2.8.6'
 
-    // Serialization
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3'
+    // Binary Serialization
+    implementation 'com.google.protobuf:protobuf-kotlin-lite:4.29.3'
 
     // FileKit
     def filekitVersion = '0.8.8'
     implementation "io.github.vinceglb:filekit-core:$filekitVersion"
     implementation "io.github.vinceglb:filekit-compose:$filekitVersion"
-    
+
     // Reordering elements
     implementation 'sh.calvin.reorderable:reorderable:2.4.2'
-    
+
     // Autocorrect words
     implementation 'org.apache.commons:commons-text:1.12.0'
 
@@ -81,6 +81,24 @@ dependencies {
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.19.6'
+    }
+    generateProtoTasks {
+        all().configureEach { task ->
+            task.builtins {
+                java {
+                    option "lite"
+                }
+                kotlin {
+                    option "lite"
+                }
+            }
+        }
+    }
 }
 
 ktfmt {
