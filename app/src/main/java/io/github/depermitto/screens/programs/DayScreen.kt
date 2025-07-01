@@ -13,7 +13,7 @@ import io.github.depermitto.components.ExpandableOutlinedCard
 import io.github.depermitto.data.Day
 import io.github.depermitto.data.ExerciseDao
 import io.github.depermitto.replaceAt
-import io.github.depermitto.screens.exercises.ExerciseChooser
+import io.github.depermitto.screens.exercises.AddExerciseButton
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
 import io.github.depermitto.theme.transparentTextFieldColors
@@ -37,17 +37,17 @@ fun DayScreen(day: Day, onDayChange: (Day?) -> Unit, exerciseDao: ExerciseDao) =
             .fillMaxWidth()
             .padding(ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
     ) {
-        day.exercises.forEachIndexed { i, exercises ->
+        day.exerciseSets.forEachIndexed { i, exercises ->
             ExpandableOutlinedCard(title = { Text(text = "${i + 1}. ${exercises.first().name}") }) {
                 SetScreen(set = exercises, onSetChange = {
-                    if (it == null) onDayChange(day.copy(exercises = day.exercises - setOf(exercises)))
-                    else onDayChange(day.copy(exercises = day.exercises.replaceAt(i, it)))
+                    if (it == null) onDayChange(day.copy(exerciseSets = day.exerciseSets - setOf(exercises)))
+                    else onDayChange(day.copy(exerciseSets = day.exerciseSets.replaceAt(i, it)))
                 })
             }
         }
 
-        ExerciseChooser(exerciseDao = exerciseDao,
-            onChoose = { onDayChange(day.copy(exercises = day.exercises + setOf(listOf(it)))) })
+        AddExerciseButton(exerciseDao = exerciseDao,
+            onChoose = { onDayChange(day.copy(exerciseSets = day.exerciseSets + setOf(listOf(it)))) })
     }
 }
 

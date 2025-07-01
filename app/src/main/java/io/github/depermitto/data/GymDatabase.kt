@@ -13,9 +13,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.time.Instant
 
-@Database(
-    entities = [Exercise::class, HistoryEntry::class, Program::class], version = 10, exportSchema = true
-)
+@Database(entities = [ExerciseSet::class, HistoryEntry::class, Program::class], version = 10, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class GymDatabase : RoomDatabase() {
     abstract fun getGymDao(): GymDao
@@ -34,13 +32,13 @@ interface GymDao {
 
 @Entity(tableName = "exercises")
 @Serializable
-data class Exercise(
+data class ExerciseSet(
     @SerialName("exercise-id") @ColumnInfo(name = "exercise_id") @PrimaryKey(autoGenerate = true) val exerciseId: Long = 0,
     var name: String,
     val reps: Float = 0f,
     val rpe: Float = 0f,
-    val superset: Exercise? = null,
-    val alternatives: List<Exercise>? = null,
+    val superset: ExerciseSet? = null,
+    val alternatives: List<ExerciseSet>? = null,
     val notes: String = "",
     @Contextual val date: Instant? = null,
 )
@@ -48,13 +46,13 @@ data class Exercise(
 @Dao
 interface ExerciseDao {
     @Upsert
-    suspend fun upsert(listing: Exercise)
+    suspend fun upsert(listing: ExerciseSet)
 
     @Delete
-    suspend fun delete(listing: Exercise)
+    suspend fun delete(listing: ExerciseSet)
 
     @Query("SELECT * FROM exercises")
-    fun getAllFlow(): Flow<List<Exercise>>
+    fun getAllFlow(): Flow<List<ExerciseSet>>
 }
 
 @Entity(tableName = "history")
@@ -87,7 +85,7 @@ data class Program(
 @Serializable
 data class Day(
     val name: String = "Day 1",
-    val exercises: List<List<Exercise>> = listOf(),
+    val exerciseSets: List<List<ExerciseSet>> = listOf(),
 )
 
 @Dao
@@ -121,14 +119,14 @@ class Converters {
     fun daysToString(days: List<Day>): String = Json.encodeToString(days)
 
     @TypeConverter
-    fun exerciseFromString(value: String?): Exercise? = null
+    fun exerciseFromString(value: String): ExerciseSet = Json.decodeFromString(value)
 
     @TypeConverter
-    fun exerciseToString(exercise: Exercise?): String? = null
+    fun exerciseToString(exerciseSet: ExerciseSet): String = Json.encodeToString(exerciseSet)
 
     @TypeConverter
-    fun listOfExerciseFromString(value: String?): List<Exercise>? = null
+    fun listOfExerciseFromString(value: String): List<ExerciseSet> = Json.decodeFromString(value)
 
     @TypeConverter
-    fun listOfExerciseToString(exercises: List<Exercise>?): String? = null
+    fun listOfExerciseToString(exerciseSets: List<ExerciseSet>): String = Json.encodeToString(exerciseSets)
 }

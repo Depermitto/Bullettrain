@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.depermitto.components.NumberField
-import io.github.depermitto.data.Exercise
+import io.github.depermitto.data.ExerciseSet
 import io.github.depermitto.replaceAt
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
@@ -20,7 +20,7 @@ import io.github.depermitto.theme.ItemSpacing
 // TODO Remove sets, make supersets, duplicate exercises, duplicate days
 @Deprecated(message = "Do something akin to TrainScreen")
 @Composable
-fun SetScreen(set: List<Exercise>, onSetChange: (List<Exercise>?) -> Unit) {
+fun SetScreen(set: List<ExerciseSet>, onSetChange: (List<ExerciseSet>?) -> Unit) {
     LazyColumn(
         modifier = Modifier.heightIn(0.dp, 220.dp),
         contentPadding = PaddingValues(ItemPadding),

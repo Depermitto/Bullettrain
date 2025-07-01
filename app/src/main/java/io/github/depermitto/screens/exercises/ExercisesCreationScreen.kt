@@ -7,12 +7,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.depermitto.data.Exercise
+import io.github.depermitto.data.ExerciseSet
 import io.github.depermitto.theme.ItemPadding
 
 @Composable
-fun ExercisesCreationScreen(newExercise: (Exercise?) -> Unit) {
-    var exerciseState by remember { mutableStateOf(Exercise(name = "")) }
+fun ExercisesCreationScreen(newExercise: (ExerciseSet?) -> Unit) {
+    var exerciseSetState by remember { mutableStateOf(ExerciseSet(name = "")) }
 
     OutlinedCard(modifier = Modifier.size(200.dp, 200.dp)) {
         Box(
@@ -22,7 +22,7 @@ fun ExercisesCreationScreen(newExercise: (Exercise?) -> Unit) {
         ) {
             OutlinedTextField(
                 modifier = Modifier.align(Alignment.TopCenter),
-                value = exerciseState.name, onValueChange = { exerciseState = exerciseState.copy(name = it) },
+                value = exerciseSetState.name, onValueChange = { exerciseSetState = exerciseSetState.copy(name = it) },
                 label = { Text(text = "Exercise Name") },
                 maxLines = 4,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -41,7 +41,7 @@ fun ExercisesCreationScreen(newExercise: (Exercise?) -> Unit) {
                     Text(text = "Cancel")
                 }
 
-                TextButton(onClick = { newExercise(exerciseState) }) {
+                TextButton(onClick = { newExercise(exerciseSetState) }) {
                     Text(text = "Confirm")
                 }
             }

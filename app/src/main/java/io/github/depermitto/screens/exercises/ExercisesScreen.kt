@@ -11,25 +11,28 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.components.AnchoredFloatingActionButton
-import io.github.depermitto.data.Exercise
 import io.github.depermitto.data.ExerciseDao
-import io.github.depermitto.theme.filledContainerColor
-import io.github.depermitto.theme.notUnderlinedTextFieldColors
+import io.github.depermitto.data.ExerciseSet
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.ItemSpacing
+import io.github.depermitto.theme.filledContainerColor
+import io.github.depermitto.theme.notUnderlinedTextFieldColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) {
+fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (ExerciseSet) -> Unit) {
     val scope = rememberCoroutineScope { Dispatchers.IO }
-    val exercises by exerciseDao.getAllFlow().collectAsState(emptyList())
+    val exercises by exerciseDao.getAllFlow().collectAsStateWithLifecycle(emptyList())
 
     Box(modifier = Modifier.fillMaxSize()) {
         var searchText by remember { mutableStateOf("") }
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(ItemSpacing), contentPadding = PaddingValues(ItemPadding)) {
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(ItemSpacing), contentPadding = PaddingValues(ItemPadding)
+        ) {
             item {
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
@@ -51,8 +54,7 @@ fun ExercisesScreen(exerciseDao: ExerciseDao, onSelection: (Exercise) -> Unit) {
         }
 
         var showDialog by remember { mutableStateOf(false) }
-        AnchoredFloatingActionButton(
-            onClick = { showDialog = true },
+        AnchoredFloatingActionButton(onClick = { showDialog = true },
             icon = { Icon(Icons.Default.Add, contentDescription = "Add") })
 
         if (showDialog) {

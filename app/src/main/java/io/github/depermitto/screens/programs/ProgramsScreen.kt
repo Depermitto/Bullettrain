@@ -46,7 +46,7 @@ fun ProgramsScreen(modifier: Modifier = Modifier, programDao: ProgramDao, navCon
                         Text(text = program.name, style = MaterialTheme.typography.titleLarge)
                         Text(text = "${program.days.size} day program", style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            text = "${program.days.sumOf { day -> day.exercises.sumOf { set -> set.size } }} total sets",
+                            text = "${program.days.sumOf { day -> day.exerciseSets.sumOf { set -> set.size } }} total sets",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }

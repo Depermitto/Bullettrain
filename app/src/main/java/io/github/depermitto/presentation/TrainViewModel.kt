@@ -12,7 +12,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.depermitto.data.Day
-import io.github.depermitto.data.Exercise
+import io.github.depermitto.data.ExerciseSet
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -27,7 +27,7 @@ enum class WorkoutState { NotStartedYet, Started, Done }
 @RequiresApi(Build.VERSION_CODES.O)
 class TrainViewModel(day: Day) : ViewModel() {
     var name by mutableStateOf(day.name)
-    var exercises = mutableStateListOf<SnapshotStateList<Exercise>>()
+    var exercises: SnapshotStateList<SnapshotStateList<ExerciseSet>> = mutableStateListOf()
 
     private lateinit var countingJob: Job
     private lateinit var start: Instant
@@ -51,8 +51,10 @@ class TrainViewModel(day: Day) : ViewModel() {
     }
 
     fun stopWorkoutOnce() {
-        countingJob.cancel("Workout Finished")
-        workoutState = WorkoutState.Done
+        if (workoutState == WorkoutState.Started) {
+            countingJob.cancel("Workout Finished")
+            workoutState = WorkoutState.Done
+        }
     }
 
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("m:ss").withZone(ZoneId.systemDefault())
