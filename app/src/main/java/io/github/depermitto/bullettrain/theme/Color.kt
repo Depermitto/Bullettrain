@@ -1,5 +1,6 @@
 package io.github.depermitto.bullettrain.theme
 
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -17,7 +18,9 @@ import io.github.depermitto.bullettrain.database.entities.Theme
 fun TextFieldDefaults.unlinedColors() = colors(
     focusedIndicatorColor = Color.Transparent,
     unfocusedIndicatorColor = Color.Transparent,
-    disabledIndicatorColor = Color.Transparent
+    disabledIndicatorColor = Color.Transparent,
+    unfocusedContainerColor = BottomAppBarDefaults.containerColor,
+    focusedContainerColor = BottomAppBarDefaults.containerColor,
 )
 
 @Composable

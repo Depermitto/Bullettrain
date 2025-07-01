@@ -17,9 +17,7 @@ import io.github.depermitto.bullettrain.components.ListItem
 import io.github.depermitto.bullettrain.database.Database
 import io.github.depermitto.bullettrain.database.entities.Theme
 import io.github.depermitto.bullettrain.database.entities.UnitSystem
-import io.github.depermitto.bullettrain.theme.palettes.FlamePeaPalette
-import io.github.depermitto.bullettrain.theme.palettes.Palette
-import io.github.depermitto.bullettrain.theme.palettes.RhinoButtercupPalette
+import io.github.depermitto.bullettrain.theme.palettes.*
 import io.github.depermitto.bullettrain.util.splitOnUppercase
 
 @Composable
@@ -36,7 +34,7 @@ fun SettingsScreen(
 
     SettingList(headline = "Palette",
         supporting = settings.palette.name,
-        list = listOfNotNull(dynamicPalette, RhinoButtercupPalette, FlamePeaPalette),
+        list = listOfNotNull(dynamicPalette, RhinoButtercupPalette, FlamePeaPalette, WoodsmokePalette),
         onClick = { db.settingsDao.update { state -> state.copy(palette = it) } }) { palette ->
         ListItem(headlineContent = { Text(palette.name) }, selected = palette.name == settings.palette.name)
     }

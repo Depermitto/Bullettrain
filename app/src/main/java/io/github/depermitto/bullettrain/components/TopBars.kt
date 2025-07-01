@@ -9,6 +9,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
@@ -27,11 +28,9 @@ fun TopBarWithSettingsButton(
     )
 }, actions = {
     IconButton(onClick = { navController.navigate(Destination.Settings) }) {
-        Icon(
-            Icons.Filled.Settings, contentDescription = "Settings"
-        )
+        Icon(Icons.Filled.Settings, contentDescription = "Settings")
     }
-}, colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background))
+}, colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent))
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,22 +41,16 @@ fun TopBarWithBackButton(
     title: String,
 ) {
     val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-    TopAppBar(
-        modifier = modifier,
-        title = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-        },
-        navigationIcon = {
-            IconButton(onClick = { onBackPressedDispatcher?.onBackPressed() ?: navController.navigateUp() }) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back Button")
-            }
-        },
-        actions = { topEndContent?.invoke() },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
-    )
+    TopAppBar(modifier = modifier, title = {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }, navigationIcon = {
+        IconButton(onClick = { onBackPressedDispatcher?.onBackPressed() ?: navController.navigateUp() }) {
+            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back Button")
+        }
+    }, actions = { topEndContent?.invoke() }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent))
 }
