@@ -1,31 +1,26 @@
 package io.github.depermitto.bullettrain.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterEnd
-import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.database.entities.*
-
-sealed class Ratio {
-    data object Unlimited : Ratio()
-    data class Strict(val value: Float) : Ratio()
-}
 
 @Composable
 fun <T> BasicTable(
@@ -35,11 +30,10 @@ fun <T> BasicTable(
     headlineTrailingContent: @Composable (() -> Unit)? = null,
     overlayingContent: @Composable (() -> Unit)? = null,
     emptyMessage: String = "No Information To Present",
-    ratio: Ratio = Ratio.Unlimited,
-    headers: Pair<String, String>,
+    headers: List<String>,
     separateHeadersAndContent: Boolean = true,
     list: List<T>,
-    content: (Int, T) -> Pair<@Composable () -> Unit, @Composable () -> Unit>
+    content: @Composable (Int, T) -> Unit
 ) = Column(modifier) {
     HeroTile(
         headlineContent = headlineContent,
@@ -56,38 +50,20 @@ fun <T> BasicTable(
         )
     } else Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
         // ^ This weird padding is for equalizing padding for ListItem ^
-        Row {
-            Text(text = headers.first, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
-            Spacer(modifier = Modifier.weight(1f))
-            Text(text = headers.second, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            headers.forEach { header ->
+                Text(text = header, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+            }
         }
         if (separateHeadersAndContent) HorizontalDivider()
 
         list.forEachIndexed { i, item ->
-            Row {
-                val (col1, col2) = content(i, item)
-
-                if (ratio == Ratio.Unlimited) {
-                    col1()
-                    Spacer(modifier = Modifier.weight(1f))
-                    col2()
-                } else if (ratio is Ratio.Strict) {
-                    assert(ratio.value > 0f && ratio.value < 1f)
-
-                    Box(modifier = Modifier.weight(ratio.value), contentAlignment = CenterStart) {
-                        col1()
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Box(modifier = Modifier.weight(1f - ratio.value), contentAlignment = CenterEnd) {
-                        col2()
-                    }
-                }
-            }
+            content(i, item)
         }
     }
 
-    Spacer(Modifier.weight(1f))
     overlayingContent?.let { content ->
+        Spacer(Modifier.weight(1f))
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             content()
         }
@@ -99,11 +75,10 @@ fun WorkoutTable(
     modifier: Modifier = Modifier,
     workout: Workout,
     program: Program,
-    headers: Pair<String, String>,
+    headers: List<String>,
     trailingContent: (@Composable () -> Unit)? = null,
     overlayingContent: (@Composable () -> Unit)? = null,
     exstractor: (WorkoutEntry) -> String?,
-    ratio: Ratio = Ratio.Unlimited,
     exerciseDao: ExerciseDao,
     navController: NavController,
 ) {
@@ -115,23 +90,23 @@ fun WorkoutTable(
         supportingText = null
     }
 
-    // TODO probably drop this Pair shit and just replace it with HeroTile
     BasicTable(
         modifier = modifier,
         headlineContent = { Text(text = header, style = MaterialTheme.typography.titleLarge) },
         headlineSupportingContent = supportingText?.let { { Text(text = supportingText) } },
         headlineTrailingContent = trailingContent,
         overlayingContent = overlayingContent,
-        ratio = ratio,
         emptyMessage = "Empty Workout",
         headers = headers,
         list = workout.entries.mapNotNull { exercise -> exstractor(exercise)?.let { text -> exercise to text } },
     ) { _, (exercise, text) ->
         val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
-        Pair(first = {
-            TextLink(exerciseDescriptor.name, navController, Destination.Exercise(exerciseDescriptor.id), maxLines = 2)
-        }, second = {
-            Text(text = text, overflow = TextOverflow.Ellipsis, maxLines = 2)
-        })
+        HeroTile(
+            headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
+            trailingContent = { Text(text = text, overflow = TextOverflow.Ellipsis, maxLines = 2) },
+            modifier = Modifier.clip(MaterialTheme.shapes.small),
+            onClick = { navController.navigate(Destination.Exercise(exerciseDescriptor.id)) },
+            contentPadding = PaddingValues(0.dp)
+        )
     }
 }

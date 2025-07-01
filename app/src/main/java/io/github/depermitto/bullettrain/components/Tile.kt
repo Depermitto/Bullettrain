@@ -33,7 +33,7 @@ fun HeroTile(
     headlineTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     supportingTextStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     contentPadding: PaddingValues = PaddingValues(vertical = 12.dp, horizontal = 16.dp)
-) = Box(if (onClick == null) Modifier else modifier.clickable { onClick() }) {
+) = Box(if (onClick == null) modifier else modifier.clickable { onClick() }) {
     ConstraintLayout(
         Modifier
             .fillMaxWidth()

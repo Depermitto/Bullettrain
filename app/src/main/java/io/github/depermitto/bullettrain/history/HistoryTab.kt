@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import io.github.depermitto.bullettrain.components.Ratio
 import io.github.depermitto.bullettrain.components.WorkoutTable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.entities.*
@@ -100,15 +99,16 @@ fun HistoryTab(
                     modifier = Modifier.fillMaxWidth(),
                     workout = record.workout,
                     program = relatedProgram,
-                    headers = Pair("Exercise", "Best Set"),
+                    headers = listOf("Exercise", "Best Set"),
                     navController = navController,
                     exerciseDao = exerciseDao,
                     trailingContent = {
-                        IconButton(onClick = { trainViewModel.editWorkout(record) }) {
-                            Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit Workout")
+                        TextButton(onClick = { trainViewModel.editWorkout(record) }) {
+                            Icon(Icons.Filled.Edit, "Edit Workout", Modifier.size(ButtonDefaults.IconSize))
+                            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                            Text("Edit")
                         }
                     },
-                    ratio = Ratio.Strict(0.7f),
                     exstractor = { exercise ->
                         exercise.getPerformedSets().maxByOrNull { set -> set.weight * set.actualPerfVar }?.let { bestSet ->
                             val perfVar = bestSet.actualPerfVar.encodeToStringOutput() // is always non-zero

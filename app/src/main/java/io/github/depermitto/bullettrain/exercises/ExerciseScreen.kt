@@ -9,10 +9,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.BasicTable
+import io.github.depermitto.bullettrain.components.HeroTile
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
 import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
 import io.github.depermitto.bullettrain.database.entities.HistoryDao
@@ -40,24 +43,27 @@ fun ExerciseScreen(
         items(exercises) { exercise ->
             val doneDate = exercise.lastPerformedSet()?.doneTs?.atZone(ZoneId.systemDefault()) ?: return@items
             BasicTable(
-                headers = Pair("Set", "Completed"), list = exercise.getPerformedSets(), separateHeadersAndContent = false,
+                headers = listOf("Set", "Completed"), list = exercise.getPerformedSets(), separateHeadersAndContent = false,
                 headlineContent = { Text(dateFormatter.format(doneDate), style = MaterialTheme.typography.titleMedium) },
             ) { setIndex, set ->
-                Pair(first = {
-                    Text("${setIndex + 1}", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }, second = {
-                    Text(
-                        text = run {
-                            val perfVar = set.actualPerfVar.encodeToStringOutput() // is always non-zero
-                            val weight = set.weight.encodeToStringOutput()
+                HeroTile(
+                    headlineContent = { Text("${setIndex + 1}", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    trailingContent = {
+                        Text(
+                            text = run {
+                                val perfVar = set.actualPerfVar.encodeToStringOutput() // is always non-zero
+                                val weight = set.weight.encodeToStringOutput()
 
-                            when {
-                                weight.isBlank() -> "$perfVar ${set.targetPerfVar.category.shortName.lowercase()}"
-                                else -> "$perfVar x $weight ${settings.unitSystem.weightUnit()}"
-                            }
-                        }, maxLines = 1, overflow = TextOverflow.Ellipsis
-                    )
-                })
+                                when {
+                                    weight.isBlank() -> "$perfVar ${set.targetPerfVar.category.shortName.lowercase()}"
+                                    else -> "$perfVar x $weight ${settings.unitSystem.weightUnit()}"
+                                }
+                            }, maxLines = 1, overflow = TextOverflow.Ellipsis
+                        )
+                    },
+                    modifier = Modifier.clip(MaterialTheme.shapes.small),
+                    contentPadding = PaddingValues(0.dp)
+                )
             }
         }
     }
