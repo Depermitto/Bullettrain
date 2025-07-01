@@ -53,10 +53,13 @@ fun SettingsScreen(
         ListItem(headlineContent = { Text(theme.name.splitOnUppercase()) }, selected = theme == settings.theme)
     }
 
-    SettingSwitch(headline = "True Black",
+    SettingSwitch(
+        headline = "True Black",
         supporting = "Recommended for OLED screens",
         checked = settings.trueBlack,
-        onChecked = { db.settingsDao.update { state -> state.copy(trueBlack = it) } })
+        onChecked = { db.settingsDao.update { state -> state.copy(trueBlack = it) } },
+        enabled = settings.theme.isDarkMode()
+    )
 
 //        Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
 //            Button(onClick = {
@@ -120,9 +123,9 @@ fun <T> SettingList(headline: String, supporting: String, list: List<T>, onClick
 }
 
 @Composable
-fun SettingSwitch(headline: String, supporting: String, onChecked: (Boolean) -> Unit, checked: Boolean) {
+fun SettingSwitch(headline: String, supporting: String, onChecked: (Boolean) -> Unit, checked: Boolean, enabled: Boolean = true) {
     ListItem(headlineContent = { Text(headline) },
         supportingContent = { Text(supporting) },
-        onClick = { onChecked(!checked) },
-        trailingContent = { Switch(checked = checked, onCheckedChange = null) })
+        onClick = { onChecked(!checked) }.takeIf { enabled },
+        trailingContent = { Switch(checked = checked, onCheckedChange = null, enabled = enabled) })
 }

@@ -13,13 +13,11 @@ fun BullettrainTheme(
 ) {
     val settings by settingsDao.getSettings.collectAsStateWithLifecycle()
 
-    var colorScheme = if (settings.theme.isDarkMode()) {
-        settings.palette.darkScheme
-    } else {
-        settings.palette.lightScheme
+    val colorScheme = when {
+        settings.theme.isDarkMode() && settings.trueBlack -> settings.palette.darkScheme.copy(background = Color.Black)
+        settings.theme.isDarkMode() -> settings.palette.darkScheme
+        else -> settings.palette.lightScheme
     }
-
-    if (settings.trueBlack) colorScheme = colorScheme.copy(background = Color.Black)
 
     MaterialTheme(
         colorScheme = colorScheme, typography = Typography, content = content

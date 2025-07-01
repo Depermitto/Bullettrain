@@ -6,6 +6,7 @@ import androidx.compose.runtime.Immutable
 import io.github.depermitto.bullettrain.database.BackgroundSlave
 import io.github.depermitto.bullettrain.database.Compressor
 import io.github.depermitto.bullettrain.database.StorageFile
+import io.github.depermitto.bullettrain.database.entities.Theme.Dark
 import io.github.depermitto.bullettrain.theme.palettes.Palette
 import io.github.depermitto.bullettrain.theme.palettes.RhinoButtercupPalette
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +30,7 @@ enum class Theme {
     FollowSystem, Light, Dark;
 
     @Composable
-    fun isDarkMode(): Boolean = (this == FollowSystem && (isSystemInDarkTheme())) || this == Dark
+    fun isDarkMode(): Boolean = this == Dark || (this == FollowSystem && isSystemInDarkTheme())
 }
 
 @Immutable
