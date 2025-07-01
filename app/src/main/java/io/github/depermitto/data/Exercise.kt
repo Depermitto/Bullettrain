@@ -1,6 +1,7 @@
 package io.github.depermitto.data
 
 import androidx.room.*
+import io.github.depermitto.components.encodeToStringOutput
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
@@ -72,8 +73,8 @@ sealed class ExerciseTarget(val category: ExerciseTargetCategory) {
     }
 
     fun toText(): String = when (this) {
-        is RepRange -> "$min - $max"
-        is Reps -> reps.toString()
-        is Time -> "%.2f".format(time) + " min"
+        is RepRange -> "${min.encodeToStringOutput()}-${max.encodeToStringOutput()}"
+        is Reps -> reps.encodeToStringOutput()
+        is Time -> time.encodeToStringOutput() + " min"
     }
 }

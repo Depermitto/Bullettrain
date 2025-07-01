@@ -35,12 +35,14 @@ class TrainViewModel(day: Day, private val historyDao: HistoryDao) : ViewModel()
                 addAll(session.day.exercises)
             } else {
                 addAll(day.exercises.map { exercise ->
-                    exercise.copy(targetCategory = when (exercise.targetCategory) {
+                    val trainingTargetCategory = when (exercise.targetCategory) {
                         ExerciseTargetCategory.RepRange -> ExerciseTargetCategory.Reps
                         else -> exercise.targetCategory
-                    }, sets = exercise.sets.map {
+                    }
+
+                    exercise.copy(targetCategory = trainingTargetCategory, sets = exercise.sets.map {
                         it.copy(
-                            target = ExerciseTarget.of(exercise.targetCategory),
+                            target = ExerciseTarget.of(trainingTargetCategory),
                             weight = 0f,
                             date = null,
                         )
