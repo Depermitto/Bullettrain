@@ -9,12 +9,17 @@ import io.github.depermitto.bullettrain.database.entities.HistoryDao
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseChooser(
-    onDismissRequest: () -> Unit, exerciseDao: ExerciseDao, historyDao: HistoryDao, onChoose: (ExerciseDescriptor) -> Unit
+    onDismissRequest: () -> Unit,
+    exerciseDao: ExerciseDao,
+    historyDao: HistoryDao,
+    filter: (ExerciseDescriptor) -> Boolean = { true },
+    onSelection: (ExerciseDescriptor) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(onDismissRequest = onDismissRequest, sheetState = sheetState) {
         ExercisesListScreen(exerciseDao = exerciseDao,
             historyDao = historyDao,
-            onSelection = { onChoose(it); onDismissRequest() })
+            filter = filter,
+            onSelection = { onSelection(it); onDismissRequest() })
     }
 }

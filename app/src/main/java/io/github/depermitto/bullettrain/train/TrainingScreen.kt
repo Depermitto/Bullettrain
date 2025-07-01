@@ -64,6 +64,9 @@ fun TrainingScreen(
         .verticalScroll(rememberScrollState())
         .padding(bottom = Dp.EmptyScrollSpace), verticalArrangement = Arrangement.spacedBy(Dp.Medium)
 ) {
+    val filter = { descriptor: ExerciseDescriptor ->
+        !trainViewModel.getWorkoutEntries().any { it.descriptorId == descriptor.id }
+    }
     val scope = rememberCoroutineScope()
     trainViewModel.getWorkoutEntries().forEachIndexed { exerciseIndex, exercise ->
         val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
@@ -75,7 +78,8 @@ fun TrainingScreen(
         if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
             historyDao = historyDao,
             onDismissRequest = { showSwapExerciseChooser = false },
-            onChoose = { it -> trainViewModel.setWorkoutEntry(exerciseIndex, exercise.copy(descriptorId = it.id)) })
+            filter = filter,
+            onSelection = { it -> trainViewModel.setWorkoutEntry(exerciseIndex, exercise.copy(descriptorId = it.id)) })
 
         WorkoutEntry(
             workoutEntry = exercise,
@@ -199,7 +203,8 @@ fun TrainingScreen(
     if (showExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
         historyDao = historyDao,
         onDismissRequest = { showExerciseChooser = false },
-        onChoose = {
+        filter = filter,
+        onSelection = {
             trainViewModel.addWorkoutEntry(
                 WorkoutEntry(descriptorId = it.id, sets = listOf(ExerciseSet(targetPerfVar = PerfVar.Reps())))
             )

@@ -67,6 +67,9 @@ fun DayScreen(
     navController: NavController,
     snackbarHostState: SnackbarHostState
 ) = Box(modifier = modifier.fillMaxSize()) {
+    val filter = { descriptor: ExerciseDescriptor ->
+        !programViewModel.getDay(dayIndex).entries.any { it.descriptorId == descriptor.id }
+    }
     val view = LocalView.current
     val scope = rememberCoroutineScope()
     val day = programViewModel.getDay(dayIndex)
@@ -239,7 +242,8 @@ fun DayScreen(
             if (showSwapExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
                 historyDao = historyDao,
                 onDismissRequest = { showSwapExerciseChooser = false },
-                onChoose = { programViewModel.setExercise(dayIndex, exerciseIndex, exercise.copy(descriptorId = it.id)) })
+                filter = filter,
+                onSelection = { programViewModel.setExercise(dayIndex, exerciseIndex, exercise.copy(descriptorId = it.id)) })
         }
     }
 
@@ -247,7 +251,8 @@ fun DayScreen(
     if (showAddExerciseChooser) ExerciseChooser(exerciseDao = exerciseDao,
         historyDao = historyDao,
         onDismissRequest = { showAddExerciseChooser = false },
-        onChoose = {
+        filter = filter,
+        onSelection = {
             programViewModel.setDay(
                 dayIndex, day.copy(
                     entries = day.entries + WorkoutEntry(

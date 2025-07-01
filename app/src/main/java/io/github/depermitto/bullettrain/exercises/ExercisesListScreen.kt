@@ -33,16 +33,17 @@ fun ExercisesListScreen(
     exerciseDao: ExerciseDao,
     historyDao: HistoryDao,
     modifier: Modifier = Modifier,
+    filter: (ExerciseDescriptor) -> Boolean = { true },
     onSelection: (ExerciseDescriptor) -> Unit,
 ) = Box(modifier = modifier.fillMaxSize()) {
     val exerciseFrequencyMap by historyDao.getAll.map { records ->
-        records.flatMap { record -> record.workout.entries.filter { it.sets.any { it.completed } } }
-            .groupingBy { it.descriptorId }.eachCount()
+        records.flatMap { record -> record.workout.entries.filter { entry -> entry.sets.any { set -> set.completed } } }
+            .groupingBy { entry -> entry.descriptorId }.eachCount()
     }.collectAsStateWithLifecycle(initialValue = emptyMap())
 
     var searchText by rememberSaveable { mutableStateOf("") }
-    val exercises by exerciseDao.where(name = searchText, errorTolerance = 3, ignoreCase = true).map {
-        it.sortedByDescending { exerciseFrequencyMap[it.id] }
+    val exercises by exerciseDao.where(name = searchText, errorTolerance = 3, ignoreCase = true).map { exercises ->
+        exercises.filter(filter).sortedByDescending { exerciseFrequencyMap[it.id] }
     }.collectAsStateWithLifecycle(initialValue = emptyList())
 
     Column(modifier = Modifier.align(Alignment.TopCenter)) {
