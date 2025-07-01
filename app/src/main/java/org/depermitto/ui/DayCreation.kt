@@ -15,6 +15,7 @@ import org.depermitto.ui.screens.Screen
 import org.depermitto.ui.theme.OutlinedCardColumn
 import org.depermitto.ui.theme.transparentTextFieldColors
 
+// TODO use ViewModels for this shit, it NEEDS to remember state
 @Composable
 fun DayCreation(day: Day, onDayChanged: (Day?) -> Unit, navController: NavController) {
     OutlinedCardColumn {
