@@ -16,17 +16,13 @@ import kotlinx.coroutines.launch
 class ProgramViewModel(program: Program, private val programDao: ProgramDao) : ViewModel() {
     private val programId = program.programId
     var programName by mutableStateOf(program.name)
-        private set
     var days = mutableStateListOf<Day>().apply { addAll(program.days) }
         private set
     var followed by mutableStateOf(program.followed)
         private set
 
-    fun setName(name: String) {
-        programName = name
-    }
-
     fun addDay() = days.add(Day("Day ${days.size + 1}"))
+    fun addDay(day: Day) = days.add(day)
     fun setDay(dayIndex: Int, day: Day) = days.set(dayIndex, day)
     fun removeDayAt(dayIndex: Int) = days.removeAt(dayIndex)
 

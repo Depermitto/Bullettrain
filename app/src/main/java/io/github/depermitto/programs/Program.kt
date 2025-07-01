@@ -60,7 +60,10 @@ fun Program(
                 colors = transparentTextFieldColors()
             )
         }, dropdownItems = {
-            DropdownMenuItem(text = { Text(text = "Delete") },
+            DropdownMenuItem(text = { Text(text = "Duplicate Day") },
+                leadingIcon = { DuplicateIcon() },
+                onClick = { programViewModel.addDay(day) })
+            DropdownMenuItem(text = { Text(text = "Delete Day") },
                 leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
                 onClick = { programViewModel.removeDayAt(dayIndex) })
         }, startExpanded = true) {
@@ -145,9 +148,7 @@ fun ProgramExercise(
                 Header(text = exercise.perfVarCategory.prettyName)
                 Icon(Icons.Sharp.KeyboardArrowDown, contentDescription = null)
 
-                DropdownMenu(
-                    expanded = showTargetEditDropdown,
-                    onDismissRequest = { showTargetEditDropdown = false }) {
+                DropdownMenu(expanded = showTargetEditDropdown, onDismissRequest = { showTargetEditDropdown = false }) {
                     PerfVarCategory.entries.forEach { entry ->
                         DropdownMenuItem(text = { Text(entry.prettyName) }, onClick = {
                             onExerciseChange(
@@ -189,28 +190,17 @@ fun ProgramExercise(
                         value = set.targetPerfVar,
                         onValueChange = {
                             onExerciseChange(
-                                exercise.copy(
-                                    sets = exercise.sets.set(
-                                        setIndex,
-                                        set.copy(targetPerfVar = it)
-                                    )
-                                )
+                                exercise.copy(sets = exercise.sets.set(setIndex, set.copy(targetPerfVar = it)))
                             )
                         })
                     if (set.intensity != null) {
-                        NumberField(
-                            Modifier
-                                .weight(ExerciseSetWideWeight)
-                                .padding(horizontal = ExerciseSetSpacing),
+                        NumberField(modifier = Modifier
+                            .weight(ExerciseSetWideWeight)
+                            .padding(horizontal = ExerciseSetSpacing),
                             value = set.intensity,
                             onValueChange = {
                                 onExerciseChange(
-                                    exercise.copy(
-                                        sets = exercise.sets.set(
-                                            setIndex,
-                                            set.copy(intensity = it)
-                                        )
-                                    )
+                                    exercise.copy(sets = exercise.sets.set(setIndex, set.copy(intensity = it)))
                                 )
                             })
                     }

@@ -9,9 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
+import io.github.depermitto.Screen
 import io.github.depermitto.components.AnchoredFloatingActionButton
 import io.github.depermitto.data.entities.ExerciseDao
-import io.github.depermitto.Screen
 import io.github.depermitto.theme.ItemPadding
 import io.github.depermitto.theme.notUnderlinedTextFieldColors
 
@@ -29,7 +29,7 @@ fun ProgramCreation(
                 .fillMaxWidth()
                 .padding(horizontal = ItemPadding),
             value = programViewModel.programName,
-            onValueChange = { programViewModel.setName(it) },
+            onValueChange = { programViewModel.programName = it },
             maxLines = 1,
             placeholder = { Text(text = "Workout Name") },
             shape = MaterialTheme.shapes.medium,

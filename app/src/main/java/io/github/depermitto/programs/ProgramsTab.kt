@@ -56,11 +56,11 @@ fun ProgramsTab(
                 )
 
                 DropdownMenu(expanded = showDropdown, onDismissRequest = { showDropdown = false }) {
-                    DropdownMenuItem(text = { Text(text = "Edit") },
-                        trailingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
+                    DropdownMenuItem(text = { Text(text = "Edit Program") },
+                        leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
                         onClick = { navController.navigate(Screen.ProgramScreen.passId(program.programId)) })
-                    DropdownMenuItem(text = { Text(text = "Delete") },
-                        trailingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+                    DropdownMenuItem(text = { Text(text = "Delete Program") },
+                        leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
                         onClick = { scope.launch(Dispatchers.IO) { programDao.delete(program) } })
                 }
             }
