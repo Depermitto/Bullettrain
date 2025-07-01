@@ -126,7 +126,7 @@ class TrainViewModel(
         val record = state.copy(
             workoutPhase = WorkoutPhase.Completed, workout = state.workout.copy(exercises = exercises.toList())
         )
-        val nextDayIndex = (record.relatedProgram.nextDayIndex + 1) % record.relatedProgram.days.size
+        val nextDayIndex = (record.relatedProgram.days.indexOf(record.workout) + 1) % record.relatedProgram.days.size
 
         historyDao.upsert(record)
         programDao.upsert(record.relatedProgram.copy(nextDayIndex = nextDayIndex, mostRecentWorkoutDate = record.date))
