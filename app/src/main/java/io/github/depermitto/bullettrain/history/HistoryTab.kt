@@ -40,6 +40,7 @@ import io.github.depermitto.bullettrain.components.format
 import io.github.depermitto.bullettrain.db.ExerciseDao
 import io.github.depermitto.bullettrain.db.HistoryDao
 import io.github.depermitto.bullettrain.db.ProgramDao
+import io.github.depermitto.bullettrain.exercises.oneRepMax
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.protos.ExercisesProto.*
 import io.github.depermitto.bullettrain.protos.SettingsProto.*
@@ -67,7 +68,7 @@ fun HistoryTab(
   val days = generateDays(homeViewModel.calendarPage)
   val historyRecords by
     historyDao
-      .where { records ->
+      .map { records ->
         records
           .filter { days.first() <= it.date && it.date <= days.last() }
           .sortedByDescending { it.workoutStartTs.seconds }
@@ -143,7 +144,7 @@ fun HistoryTab(
               headlineTextStyle = MaterialTheme.typography.titleLarge,
               supportingContent = { Text(record.workout.name) },
               trailingContent = {
-                var showDropdown by rememberSaveable { mutableStateOf(false) }
+                var showDropdown by remember { mutableStateOf(false) }
                 DropdownButton(showDropdown, onShowChange = { showDropdown = it }) {
                   DropdownMenuItem(
                     text = { Text("Edit") },
@@ -193,8 +194,8 @@ fun HistoryTab(
           val notPerformedLabel = "skipped"
           val bestSet =
             exercise.setsList
-              .filter { it.hasDoneTs() }
-              .maxByOrNull { set -> set.weight * (1 + set.actual / 30F) } // 1RM
+              .filter { s -> s.hasDoneTs() }
+              .maxByOrNull { s -> oneRepMax(s) }
               ?.let { bestSet ->
                 val actual = bestSet.actual.format()
                 val weight = bestSet.weight.format()

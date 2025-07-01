@@ -67,6 +67,6 @@ class HistoryDao(historyRecords: List<HistoryRecord>) {
     return items.value[index]
   }
 
-  fun <T> where(mapper: (records: List<HistoryRecord>) -> T): Flow<T> =
+  fun <T> map(mapper: (records: List<HistoryRecord>) -> T): Flow<T> =
     items.map { historyRecords -> mapper(historyRecords) }
 }

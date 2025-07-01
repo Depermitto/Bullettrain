@@ -20,6 +20,6 @@ fun ExerciseTab(
     historyDao = historyDao,
     filter = null,
   ) {
-    navController.navigate(Destination.Exercise(exerciseId = it.id))
+    navController.navigate(Destination.Exercise(descriptorId = it.id))
   }
 }

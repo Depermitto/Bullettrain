@@ -34,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -70,6 +71,7 @@ import io.github.depermitto.bullettrain.components.HomeScreenTopBar
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.components.TopBarWithBackButton
 import io.github.depermitto.bullettrain.db.Db
+import io.github.depermitto.bullettrain.exercises.ExerciseScreen
 import io.github.depermitto.bullettrain.exercises.ExercisesSetsListings
 import io.github.depermitto.bullettrain.home.HomeScreen
 import io.github.depermitto.bullettrain.home.HomeViewModel
@@ -87,8 +89,6 @@ import io.github.depermitto.bullettrain.train.TrainViewModel
 import io.github.depermitto.bullettrain.train.TrainingScreen
 import io.github.depermitto.bullettrain.util.DateFormatters
 import io.github.depermitto.bullettrain.util.date
-import io.github.depermitto.bullettrain.util.lastCompletedSet
-import io.github.depermitto.bullettrain.util.toLocalDate
 import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.launch
 
@@ -417,7 +417,7 @@ fun App(db: Db) = MaterialTheme {
 
     composable<Destination.Exercise> { navBackStackEntry ->
       val exerciseDescriptor =
-        db.exerciseDao.where(navBackStackEntry.toRoute<Destination.Exercise>().exerciseId)
+        db.exerciseDao.where(navBackStackEntry.toRoute<Destination.Exercise>().descriptorId)
       var showDropdown by remember { mutableStateOf(false) }
       var showRenameDialog by rememberSaveable { mutableStateOf(false) }
       Scaffold(
@@ -452,58 +452,48 @@ fun App(db: Db) = MaterialTheme {
           )
         }
       ) { paddingValues ->
-        val exercises by
-          db.historyDao
-            .where { records ->
-              records
-                .flatMap { record ->
-                  record.workout.exercisesList.filter { it.descriptorId == exerciseDescriptor.id }
-                }
-                .sortedByDescending { exercise -> exercise.lastCompletedSet?.doneTs?.seconds }
-            }
-            .collectAsStateWithLifecycle(initialValue = emptyList())
-
-        ExercisesSetsListings(
+        ExerciseScreen(
           modifier = Modifier.consumeWindowInsets(paddingValues).padding(paddingValues),
-          exercises = exercises,
-          exerciseHeadline = { exercise ->
-            val doneDate = exercise.lastCompletedSet!!.doneTs.toLocalDate()
-            Text(doneDate.format(DateFormatters.EEEE_MMM_dd_yyyy))
-          },
+          historyDao = db.historyDao,
+          exerciseDescriptor = exerciseDescriptor,
           settings = settings,
         )
-      }
 
-      // This is a essentially copy from ExercisesListScreen.kt
-      if (showRenameDialog) {
-        var errorMessage by rememberSaveable { mutableStateOf("") }
-        TextFieldAlertDialog(
-          onDismissRequest = { showRenameDialog = false },
-          startingText = exerciseDescriptor.name,
-          label = { Text("Exercise Name") },
-          dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
-          confirmButton = { name ->
-            TextButton(
-              onClick = {
-                errorMessage =
-                  db.exerciseDao
-                    .validateName(name)
-                    .fold(
-                      onSuccess = {
-                        showRenameDialog = false
-                        db.exerciseDao.update(exerciseDescriptor.toBuilder().setName(name).build())
-                        ""
-                      },
-                      onFailure = { throwable -> throwable.message ?: "Invalid exercise name" },
-                    )
+        // This is a essentially copy from ExercisesListScreen.kt
+        if (showRenameDialog) {
+          var errorMessage by rememberSaveable { mutableStateOf("") }
+          TextFieldAlertDialog(
+            onDismissRequest = { showRenameDialog = false },
+            startingText = exerciseDescriptor.name,
+            label = { Text("Exercise Name") },
+            dismissButton = {
+              TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") }
+            },
+            confirmButton = { name ->
+              TextButton(
+                onClick = {
+                  errorMessage =
+                    db.exerciseDao
+                      .validateName(name)
+                      .fold(
+                        onSuccess = {
+                          showRenameDialog = false
+                          db.exerciseDao.update(
+                            exerciseDescriptor.toBuilder().setName(name).build()
+                          )
+                          ""
+                        },
+                        onFailure = { throwable -> throwable.message ?: "Invalid exercise name" },
+                      )
+                }
+              ) {
+                Text("Confirm")
               }
-            ) {
-              Text("Confirm")
-            }
-          },
-          errorMessage = errorMessage,
-          isError = errorMessage.isNotBlank(),
-        )
+            },
+            errorMessage = errorMessage,
+            isError = errorMessage.isNotBlank(),
+          )
+        }
       }
 
       if (showDiscardOrDeleteDialog)

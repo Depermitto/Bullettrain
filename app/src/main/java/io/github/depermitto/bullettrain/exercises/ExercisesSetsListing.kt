@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -23,7 +25,7 @@ import io.github.depermitto.bullettrain.util.weightUnit
 
 /**
  * Show sets in a listing for [exercises]. Shows only completed sets and guarantees that at least
- * one set will be shown per exercise, otherwise exercise is skipped.
+ * one set will be shown per exercise, otherwise the exercise is skipped.
  */
 @Composable
 fun ExercisesSetsListings(
@@ -31,15 +33,17 @@ fun ExercisesSetsListings(
   exercises: List<Exercise>,
   exerciseHeadline: @Composable (Exercise) -> Unit,
   settings: Settings,
+  lazyListState: LazyListState = rememberLazyListState(),
 ) {
   LazyColumn(
     modifier = modifier,
-    contentPadding = PaddingValues(start = Dp.Medium, end = Dp.Medium),
+    state = lazyListState,
+    contentPadding = PaddingValues(horizontal = Dp.Medium),
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.spacedBy(Dp.Small),
   ) {
     items(exercises) { exercise ->
-      val sets = exercise.setsList.filter { set -> set.hasDoneTs() }
+      val sets = exercise.setsList.filter { s -> s.hasDoneTs() }
       if (sets.isEmpty()) return@items
       DataPanel(
         items = sets,

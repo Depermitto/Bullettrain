@@ -139,7 +139,7 @@ fun DayScreen(
                 },
                 trailingContent = {
                   Row(verticalAlignment = Alignment.CenterVertically) {
-                    var showDropdown by rememberSaveable { mutableStateOf(false) }
+                    var showDropdown by remember { mutableStateOf(false) }
                     DropdownButton(
                       modifier = Modifier.offset(x = 2.dp),
                       show = showDropdown,

@@ -195,7 +195,8 @@ private fun CalendarItem(
 }
 
 /**
- * Generate 35-42 days for the given [YearMonth]. Includes days from the previous and next month.
+ * Generate all visible days on the calendar for the given [YearMonth]. The amount of dates
+ * generated is always divisible by 7. This function never fails.
  */
 fun generateDays(date: YearMonth): List<LocalDate> {
   val dates = mutableListOf<LocalDate>()

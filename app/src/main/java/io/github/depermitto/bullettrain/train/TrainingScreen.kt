@@ -93,7 +93,7 @@ fun TrainingScreen(
     Column(verticalArrangement = Arrangement.spacedBy(Dp.Medium)) {
       trainViewModel.getExercises().forEachIndexed { exerciseIndex, exercise ->
         val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
-        val lastPerformedSet = exercise.lastCompletedSet
+        val lastCompletedSet = exercise.lastCompletedSet
 
         var showDeleteExerciseDialog by rememberSaveable { mutableStateOf(false) }
         if (showDeleteExerciseDialog)
@@ -139,7 +139,7 @@ fun TrainingScreen(
               trailingContent = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                   if (trainViewModel.isWorkoutRunning())
-                    lastPerformedSet?.let { exerciseSet ->
+                    lastCompletedSet?.let { exerciseSet ->
                       Card {
                         Text(
                           if (exercise.setsList.all { it.hasDoneTs() }) "Done"
@@ -150,7 +150,7 @@ fun TrainingScreen(
                       }
                     }
 
-                  var showDropdown by rememberSaveable { mutableStateOf(false) }
+                  var showDropdown by remember { mutableStateOf(false) }
                   DropdownButton(
                     modifier = Modifier.offset(x = 2.dp),
                     show = showDropdown,
@@ -239,7 +239,7 @@ fun TrainingScreen(
                 )
               },
               completed = set.hasDoneTs(),
-              placeholder = { lastPerformedSet?.let { Placeholder(it.actual.format()) } },
+              placeholder = { lastCompletedSet?.let { Placeholder(it.actual.format()) } },
             )
             PrettyToggleNumberField(
               modifier = Modifier.weight(.7F).padding(horizontal = 2.dp),
@@ -252,7 +252,7 @@ fun TrainingScreen(
                 )
               },
               completed = set.hasDoneTs(),
-              placeholder = { lastPerformedSet?.let { Placeholder(it.weight.format()) } },
+              placeholder = { lastCompletedSet?.let { Placeholder(it.weight.format()) } },
             )
             Checkbox(
               modifier = Modifier.size(20.dp).weight(.3F),
