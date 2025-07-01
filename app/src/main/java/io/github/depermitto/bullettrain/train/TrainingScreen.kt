@@ -64,7 +64,6 @@ fun TrainingScreen(
 ) = LazyColumn(
     modifier = Modifier.padding(horizontal = ItemPadding), verticalArrangement = Arrangement.spacedBy(ItemSpacing)
 ) {
-    // TODO add colors for supersets here
     itemsIndexed(trainViewModel.getExercises()) { i, _ ->
         Card(modifier = Modifier, colors = CardDefaults.cardColors(containerColor = filledContainerColor())) {
             val exercise = trainViewModel.getExercise(index = i)
@@ -100,7 +99,7 @@ fun TrainingScreen(
                             text = { Text(text = "Delete") },
                             onClick = { trainViewModel.removeExercise(i) })
                         DropdownMenuItem(leadingIcon = { SwapIcon() }, text = { Text(text = "Swap") }, onClick = {
-                            swapExerciseChooser() // TODO add alternatives here
+                            swapExerciseChooser()
                             showDropdownButton = false
                         })
                     }

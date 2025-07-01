@@ -17,7 +17,6 @@ import io.github.depermitto.bullettrain.theme.ItemSpacing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-// TODO classic settings screen (better layout)
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,

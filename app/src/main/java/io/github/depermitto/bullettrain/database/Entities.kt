@@ -47,7 +47,6 @@ data class Day(
     val exercises: List<Exercise> = listOf(),
 )
 
-// TODO TimeRange, Intensity variations?
 @Serializable
 data class Exercise(
     @SerialName("exerciseId") override val id: Int = 0,

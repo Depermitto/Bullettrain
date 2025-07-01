@@ -74,14 +74,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// TODO make tests and benchmarks, mostly for backend probably
 @Composable
 fun App(db: Database) = MaterialTheme {
     val navController = rememberNavController()
 
-    val homeViewModel = viewModel<HomeViewModel>(factory = HomeViewModel.Companion.Factory(startingBar = Screen.HomeScreen.Tabs.History))
-    val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Companion.Factory(Program(), db.programDao))
-    val trainViewModel = viewModel<TrainViewModel>(factory = TrainViewModel.Companion.Factory(db.historyDao, db.programDao, navController))
+    val homeViewModel = viewModel<HomeViewModel>(factory = HomeViewModel.Factory(startingBar = Screen.HomeScreen.Tabs.History))
+    val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program(), db.programDao))
+    val trainViewModel = viewModel<TrainViewModel>(factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController))
 
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { paddingValues ->
@@ -174,7 +173,7 @@ fun App(db: Database) = MaterialTheme {
             composable(Screen.ProgramScreen.route) { navBackStackEntry ->
                 val programId = (navBackStackEntry.arguments?.getString("programId") ?: return@composable).toInt()
                 val program = runBlocking { db.programDao.where(programId).firstOrNull() } ?: return@composable
-                val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Companion.Factory(program, db.programDao))
+                val programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(program, db.programDao))
 
                 RibbonScaffold(ribbon = { Ribbon(navController, title = programViewModel.programName) }) {
                     ProgramScreen(programViewModel, exerciseDao = db.exerciseDao)
