@@ -79,10 +79,12 @@ fun TrainingScreen(
             historyDao = historyDao,
             onDismissRequest = { showSwapExerciseChooser = false },
             filter = filter,
+            // Swap ExerciseDescriptor
             onSelection = { it -> trainViewModel.setWorkoutEntry(exerciseIndex, exercise.copy(descriptorId = it.id)) })
 
         WorkoutEntry(
             workoutEntry = exercise,
+            // Delete set
             onWorkoutEntryChange = { trainViewModel.setWorkoutEntry(exerciseIndex, it) },
             headline = {
                 HeroTile(headlineContent = {
@@ -122,6 +124,7 @@ fun TrainingScreen(
                         }
                         Spacer(Modifier.width(8.dp))
                         FilledTonalIconButton(modifier = Modifier.size(SqueezableIconSize), onClick = {
+                            // Add set
                             trainViewModel.setWorkoutEntry(
                                 exerciseIndex, exercise.copy(
                                     sets = exercise.sets + ExerciseSet(

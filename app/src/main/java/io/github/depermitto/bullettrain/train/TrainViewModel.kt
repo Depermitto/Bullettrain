@@ -37,9 +37,10 @@ class TrainViewModel(
 
     fun setWorkoutEntry(index: Int, workoutEntry: WorkoutEntry) {
         workoutEntries[index] = workoutEntry
+        backup()
     }
 
-    fun setExerciseSet(exerciseIndex: Int, setIndex: Int, set: ExerciseSet) = setWorkoutEntry(
+    fun setExerciseSet(exerciseIndex: Int, setIndex: Int, set: ExerciseSet) = workoutEntries.set(
         exerciseIndex, getWorkoutEntry(exerciseIndex).copy(sets = getWorkoutEntry(exerciseIndex).sets.smallListSet(setIndex, set))
     )
 
@@ -182,7 +183,6 @@ class TrainViewModel(
             }
             workoutEntries = record.workout.entries.toMutableStateList()
             workoutState = record
-            backup()
         } else throw UnsupportedOperationException("WorkoutState Is Not Null")
     }
 
