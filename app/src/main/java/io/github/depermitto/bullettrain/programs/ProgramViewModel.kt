@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -12,13 +13,16 @@ import io.github.depermitto.bullettrain.database.Exercise
 import io.github.depermitto.bullettrain.database.Program
 import io.github.depermitto.bullettrain.util.smallListSet
 
-class ProgramViewModel(program: Program) : ViewModel() {
-    val programId = program.id
-    var programName by mutableStateOf(program.name)
-    private var days = mutableStateListOf<Day>().apply { addAll(program.days) }
-    var followed by mutableStateOf(program.followed)
+class ProgramViewModel(private val baseProgram: Program) : ViewModel() {
+    var programId = baseProgram.id
         private set
-    var nextDay = program.nextDayIndex
+    var programName by mutableStateOf(baseProgram.name)
+    private var days = mutableStateListOf<Day>().apply { addAll(baseProgram.days) }
+    var nextDayIndex = baseProgram.nextDayIndex
+        private set
+    var followed by mutableStateOf(baseProgram.followed)
+        private set
+    var draft by mutableStateOf(baseProgram.draft)
         private set
 
     fun getDays(): List<Day> = days.toList()
@@ -33,7 +37,7 @@ class ProgramViewModel(program: Program) : ViewModel() {
 
     fun reorderDays(fromIndex: Int, toIndex: Int) = days.add(toIndex, days.removeAt(fromIndex))
 
-    fun areDaysEqual(program: Program): Boolean = getDays() == program.days
+    val hasChanged = getDays() != baseProgram.days
     fun hasContent(ignoreDay1: Boolean = false): Boolean {
         if (programName.isNotBlank()) return true
         return if (!ignoreDay1) {
@@ -42,21 +46,24 @@ class ProgramViewModel(program: Program) : ViewModel() {
         } else days.isNotEmpty()
     }
 
-    fun constructProgram(): Program = Program(
+    fun getProgram(): Program = Program(
         id = programId,
         name = programName,
         days = getDays(),
         followed = followed,
-        nextDayIndex = nextDay,
+        draft = draft,
+        nextDayIndex = nextDayIndex,
         mostRecentWorkoutDate = null
     )
 
-    fun clear() {
-        programName = ""
-        days.clear()
-        days.add(Day())
-        followed = false
-        nextDay = 0
+    fun revertToDefault() {
+        val defaultProgram = Program()
+        programId = defaultProgram.id
+        programName = defaultProgram.name
+        days = defaultProgram.days.toMutableStateList()
+        followed = defaultProgram.followed
+        draft = defaultProgram.draft
+        nextDayIndex = defaultProgram.nextDayIndex
     }
 
     companion object {

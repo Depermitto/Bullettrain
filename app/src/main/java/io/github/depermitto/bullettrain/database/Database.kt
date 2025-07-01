@@ -160,7 +160,7 @@ abstract class Dao<T : Entity>(protected val storageFile: StorageFile<List<T>>) 
     }
 
     /**
-     * return id of the inserted item or -1 if it existed in the database.
+     * return id of the inserted item or -1 if it was updated.
      */
     open fun upsert(item: T): Int = if (update(item)) -1 else insert(item)
 

@@ -106,7 +106,7 @@ fun TrainingScreen(
                     if (!trainViewModel.isWorkoutEditing()) lastPerformedSet?.let { exerciseSet ->
                         Card {
                             Text(
-                                modifier = Modifier.padding(4.dp),
+                                modifier = Modifier.padding(SmallPadding),
                                 text = if (exercise.sets.all { it.completed }) "Done"
                                 else trainViewModel.elapsedSince(exerciseSet.doneTs!!),
                                 style = MaterialTheme.typography.titleMedium

@@ -149,7 +149,7 @@ fun App(db: Database) = MaterialTheme {
                     }
                 }, onDrag = { _, dragAmount -> dragDirection = dragAmount.x })
             }, topBar = {
-                if (homeViewModel.activeTab == Tab.Train) TopBarWithSettingsButton(
+                if (homeViewModel.activeTab == Tab.Train || homeViewModel.activeTab == Tab.Programs) TopBarWithSettingsButton(
                     navController = navController, title = "Home"
                 )
             }, bottomBar = {
@@ -261,7 +261,7 @@ fun App(db: Database) = MaterialTheme {
                     title = if (programViewModel.programName.isBlank()) "New Program" else programViewModel.programName,
                     topEndContent = {
                         TextButton(onClick = {
-                            val program = programViewModel.constructProgram()
+                            val program = programViewModel.getProgram()
                             if (program.name.isBlank()) {
                                 BackgroundSlave.enqueue {
                                     snackbarHostState.showSnackbar("Blank Program Name", withDismissAction = true)
@@ -270,8 +270,8 @@ fun App(db: Database) = MaterialTheme {
                             }
 
                             navController.navigateUp()
-                            db.programDao.insert(program)
-                            programViewModel.clear()
+                            db.programDao.upsert(program)
+                            programViewModel.revertToDefault()
                         }) {
                             Icon(
                                 modifier = Modifier.size(ButtonDefaults.IconSize),
@@ -295,7 +295,7 @@ fun App(db: Database) = MaterialTheme {
 
             if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
                 text = "Do you want to discard ${programViewModel.programName.ifBlank { "your new creation" }}?",
-                onConfirm = { navController.navigateUp(); programViewModel.clear() })
+                onConfirm = { navController.navigateUp(); programViewModel.revertToDefault() })
 
             BackHandler(enabled = programViewModel.hasContent(ignoreDay1 = false)) { showDiscardDialog = true }
         }
@@ -327,8 +327,8 @@ fun App(db: Database) = MaterialTheme {
 
                 Scaffold(topBar = {
                     TopBarWithBackButton(navController = navController, title = programViewModel.programName, topEndContent = {
-                        if (!programViewModel.areDaysEqual(program)) TextButton(onClick = {
-                            db.programDao.update(programViewModel.constructProgram())
+                        if (programViewModel.hasChanged) TextButton(onClick = {
+                            db.programDao.update(programViewModel.getProgram())
                             navController.popBackStack()
                         }) {
                             Icon(
@@ -352,9 +352,9 @@ fun App(db: Database) = MaterialTheme {
 
                 if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
                     text = "Do you want to discard changes made to ${programViewModel.programName}?",
-                    onConfirm = { navController.navigateUp() })
+                    onConfirm = { db.programDao.delete(program); navController.navigateUp() })
 
-                BackHandler(enabled = !programViewModel.areDaysEqual(program)) { showDiscardDialog = true }
+                BackHandler(enabled = programViewModel.hasChanged) { showDiscardDialog = true }
             }
         }
 

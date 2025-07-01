@@ -31,6 +31,7 @@ import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
 import io.github.depermitto.bullettrain.database.ProgramDao
 import io.github.depermitto.bullettrain.theme.RegularPadding
 import io.github.depermitto.bullettrain.theme.RegularSpacing
+import io.github.depermitto.bullettrain.theme.SmallPadding
 
 @Composable
 fun ProgramsTab(
@@ -76,6 +77,14 @@ fun ProgramsTab(
 //                                    )
 //                                }
                             }
+                        }, trailingContent = {
+                            if (program.draft) Card {
+                                Text(
+                                    text = "Draft",
+                                    modifier = Modifier.padding(SmallPadding),
+                                    style = MaterialTheme.typography.titleSmall
+                                )
+                            }
                         })
                 }
 
@@ -102,6 +111,6 @@ fun ProgramsTab(
     AnchoredFloatingActionButton(
         icon = { Icon(Icons.Filled.Add, contentDescription = "Create Program") },
         text = { Text(text = "Create") },
-        onClick = { programViewModel.clear(); navController.navigate(Destination.ProgramCreation) },
+        onClick = { programViewModel.revertToDefault(); navController.navigate(Destination.ProgramCreation) },
     )
 }
