@@ -17,6 +17,10 @@ val DragHandleIcon: @Composable () -> Unit = {
   Icon(painterResource(id = R.drawable.drag_horizontal_variant), contentDescription = "Drag Handle")
 }
 
+val NumberedListIcon: @Composable () -> Unit = {
+  Icon(painterResource(id = R.drawable.format_list_numbered), contentDescription = "Numbered List")
+}
+
 val HeartPlusIcon: @Composable () -> Unit = {
   Icon(painterResource(id = R.drawable.heart_plus), contentDescription = "Heart Plus")
 }

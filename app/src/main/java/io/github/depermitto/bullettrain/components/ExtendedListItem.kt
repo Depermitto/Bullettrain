@@ -49,6 +49,7 @@ fun ExtendedListItem(
         Box(
           Modifier.constrainAs(headline) {
             top.linkTo(parent.top)
+            if (supportingContent == null) centerVerticallyTo(parent)
             width = Dimension.preferredWrapContent
           }
         ) {

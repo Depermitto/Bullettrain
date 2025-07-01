@@ -1,8 +1,5 @@
 package io.github.depermitto.bullettrain.programs
 
-import android.os.Build
-import android.view.HapticFeedbackConstants
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,24 +24,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
+import io.github.depermitto.bullettrain.components.DropdownButton
 import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.NumberField
+import io.github.depermitto.bullettrain.components.ReorderingAlertDialog
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
 import io.github.depermitto.bullettrain.components.TextLink
-import io.github.depermitto.bullettrain.components.reorderable
 import io.github.depermitto.bullettrain.db.ExerciseDao
 import io.github.depermitto.bullettrain.db.HistoryDao
 import io.github.depermitto.bullettrain.exercises.Exercise
@@ -56,7 +54,6 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
-import sh.calvin.reorderable.ReorderableColumn
 
 @Composable
 fun DayScreen(
@@ -70,45 +67,39 @@ fun DayScreen(
   snackbarHostState: SnackbarHostState,
 ) {
   Box(modifier = modifier.fillMaxSize()) {
-    val filter = { descriptor: Exercise.Descriptor ->
-      programViewModel.getDay(dayIndex).exercisesList.none { it.descriptorId == descriptor.id }
+    val duplicateExerciseFilter = { descriptor: Exercise.Descriptor ->
+      programViewModel.getExercises(dayIndex).none { it.descriptorId == descriptor.id }
     }
-    val view = LocalView.current
     val scope = rememberCoroutineScope()
     val day = programViewModel.getDay(dayIndex)
-    ReorderableColumn(
+
+    var showReorderExerciseDialog by rememberSaveable { mutableStateOf(false) }
+    if (showReorderExerciseDialog)
+      ReorderingAlertDialog(
+        title = "Reorder exercises",
+        onDismissRequest = { showReorderExerciseDialog = false },
+        dismissButton = {
+          TextButton(onClick = { showReorderExerciseDialog = false }) { Text("Close") }
+        },
+        list = programViewModel.getExercises(dayIndex),
+        onSettle = { from, to -> programViewModel.reorderExercises(dayIndex, from, to) },
+      ) { exerciseIndex, exercise ->
+        val exerciseDescriptor = exerciseDao.where(id = exercise.descriptorId)
+        Text(text = "${exerciseIndex + 1}. ${exerciseDescriptor.name}", maxLines = 2)
+      }
+
+    Column(
       modifier =
         Modifier.padding(horizontal = Dp.Medium)
           .verticalScroll(rememberScrollState())
           .padding(bottom = Dp.EmptyScrollSpace),
-      list = day.exercisesList,
       verticalArrangement = Arrangement.spacedBy(Dp.Medium),
-      onMove = {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-          view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
-        }
-      },
-      onSettle = { from, to ->
-        programViewModel.setDay(
-          dayIndex,
-          day
-            .toBuilder()
-            .apply {
-              val exercise = getExercises(from)
-              removeExercises(from)
-              addExercises(to, exercise)
-            }
-            .build(),
-        )
-      },
-    ) { exerciseIndex, exercise, isDragging ->
-      key(exercise.descriptorId) {
+    ) {
+      programViewModel.getExercises(dayIndex).forEachIndexed { exerciseIndex, exercise ->
         val exerciseDescriptor = exerciseDao.where(exercise.descriptorId)
-        val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
         var showSwapExerciseChooser by rememberSaveable { mutableStateOf(false) }
 
         SwipeToDeleteBox(
-          shadowElevation = elevation,
           shape = MaterialTheme.shapes.medium,
           threshold = 0.9F,
           onDelete = {
@@ -148,84 +139,90 @@ fun DayScreen(
                   )
                 },
                 trailingContent = {
-                  Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                      IconButton(
-                        modifier =
-                          Modifier.size(SqueezableIconSize)
-                            .reorderable(this@ReorderableColumn, view),
-                        onClick = { showSwapExerciseChooser = true },
-                      ) {
-                        SwapIcon()
-                      }
-
-                      FilledTonalIconButton(
-                        modifier = Modifier.size(SqueezableIconSize),
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    var showDropdown by rememberSaveable { mutableStateOf(false) }
+                    DropdownButton(show = showDropdown, onShowChange = { showDropdown = it }) {
+                      DropdownMenuItem(
+                        text = { Text("Swap") },
                         onClick = {
-                          programViewModel.setExercise(
-                            dayIndex,
-                            exerciseIndex,
-                            exercise.toBuilder().addSets(Exercise.Set.getDefaultInstance()).build(),
-                          )
+                          showDropdown = false
+                          showSwapExerciseChooser = true
                         },
-                      ) {
-                        Icon(Icons.Filled.Add, null)
-                      }
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        leadingIcon = SwapIcon,
+                      )
+                      DropdownMenuItem(
+                        text = { Text("Reorder") },
+                        onClick = {
+                          showDropdown = false
+                          showReorderExerciseDialog = true
+                        },
+                        leadingIcon = NumberedListIcon,
+                      )
                       if (!exercise.hasTarget2)
-                        IconButton(
-                          modifier = Modifier.size(SqueezableIconSize),
+                        DropdownMenuItem(
+                          text = { Text("Variable Target") },
+                          leadingIcon = SplitIcon,
                           onClick = {
+                            showDropdown = false
                             programViewModel.setExercise(
                               dayIndex,
                               exerciseIndex,
                               exercise.toBuilder().setHasTarget2(true),
                             )
                           },
-                        ) {
-                          SplitIcon()
-                        }
+                        )
                       else
-                        IconButton(
-                          modifier = Modifier.size(SqueezableIconSize),
+                        DropdownMenuItem(
+                          text = { Text("Singular Target") },
+                          leadingIcon = MergeIcon,
                           onClick = {
+                            showDropdown = false
                             programViewModel.setExercise(
                               dayIndex,
                               exerciseIndex,
                               exercise.toBuilder().setHasTarget2(false),
                             )
                           },
-                        ) {
-                          MergeIcon()
-                        }
-
+                        )
                       if (!exercise.hasIntensity)
-                        IconButton(
-                          modifier = Modifier.size(SqueezableIconSize),
+                        DropdownMenuItem(
+                          text = { Text("Add RPE") },
+                          leadingIcon = HeartPlusIcon,
                           onClick = {
+                            showDropdown = false
                             programViewModel.setExercise(
                               dayIndex,
                               exerciseIndex,
                               exercise.toBuilder().setHasIntensity(true),
                             )
                           },
-                        ) {
-                          HeartPlusIcon()
-                        }
+                        )
                       else
-                        IconButton(
-                          modifier = Modifier.size(SqueezableIconSize),
+                        DropdownMenuItem(
+                          text = { Text("Remove RPE") },
+                          leadingIcon = HeartRemoveIcon,
                           onClick = {
+                            showDropdown = false
                             programViewModel.setExercise(
                               dayIndex,
                               exerciseIndex,
                               exercise.toBuilder().setHasIntensity(false),
                             )
                           },
-                        ) {
-                          HeartRemoveIcon()
-                        }
+                        )
+                    }
+
+                    FilledTonalIconButton(
+                      modifier = Modifier.size(SqueezableIconSize),
+                      onClick = {
+                        programViewModel.setExercise(
+                          dayIndex,
+                          exerciseIndex,
+                          exercise.toBuilder().addSets(Exercise.Set.getDefaultInstance()).build(),
+                        )
+                      },
+                    ) {
+                      Icon(Icons.Filled.Add, "Add Exercise Set")
                     }
                   }
                 },
@@ -351,7 +348,7 @@ fun DayScreen(
             exerciseDao = exerciseDao,
             historyDao = historyDao,
             onDismissRequest = { showSwapExerciseChooser = false },
-            filter = filter,
+            filter = duplicateExerciseFilter,
             onSelection = {
               programViewModel.setExercise(
                 dayIndex,
@@ -369,7 +366,7 @@ fun DayScreen(
         exerciseDao = exerciseDao,
         historyDao = historyDao,
         onDismissRequest = { showAddExerciseChooser = false },
-        filter = filter,
+        filter = duplicateExerciseFilter,
         onSelection = {
           programViewModel.setDay(
             dayIndex,

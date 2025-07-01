@@ -85,7 +85,6 @@ class TrainViewModel(
     if (isWorkoutRunning()) historyDao.update(this.getRecord())
   }
 
-  // TODO bring back removing Exercises
   fun removeExerciseAt(index: Int) {
     exercises.removeAt(index)
     if (isWorkoutRunning()) historyDao.update(this.getRecord())
@@ -127,12 +126,10 @@ class TrainViewModel(
   fun elapsed(since: Timestamp? = null): String {
     val secs = since?.seconds ?: workoutStartTs.seconds
     val diff = max(0, clock - secs)
-    val hours = diff / (60 * 60)
-
-    return if (hours == 0L) {
+    return if (diff < 3600) {
       DateFormatters.m_ss.format(Instant.ofEpochSecond(diff))
     } else {
-      "$hours:${DateFormatters.mm_ss.format(Instant.ofEpochSecond(diff))}"
+      DateFormatters.k_mm_ss.format(Instant.ofEpochSecond(diff))
     }
   }
 

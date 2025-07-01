@@ -206,7 +206,7 @@ fun Setting(
   onClick: () -> Unit,
   headline: String,
   supporting: String,
-) =
+) {
   ExtendedListItem(
     modifier = modifier,
     headlineContent = { Text(headline) },
@@ -214,6 +214,7 @@ fun Setting(
     onClick = onClick,
     supportingTextStyle = MaterialTheme.typography.bodySmall,
   )
+}
 
 @Composable
 fun SettingSwitch(
@@ -223,7 +224,7 @@ fun SettingSwitch(
   onChecked: (Boolean) -> Unit,
   checked: Boolean,
   enabled: Boolean = true,
-) =
+) {
   ExtendedListItem(
     modifier = modifier,
     headlineContent = { Text(headline) },
@@ -232,3 +233,4 @@ fun SettingSwitch(
     trailingContent = { Switch(checked = checked, onCheckedChange = null, enabled = enabled) },
     supportingTextStyle = MaterialTheme.typography.bodySmall,
   )
+}
