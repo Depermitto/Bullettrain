@@ -209,7 +209,7 @@ fun App(db: Database) = MaterialTheme {
                 }
 
                 if (showDiscardDialog) DiscardConfirmationAlertDialog(onDismissRequest = { showDiscardDialog = false },
-                    text = "Do you want to discard ${programViewModel.programName.ifBlank { "new program" }}?",
+                    text = "Do you want to discard ${programViewModel.programName.ifBlank { "your new creation" }}?",
                     onConfirm = { navController.navigateUp(); programViewModel.clear() })
 
                 if (!programViewModel.isEmpty() && programViewModel.getDays().toList() != listOf(Day())) {
