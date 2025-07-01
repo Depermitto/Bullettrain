@@ -1,5 +1,6 @@
 package io.github.depermitto.components
 
+import android.util.Log
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,14 +19,15 @@ fun NumberField(
     value: Float,
     onValueChange: (Float) -> Unit,
     label: @Composable (() -> Unit)? = null,
+    placeholder: @Composable (() -> Unit)? = null,
     singleLine: Boolean = true,
     readOnly: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(3.dp),
 ) {
-    val textValue = value.toString().removeSuffix(".0")
+    val textValue = if (value == 0f) "" else value.toString().removeSuffix(".0")
 
     var textFieldValue by remember { mutableStateOf(TextFieldValue(textValue)) }
-    if (textFieldValue.text.isNotEmpty() && textFieldValue.text != "-" && value != textFieldValue.text.toFloatOrNull()) {
+    if (textFieldValue.text != "-" && value != textFieldValue.text.toFloatOrNull()) {
         textFieldValue = textFieldValue.copy(text = textValue)
     }
 
@@ -49,6 +51,7 @@ fun NumberField(
             else it.text.toFloatOrNull()?.let { value -> onValueChange(value) }
         },
         label = label,
+        placeholder = placeholder,
         singleLine = singleLine,
         readOnly = readOnly,
         contentPadding = contentPadding,

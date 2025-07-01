@@ -34,6 +34,8 @@ data class Exercise(
 ) {
     val hasIntensity: Boolean
         get() = intensityCategory != null
+
+    fun lastPerformedSet(): ExerciseSet? = sets.lastOrNull { it.date != null }
 }
 
 @Serializable

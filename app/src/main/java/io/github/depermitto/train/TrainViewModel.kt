@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import io.github.depermitto.Screen
 import io.github.depermitto.data.entities.*
+import io.github.depermitto.misc.set
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -41,6 +42,10 @@ class TrainViewModel(
     fun isWorkoutRunning(): Boolean = workoutState?.historyRecord?.workoutPhase == WorkoutPhase.During
 
     fun setExercise(index: Int, exercise: Exercise) = exercises.set(index, exercise)
+    fun setExerciseSet(exerciseIndex: Int, setIndex: Int, set: ExerciseSet) = setExercise(
+        exerciseIndex, getExercise(exerciseIndex).copy(sets = getExercise(exerciseIndex).sets.set(setIndex, set))
+    )
+
     fun getExercise(index: Int) = exercises[index]
     fun getExercises() = exercises
     fun addExercise(exercise: Exercise) = exercises.add(exercise)

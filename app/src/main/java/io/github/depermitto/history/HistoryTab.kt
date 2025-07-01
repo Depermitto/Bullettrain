@@ -98,9 +98,7 @@ fun HistoryTab(
                             val scroll = rememberScrollState(0)
                             Text(modifier = Modifier.horizontalScroll(scroll),
                                 text = exercise.sets.groupBy { it.weight }.map { (weight, sets) ->
-                                    "${sets.size} x ${
-                                        weight.encodeToStringOutput().ifBlank { 0 }
-                                    }"
+                                    "${sets.size} x ${weight.encodeToStringOutput().ifBlank { 0 }}"
                                 }.joinToString(", ") + " " + settingsViewModel.weightUnit(),
                                 maxLines = 1
                             )

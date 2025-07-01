@@ -16,15 +16,16 @@ import androidx.compose.ui.unit.dp
 import io.github.depermitto.components.DropdownButton
 import io.github.depermitto.components.Header
 import io.github.depermitto.components.NumberField
+import io.github.depermitto.components.Placeholder
 import io.github.depermitto.components.RibbonScaffold
 import io.github.depermitto.components.SwipeToDeleteBox
+import io.github.depermitto.components.encodeToStringOutput
 import io.github.depermitto.data.entities.ExerciseDao
 import io.github.depermitto.data.entities.ExerciseSet
 import io.github.depermitto.data.entities.PerfVar
 import io.github.depermitto.exercises.AddExerciseButton
 import io.github.depermitto.exercises.exerciseChooser
 import io.github.depermitto.misc.SwapIcon
-import io.github.depermitto.misc.set
 import io.github.depermitto.settings.SettingsViewModel
 import io.github.depermitto.theme.*
 import java.time.Instant
@@ -85,22 +86,21 @@ private fun TrainExercise(
     })
 
     Column(modifier = Modifier.padding(ItemPadding)) {
+        val lastPerformedSet = exercise.lastPerformedSet()
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 modifier = Modifier.weight(1f),
                 text = "${exerciseIndex + 1}. ${exercise.name}",
                 style = MaterialTheme.typography.titleMedium,
             )
-            if (trainViewModel.isWorkoutRunning()) {
-                exercise.sets.lastOrNull { it.date != null }?.let { exerciseSet ->
-                    Card {
-                        Text(
-                            modifier = Modifier.padding(4.dp),
-                            text = if (exercise.sets.all { it.date != null }) "Done"
-                            else trainViewModel.elapsedSince(exerciseSet.date!!),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
+            if (trainViewModel.isWorkoutRunning()) lastPerformedSet?.let { exerciseSet ->
+                Card {
+                    Text(
+                        modifier = Modifier.padding(4.dp),
+                        text = if (exercise.sets.all { it.date != null }) "Done"
+                        else trainViewModel.elapsedSince(exerciseSet.date!!),
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
             }
             DropdownButton(show = showDropdownButton, onShowChange = { showDropdownButton = it }) {
@@ -143,14 +143,12 @@ private fun TrainExercise(
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium
                     )
-                    if (set.intensity != null) {
-                        Text(
-                            modifier = Modifier.weight(ExerciseSetNarrowWeight),
-                            text = set.intensity.toString(),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
+                    if (set.intensity != null) Text(
+                        modifier = Modifier.weight(ExerciseSetNarrowWeight),
+                        text = set.intensity.toString(),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                     Text(
                         modifier = Modifier.weight(ExerciseSetNarrowWeight + 0.1f),
                         text = set.targetPerfVar.toText().takeUnless(String::isEmpty) ?: "--",
@@ -163,38 +161,40 @@ private fun TrainExercise(
                             .padding(horizontal = ExerciseSetSpacing),
                         value = set.actualPerfVar,
                         onValueChange = {
-                            trainViewModel.setExercise(
-                                exerciseIndex,
-                                exercise.copy(sets = exercise.sets.set(setIndex, set.copy(actualPerfVar = it)))
+                            trainViewModel.setExerciseSet(
+                                exerciseIndex, setIndex, set.copy(actualPerfVar = it)
                             )
                         },
-                    )
+                        placeholder = { lastPerformedSet?.let { Placeholder(it.actualPerfVar.encodeToStringOutput()) } })
                     NumberField(
                         Modifier
                             .weight(ExerciseSetWideWeight)
                             .padding(horizontal = ExerciseSetSpacing),
                         value = set.weight,
                         onValueChange = {
-                            trainViewModel.setExercise(
-                                exerciseIndex, exercise.copy(sets = exercise.sets.set(setIndex, set.copy(weight = it)))
+                            trainViewModel.setExerciseSet(
+                                exerciseIndex, setIndex, set.copy(weight = it)
                             )
                         },
-                    )
-                    if (trainViewModel.isWorkoutRunning()) {
-                        Checkbox(modifier = Modifier
-                            .size(20.dp)
-                            .weight(ExerciseSetNarrowWeight),
-                            checked = set.date != null,
-                            onCheckedChange = {
-                                trainViewModel.setExercise(
-                                    exerciseIndex, exercise.copy(
-                                        sets = exercise.sets.set(
-                                            setIndex, set.copy(date = if (it) Instant.now() else null)
-                                        )
-                                    )
-                                )
-                            })
-                    }
+                        placeholder = { lastPerformedSet?.let { Placeholder(it.weight.encodeToStringOutput()) } })
+                    if (trainViewModel.isWorkoutRunning()) Checkbox(modifier = Modifier
+                        .size(20.dp)
+                        .weight(ExerciseSetNarrowWeight),
+                        checked = set.date != null,
+                        onCheckedChange = {
+                            val set = if (it) set.copy(
+                                date = Instant.now(),
+                               
+                                weight = if (set.weight != 0f) set.weight
+                                else lastPerformedSet?.weight ?: 0f,
+
+                                actualPerfVar = if (set.actualPerfVar != 0f) set.actualPerfVar
+                                else lastPerformedSet?.actualPerfVar ?: 0f
+                            )
+                            else set.copy(date = null)
+
+                            trainViewModel.setExerciseSet(exerciseIndex, setIndex, set)
+                        })
                 }
             }
         }
