@@ -52,7 +52,6 @@ import io.github.depermitto.bullettrain.protos.SettingsProto.*
 import io.github.depermitto.bullettrain.theme.*
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 
 @Composable
@@ -269,6 +268,7 @@ fun DayScreen(
                   Row(verticalAlignment = Alignment.CenterVertically) {
                     NumberField(
                       modifier = Modifier.weight(0.5F),
+                      floatingPoint = false,
                       value = set.target,
                       onValueChange = {
                         programViewModel.setExercise(
@@ -281,6 +281,7 @@ fun DayScreen(
                     Text("-", modifier = Modifier.padding(horizontal = 2.dp))
                     NumberField(
                       modifier = Modifier.weight(0.5F),
+                      floatingPoint = false,
                       value = set.target2,
                       onValueChange = {
                         programViewModel.setExercise(
@@ -296,6 +297,7 @@ fun DayScreen(
                   Row(verticalAlignment = Alignment.CenterVertically) {
                     NumberField(
                       modifier = Modifier.weight(1F),
+                      floatingPoint = false,
                       value = set.target,
                       onValueChange = {
                         programViewModel.setExercise(
@@ -311,6 +313,7 @@ fun DayScreen(
               if (exercise.hasIntensity)
                 NumberField(
                   modifier = Modifier.weight(0.6F).padding(horizontal = 2.dp),
+                  floatingPoint = false,
                   value = set.intensity.toFloat(),
                   onValueChange = {
                     programViewModel.setExercise(
@@ -320,7 +323,7 @@ fun DayScreen(
                         .toBuilder()
                         .setSets(
                           setIndex,
-                          set.toBuilder().setIntensity(max(min(it.roundToInt(), 10), 0)),
+                          set.toBuilder().setIntensity(max(min(it.toInt(), 10), 0)),
                         ),
                     )
                   },

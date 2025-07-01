@@ -239,6 +239,7 @@ fun TrainingScreen(
                 )
               },
               completed = set.hasDoneTs(),
+              floatingPoint = false,
               placeholder = { lastCompletedSet?.let { Placeholder(it.actual.format()) } },
             )
             PrettyToggleNumberField(
@@ -252,6 +253,7 @@ fun TrainingScreen(
                 )
               },
               completed = set.hasDoneTs(),
+              floatingPoint = true,
               placeholder = { lastCompletedSet?.let { Placeholder(it.weight.format()) } },
             )
             Checkbox(
@@ -290,6 +292,7 @@ fun PrettyToggleNumberField(
   value: Float,
   onValueChange: (Float) -> Unit,
   completed: Boolean,
+  floatingPoint: Boolean,
   placeholder: @Composable () -> Unit,
 ) {
   val (textStyle, unfocusedBorderThickness, colors) =
@@ -318,6 +321,7 @@ fun PrettyToggleNumberField(
     value = value,
     onValueChange = onValueChange,
     enabled = !completed,
+    floatingPoint = floatingPoint,
     placeholder = placeholder,
     textStyle = textStyle,
     unfocusedBorderThickness = unfocusedBorderThickness,

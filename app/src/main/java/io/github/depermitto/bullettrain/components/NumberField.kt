@@ -3,18 +3,19 @@ package io.github.depermitto.bullettrain.components
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.delete
+import androidx.compose.foundation.text.input.placeCursorAtEnd
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.selectAll
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.depermitto.bullettrain.theme.numeric
@@ -26,6 +27,7 @@ fun NumberField(
   modifier: Modifier = Modifier,
   value: Float,
   onValueChange: (Float) -> Unit,
+  floatingPoint: Boolean,
   label: @Composable (() -> Unit)? = null,
   placeholder: @Composable (() -> Unit)? = null,
   singleLine: Boolean = true,
@@ -37,41 +39,43 @@ fun NumberField(
   unfocusedBorderThickness: Dp = OutlinedTextFieldDefaults.UnfocusedBorderThickness,
   contentPadding: PaddingValues = PaddingValues(3.dp),
 ) {
-  val textValue = value.format()
-  var textFieldValue by remember { mutableStateOf(TextFieldValue(textValue)) }
-  if (textFieldValue.text != "-" && value != textFieldValue.text.toFloatOrNull()) {
-    textFieldValue = textFieldValue.copy(text = textValue)
-  }
+  val valueFormatted = remember(value) { value.format() }
+  val textFieldState = rememberTextFieldState(valueFormatted)
 
   LaunchedEffect(enabled) {
-    if (value == 0F) {
-      textFieldValue =
-        if (!enabled) textFieldValue.copy(text = "0") else textFieldValue.copy(text = "")
+    textFieldState.edit {
+      if (!enabled) {
+        if (hasSelection) {
+          selection = TextRange.Zero
+          placeCursorAtEnd()
+        }
+
+        // Autocomplete empty fields
+        if (value == 0F) {
+          replace(0, length, "0")
+        } else if (length == 0 && toString() != valueFormatted) {
+          replace(0, length, valueFormatted)
+        }
+      } else if (value == 0F) {
+        delete(0, length)
+      }
     }
   }
 
   val interactionSource = remember { MutableInteractionSource() }
   val isFocused by interactionSource.collectIsFocusedAsState()
+  LaunchedEffect(isFocused) { if (isFocused) textFieldState.edit { selectAll() } }
 
-  LaunchedEffect(isFocused) {
-    if (isFocused)
-      textFieldValue = textFieldValue.copy(selection = TextRange(0, textFieldValue.text.length))
-  }
-  if (!enabled)
-    textFieldValue = textFieldValue.copy(selection = TextRange(textFieldValue.text.length))
-
-  val focusManager = LocalFocusManager.current
+  val regex = remember { if (floatingPoint) Regex("""\d+\.?\d*""") else Regex("""\d+""") }
   OutlinedTextField(
     modifier = modifier,
-    value = textFieldValue,
-    onValueChange = {
-      if (it.text.contains(" ")) return@OutlinedTextField
-
-      textFieldValue =
-        if (it.text == ".") textFieldValue.copy(text = "0.", selection = TextRange(2)) else it
-
-      if (it.text.isBlank()) onValueChange(0F)
-      else it.text.toFloatOrNull()?.let { value -> onValueChange(value) }
+    state = textFieldState,
+    inputTransformation = {
+      when {
+        length == 0 -> onValueChange(0F)
+        regex.matches(toString()) -> onValueChange(toString().toFloat())
+        else -> revertAllChanges()
+      }
     },
     textStyle = textStyle,
     label = label,
@@ -81,13 +85,8 @@ fun NumberField(
     enabled = enabled,
     colors = colors,
     contentPadding = contentPadding,
-    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-    keyboardActions =
-      KeyboardActions(
-        onDone = { focusManager.moveFocus(FocusDirection.Next) },
-        onNext = { focusManager.moveFocus(FocusDirection.Next) },
-        onPrevious = { focusManager.moveFocus(FocusDirection.Previous) },
-      ),
+    keyboardOptions =
+      KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
     interactionSource = interactionSource,
     focusedBorderThickness = focusedBorderThickness,
     unfocusedBorderThickness = unfocusedBorderThickness,

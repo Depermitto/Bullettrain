@@ -191,10 +191,14 @@ fun ExerciseScreen(
                     )
                   ),
                 rangeProvider =
-                  CartesianLayerRangeProvider.fixed(
-                    minY = floor(values.min()),
-                    maxY = ceil(values.max()),
-                  ),
+                  run {
+                    val minY = floor(values.min())
+                    val maxY = ceil(values.max())
+                    CartesianLayerRangeProvider.fixed(
+                      minY = if (minY == maxY) 0.0 else minY,
+                      maxY = maxY,
+                    )
+                  },
               ),
               startAxis = VerticalAxis.rememberStart(),
               bottomAxis =

@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.KeyboardActionHandler
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -16,7 +18,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import io.github.depermitto.bullettrain.theme.numeric
@@ -24,10 +25,10 @@ import io.github.depermitto.bullettrain.theme.numeric
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OutlinedTextField(
-  value: TextFieldValue,
-  onValueChange: (TextFieldValue) -> Unit,
+  state: TextFieldState,
   modifier: Modifier = Modifier,
   textStyle: TextStyle = TextStyle.numeric(),
+  inputTransformation: InputTransformation? = null,
   visualTransformation: VisualTransformation = VisualTransformation.None,
   singleLine: Boolean = true,
   enabled: Boolean = true,
@@ -35,7 +36,7 @@ fun OutlinedTextField(
   label: @Composable (() -> Unit)? = null,
   placeholder: @Composable (() -> Unit)? = null,
   keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-  keyboardActions: KeyboardActions = KeyboardActions(),
+  keyboardActionHandler: KeyboardActionHandler? = null,
   interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
   colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
   cursorBrush: Brush = SolidColor(MaterialTheme.colorScheme.primary),
@@ -44,41 +45,40 @@ fun OutlinedTextField(
   contentPadding: PaddingValues,
 ) {
   BasicTextField(
-    value = value,
-    onValueChange = onValueChange,
+    state = state,
     modifier = modifier,
-    visualTransformation = visualTransformation,
-    singleLine = singleLine,
     readOnly = readOnly,
     textStyle = textStyle,
+    inputTransformation = inputTransformation,
     keyboardOptions = keyboardOptions,
-    keyboardActions = keyboardActions,
+    onKeyboardAction = keyboardActionHandler,
     interactionSource = interactionSource,
     cursorBrush = cursorBrush,
-  ) { innerTextField ->
-    OutlinedTextFieldDefaults.DecorationBox(
-      value = value.text,
-      visualTransformation = visualTransformation,
-      label = label,
-      placeholder = placeholder,
-      innerTextField = innerTextField,
-      colors = colors,
-      singleLine = singleLine,
-      enabled = enabled,
-      interactionSource = interactionSource,
-      contentPadding = contentPadding,
-      container = {
-        OutlinedTextFieldDefaults.Container(
-          enabled = enabled,
-          isError = false,
-          interactionSource = interactionSource,
-          colors = colors,
-          focusedBorderThickness = focusedBorderThickness,
-          unfocusedBorderThickness = unfocusedBorderThickness,
-        )
-      },
-    )
-  }
+    decorator = { innerTextField ->
+      OutlinedTextFieldDefaults.DecorationBox(
+        value = state.text.toString(),
+        visualTransformation = visualTransformation,
+        label = label,
+        placeholder = placeholder,
+        innerTextField = innerTextField,
+        colors = colors,
+        singleLine = singleLine,
+        enabled = enabled,
+        interactionSource = interactionSource,
+        contentPadding = contentPadding,
+        container = {
+          OutlinedTextFieldDefaults.Container(
+            enabled = enabled,
+            isError = false,
+            interactionSource = interactionSource,
+            colors = colors,
+            focusedBorderThickness = focusedBorderThickness,
+            unfocusedBorderThickness = unfocusedBorderThickness,
+          )
+        },
+      )
+    },
+  )
 }
 
 @Composable

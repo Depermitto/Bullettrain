@@ -55,7 +55,7 @@ class Db(dir: File, private val context: Context) {
         .addAllRecords(historyDao.items.value)
         .setSettings(settingsDao.item.value)
         .build()
-    measureTime { FileOutputStream(dbFile).use { db.writeTo(it) } }.let(::println)
+    measureTime { FileOutputStream(dbFile).use { db.writeTo(it) } }
   }
 
   private fun importDatabase(inputStream: InputStream): Result<Unit> {

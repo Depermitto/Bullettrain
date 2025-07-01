@@ -34,7 +34,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -564,7 +563,16 @@ fun App(db: Db) = MaterialTheme {
 
     composable<Destination.HistoryRecord> { navBackStackEntry ->
       val record = db.historyDao.where(navBackStackEntry.toRoute<Destination.Workout>().recordId)
-      val hasChanged = record.workout != trainViewModel.getRecord().workout
+      val modified = trainViewModel.getRecord()
+      val hasChanged =
+        record.workout.exercisesCount != modified.workout.exercisesCount ||
+          record.workout.exercisesList.zip(modified.workout.exercisesList).any { (e1, e2) ->
+            e1.descriptorId != e2.descriptorId ||
+              e1.setsCount != e2.setsCount ||
+              e1.setsList.zip(e2.setsList).any { (s1, s2) ->
+                s1.weight != s2.weight || s1.actual != s2.actual
+              }
+          }
       Scaffold(
         topBar = {
           TopBarWithBackButton(
