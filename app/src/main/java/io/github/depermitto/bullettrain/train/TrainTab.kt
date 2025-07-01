@@ -20,11 +20,11 @@ import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.R
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DataPanel
+import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.ListAlertDialog
-import io.github.depermitto.bullettrain.components.Tile
-import io.github.depermitto.bullettrain.database.entities.ExerciseDao
+import io.github.depermitto.bullettrain.database.daos.ExerciseDao
+import io.github.depermitto.bullettrain.database.daos.ProgramDao
 import io.github.depermitto.bullettrain.database.entities.Program
-import io.github.depermitto.bullettrain.database.entities.ProgramDao
 import io.github.depermitto.bullettrain.database.entities.Settings
 import io.github.depermitto.bullettrain.database.entities.Workout
 import io.github.depermitto.bullettrain.theme.Large
@@ -66,7 +66,7 @@ fun TrainTab(
           items = program.nextDay().entries,
           backgroundColor = Color.Transparent,
           headline = {
-            Tile(
+            ExtendedListItem(
               headlineContent = { Text(text = program.name) },
               headlineTextStyle = MaterialTheme.typography.titleLarge,
               supportingContent = { Text(text = program.nextDay().name) },
@@ -81,7 +81,7 @@ fun TrainTab(
           contentPadding = PaddingValues(horizontal = Dp.Large),
         ) { _, entry ->
           val exerciseDescriptor = exerciseDao.where(entry.descriptorId)
-          Tile(
+          ExtendedListItem(
             headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
             trailingContent = {
               Text(
@@ -138,7 +138,7 @@ fun TrainTab(
               programDao.update(program.copy(nextDayIndex = program.workouts.indexOf(day)))
             },
           ) { day ->
-            Tile(headlineContent = { Text(day.name) })
+            ExtendedListItem(headlineContent = { Text(day.name) })
           }
       }
 

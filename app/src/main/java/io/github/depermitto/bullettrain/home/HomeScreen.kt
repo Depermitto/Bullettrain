@@ -6,6 +6,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination.Home.Tab
+import io.github.depermitto.bullettrain.database.daos.ExerciseDao
+import io.github.depermitto.bullettrain.database.daos.HistoryDao
+import io.github.depermitto.bullettrain.database.daos.ProgramDao
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.exercises.ExerciseTab
 import io.github.depermitto.bullettrain.history.HistoryTab

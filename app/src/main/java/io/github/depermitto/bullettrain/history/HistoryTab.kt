@@ -31,8 +31,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.DataPanel
-import io.github.depermitto.bullettrain.components.Tile
+import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
+import io.github.depermitto.bullettrain.database.daos.ExerciseDao
+import io.github.depermitto.bullettrain.database.daos.HistoryDao
+import io.github.depermitto.bullettrain.database.daos.ProgramDao
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
@@ -122,7 +125,7 @@ fun HistoryTab(
             },
           backgroundColor = focalGround(settings.theme),
           headline = {
-            Tile(
+            ExtendedListItem(
               headlineContent = { Text(text = relatedProgram.name) },
               headlineTextStyle = MaterialTheme.typography.titleLarge,
               supportingContent = { Text(text = record.workout.name) },
@@ -160,7 +163,7 @@ fun HistoryTab(
               }
 
           val exerciseDescriptor = exerciseDao.where(entry.descriptorId)
-          Tile(
+          ExtendedListItem(
             headlineContent = { Text(text = exerciseDescriptor.name, maxLines = 2) },
             trailingContent = {
               Text(text = bestSet ?: "skipped", overflow = TextOverflow.Ellipsis, maxLines = 2)

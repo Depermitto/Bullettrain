@@ -26,10 +26,10 @@ import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
+import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.HoldToShowOptionsBox
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
-import io.github.depermitto.bullettrain.components.Tile
-import io.github.depermitto.bullettrain.database.entities.ProgramDao
+import io.github.depermitto.bullettrain.database.daos.ProgramDao
 import io.github.depermitto.bullettrain.database.entities.Settings
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
@@ -81,7 +81,7 @@ fun ProgramsTab(
             modifier = Modifier.align(Alignment.Center),
             colors = CardDefaults.cardColors(containerColor = focalGround(settings.theme)),
           ) {
-            Tile(
+            ExtendedListItem(
               headlineContent = {
                 Text(text = program.name, style = MaterialTheme.typography.titleLarge)
               },

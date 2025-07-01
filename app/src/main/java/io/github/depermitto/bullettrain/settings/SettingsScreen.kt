@@ -16,9 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.ListAlertDialog
 import io.github.depermitto.bullettrain.components.RadioTile
-import io.github.depermitto.bullettrain.components.Tile
 import io.github.depermitto.bullettrain.database.Database
 import io.github.depermitto.bullettrain.database.entities.Theme
 import io.github.depermitto.bullettrain.database.entities.UnitSystem
@@ -184,7 +184,7 @@ fun SettingGroup(
   modifier: Modifier = Modifier,
   headline: String,
   content: @Composable ColumnScope.() -> Unit,
-) =
+) {
   Column(modifier) {
     Text(
       text = headline,
@@ -194,6 +194,7 @@ fun SettingGroup(
     )
     content()
   }
+}
 
 @Composable
 fun <T> SettingList(
@@ -205,7 +206,7 @@ fun <T> SettingList(
   content: @Composable (T) -> Unit,
 ) {
   var showDialog by rememberSaveable { mutableStateOf(false) }
-  Tile(
+  ExtendedListItem(
     modifier = modifier,
     headlineContent = { Text(headline) },
     supportingContent = { Text(supporting) },
@@ -234,7 +235,7 @@ fun Setting(
   headline: String,
   supporting: String,
 ) =
-  Tile(
+  ExtendedListItem(
     modifier = modifier,
     headlineContent = { Text(headline) },
     supportingContent = { Text(supporting) },
@@ -251,7 +252,7 @@ fun SettingSwitch(
   checked: Boolean,
   enabled: Boolean = true,
 ) =
-  Tile(
+  ExtendedListItem(
     modifier = modifier,
     headlineContent = { Text(headline) },
     supportingContent = { Text(supporting) },

@@ -118,7 +118,6 @@ fun App(db: Database) = MaterialTheme {
       factory = TrainViewModel.Factory(db.historyDao, db.programDao, navController)
     )
   var programViewModel = viewModel<ProgramViewModel>(factory = ProgramViewModel.Factory(Program()))
-
   val settings by db.settingsDao.getSettings.collectAsStateWithLifecycle()
 
   // used across every NavHost.composable

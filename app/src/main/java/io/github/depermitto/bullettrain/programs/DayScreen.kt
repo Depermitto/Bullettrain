@@ -40,10 +40,12 @@ import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
 import io.github.depermitto.bullettrain.components.DragButton
+import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.SwipeToDeleteBox
 import io.github.depermitto.bullettrain.components.TextLink
-import io.github.depermitto.bullettrain.components.Tile
+import io.github.depermitto.bullettrain.database.daos.ExerciseDao
+import io.github.depermitto.bullettrain.database.daos.HistoryDao
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
 import io.github.depermitto.bullettrain.exercises.WorkoutEntry
@@ -121,7 +123,7 @@ fun DayScreen(
             workoutEntry = exercise,
             onWorkoutEntryChange = { programViewModel.setExercise(dayIndex, exerciseIndex, it) },
             headline = {
-              Tile(
+              ExtendedListItem(
                 headlineContent = {
                   TextLink(
                     exerciseDescriptor.name,

@@ -149,7 +149,7 @@ fun ExerciseTargetField(
   value: PerfVar,
   onValueChange: (PerfVar) -> Unit,
   readOnly: Boolean = false,
-) =
+) {
   Box(modifier = modifier) {
     when (value) {
       is PerfVar.Reps ->
@@ -207,3 +207,4 @@ fun ExerciseTargetField(
         }
     }
   }
+}

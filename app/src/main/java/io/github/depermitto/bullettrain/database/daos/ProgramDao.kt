@@ -1,7 +1,7 @@
-package io.github.depermitto.bullettrain.database
+package io.github.depermitto.bullettrain.database.daos
 
 import android.util.Log
-import io.github.depermitto.bullettrain.database.entities.Entity
+import io.github.depermitto.bullettrain.database.entities.Program
 import io.github.depermitto.bullettrain.util.bigListSet
 import io.github.depermitto.bullettrain.util.loadAndUncompressData
 import io.github.depermitto.bullettrain.util.saveAndCompressData
@@ -9,21 +9,27 @@ import java.nio.file.Path
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.updateAndGet
 
-/**
- * Abstraction representing a Data Access Object. Every method executes synchronously.
- *
- * @param filepath file containing our data.
- */
-abstract class Dao<T : Entity>(private val filepath: Path) {
-  internal val items = MutableStateFlow<List<T>>(loadAndUncompressData(filepath))
+class ProgramDao(private val filepath: Path) {
+  internal val items = MutableStateFlow<List<Program>>(loadAndUncompressData(filepath))
   private var newId = items.value.maxOfOrNull { it.id } ?: 0
 
-  val getAll: StateFlow<List<T>> = items.asStateFlow()
+  val getAll: StateFlow<List<Program>> = items.asStateFlow()
+  val getUserPrograms =
+    getAll.map { programs ->
+      programs
+        .filter { it correspondsNot Program.EmptyWorkout && !it.obsolete }
+        .sortedByDescending { it.mostRecentWorkoutDate }
+    }
+  val getPerformable =
+    getAll.map { programs ->
+      programs.filterNot { it.obsolete }.sortedByDescending { it.mostRecentWorkoutDate }
+    }
 
   /** @return Boolean indicating if the operation was successful. */
-  open fun update(item: T): Boolean {
+  fun update(item: Program): Boolean {
     val existingIndex = items.value.indexOfFirst { it.id == item.id }
     if (existingIndex == -1) return false
 
@@ -34,12 +40,11 @@ abstract class Dao<T : Entity>(private val filepath: Path) {
   }
 
   /** @return Id of the inserted item. */
-  @Suppress("UNCHECKED_CAST")
-  open fun insert(item: T): Int {
+  fun insert(item: Program): Int {
     val state =
       items.updateAndGet { state ->
         newId += 1
-        state + item.clone(id = newId) as T
+        state + item.copy(id = newId)
       }
     saveAndCompressData(filepath, state)
     Log.i("db-${filepath}", state.toString())
@@ -47,13 +52,9 @@ abstract class Dao<T : Entity>(private val filepath: Path) {
   }
 
   /** @return Id of the inserted item or -1 if it was updated. */
-  open fun upsert(item: T): Int = if (update(item)) -1 else insert(item)
+  fun upsert(item: Program): Int = if (update(item)) -1 else insert(item)
 
-  open fun delete(item: T) {
-    val state = items.updateAndGet { state -> state - item }
-    saveAndCompressData(filepath, state)
-    Log.i("db-${filepath}", state.toString())
-  }
+  fun delete(item: Program) = update(item.copy(obsolete = true))
 
-  open fun where(id: Int): T = items.value.first { it.id == id }
+  fun where(id: Int): Program = items.value.first { it.id == id }
 }

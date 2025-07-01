@@ -2,25 +2,19 @@ package io.github.depermitto.bullettrain.database.entities
 
 import androidx.compose.runtime.Immutable
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
-import io.github.depermitto.bullettrain.database.Dao
 import io.github.depermitto.bullettrain.database.serializers.InstantSerializer
-import io.github.depermitto.bullettrain.util.BKTree
-import java.nio.file.Path
 import java.time.Instant
-import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Immutable
 @Serializable
 data class ExerciseDescriptor(
-  @SerialName("exerciseId") override val id: Int = 0,
+  @SerialName("exerciseId") val id: Int = 0,
   val name: String,
   val obsolete: Boolean = false,
   val instructions: String = "",
-) : Entity {
-  override fun clone(id: Int) = copy(id = id)
-}
+)
 
 @Immutable
 @Serializable
@@ -122,84 +116,4 @@ sealed class PerfVar(val category: PerfVarCategory) {
         if (this == TimeRange()) ""
         else "${min.encodeToStringOutput()}-${max.encodeToStringOutput()} min"
     }
-}
-
-class ExerciseDao(filepath: Path) : Dao<ExerciseDescriptor>(filepath) {
-  private val bkTree =
-    BKTree("Press") // This is the most frequent word in our database, followed by "Dumbbell" and
-  // "Barbell"
-
-  val getSortedAlphabetically =
-    getAll.map { exerciseDescriptors ->
-      exerciseDescriptors.filterNot { it.obsolete }.sortedBy { it.name }
-    }
-
-  /**
-   * Filter out exercises by name. This function provides an autocorrect/typo correcting algorithm
-   * that is controlled with the [errorTolerance] and [ignoreCase] parameters.
-   */
-  fun where(name: String, errorTolerance: Int = 0, ignoreCase: Boolean = false) =
-    getSortedAlphabetically.map { exercises ->
-      val words = name.trim().split(' ')
-      val predictedWords = words.mapNotNull { bkTree.search(it, errorTolerance, ignoreCase) }
-
-      exercises.filter { exercise ->
-        words.all {
-          exercise.name.contains(it, ignoreCase)
-        } || // not checking for empty string will show all exercises
-          (predictedWords.isNotEmpty() &&
-            predictedWords.all { exercise.name.contains(it, ignoreCase) })
-      }
-    }
-
-  init {
-    // fill BKTree with words from ExerciseDescriptors
-    getAll.value.forEach { exercise ->
-      exercise.name
-        .trim()
-        .split(' ')
-        .filter { word -> word.all { char -> char.isLetter() } }
-        .forEach(bkTree::insert)
-    }
-  }
-
-  override fun insert(item: ExerciseDescriptor): Int {
-    // TODO the also block probably doesn't work since there is no state
-    return super.insert(
-      item.copy(name = item.name.prep().also { preppedName -> bkTree.insert(preppedName) })
-    )
-  }
-
-  override fun update(item: ExerciseDescriptor): Boolean {
-    return super.update(item.copy(name = item.name.prep()))
-  }
-
-  override fun upsert(item: ExerciseDescriptor): Int {
-    return super.upsert(item.copy(name = item.name.prep()))
-  }
-
-  override fun delete(item: ExerciseDescriptor) {
-    super.update(item.copy(obsolete = true))
-  }
-
-  /**
-   * Check [name] for duplicates and emptiness.
-   *
-   * @return Error message if [name] is bad and null if successfully validated.
-   */
-  fun validateName(name: String): String? {
-    val name = name.prep()
-    if (name.isBlank()) {
-      return "Empty Exercise Name"
-    }
-
-    if (getAll.value.any { !it.obsolete && it.name == name }) {
-      return "Duplicate Exercise Name"
-    }
-
-    return null
-  }
-
-  private fun String.prep() =
-    this.trim().split(' ').joinToString(" ") { it.replaceFirstChar { it.uppercaseChar() } }
 }

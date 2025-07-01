@@ -18,11 +18,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.AnchoredFloatingActionButton
+import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.TextFieldAlertDialog
-import io.github.depermitto.bullettrain.components.Tile
-import io.github.depermitto.bullettrain.database.entities.ExerciseDao
+import io.github.depermitto.bullettrain.database.daos.ExerciseDao
+import io.github.depermitto.bullettrain.database.daos.HistoryDao
 import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
-import io.github.depermitto.bullettrain.database.entities.HistoryDao
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.unlinedColors
@@ -86,7 +86,7 @@ fun ExercisesListScreen(
       ) {
         items(exercises) { exerciseDescriptor ->
           val count = exerciseFrequencyMap[exerciseDescriptor.id]
-          Tile(
+          ExtendedListItem(
             modifier = Modifier.fillMaxWidth(),
             onClick = { onSelection(exerciseDescriptor) },
             headlineContent = { Text(exerciseDescriptor.name) },

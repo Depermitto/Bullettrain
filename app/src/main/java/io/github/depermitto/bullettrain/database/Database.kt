@@ -3,14 +3,14 @@ package io.github.depermitto.bullettrain.database
 import android.content.Context
 import android.util.Log
 import io.github.depermitto.bullettrain.R
-import io.github.depermitto.bullettrain.database.entities.ExerciseDao
+import io.github.depermitto.bullettrain.database.daos.ExerciseDao
+import io.github.depermitto.bullettrain.database.daos.HistoryDao
+import io.github.depermitto.bullettrain.database.daos.ProgramDao
+import io.github.depermitto.bullettrain.database.daos.SettingsDao
 import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
-import io.github.depermitto.bullettrain.database.entities.HistoryDao
 import io.github.depermitto.bullettrain.database.entities.HistoryRecord
 import io.github.depermitto.bullettrain.database.entities.Program
-import io.github.depermitto.bullettrain.database.entities.ProgramDao
 import io.github.depermitto.bullettrain.database.entities.Settings
-import io.github.depermitto.bullettrain.database.entities.SettingsDao
 import io.github.depermitto.bullettrain.util.loadAndUncompressData
 import io.github.depermitto.bullettrain.util.saveAndCompressData
 import io.github.vinceglb.filekit.core.FileKit
@@ -56,7 +56,7 @@ class Database(private val dir: Path, private val context: Context) {
       Log.i("db", "history initialized.")
     }
     if (!programsLoc.exists()) {
-      saveAndCompressData(historyLoc, listOf(Program.EmptyWorkout))
+      saveAndCompressData(programsLoc, listOf(Program.EmptyWorkout))
       Log.i("db", "programs initialized.")
     }
     if (!exercisesLoc.exists()) {
@@ -106,7 +106,7 @@ class Database(private val dir: Path, private val context: Context) {
             val entries = zipFile.entries().toList()
             // we should probably check if file is not corrupt here
             if (!entries.zip(dataLocations).all { (entry, backup) -> entry.name == backup.name }) {
-              return@withContext failure(Throwable(message = "data is in an incorrect format"))
+              return@withContext failure(Throwable(message = "data is in incorrect format"))
             }
 
             entries.forEachIndexed { i, entry ->
@@ -152,9 +152,8 @@ class Database(private val dir: Path, private val context: Context) {
   }
 
   init {
-    if (
-      loadAndUncompressData<List<Program>>(programsLoc).isEmpty() && runBlocking { factoryReset() }
-    )
+    val freshBoot = loadAndUncompressData<List<ExerciseDescriptor>>(exercisesLoc).isEmpty()
+    if (freshBoot && runBlocking { factoryReset() })
       Log.i("db", "polluted database with default data")
   }
 }

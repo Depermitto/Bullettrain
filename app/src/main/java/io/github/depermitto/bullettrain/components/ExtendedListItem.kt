@@ -27,7 +27,7 @@ import androidx.constraintlayout.compose.Dimension
  * @see [RadioTile]
  */
 @Composable
-fun Tile(
+fun ExtendedListItem(
   modifier: Modifier = Modifier,
   onClick: (() -> Unit)? = null,
   supportingContent: (@Composable () -> Unit)? = null,
@@ -90,7 +90,7 @@ fun Tile(
  * Similar to [androidx.compose.material3.ListItem] but with a
  * [androidx.compose.material3.RadioButton] as leading content.
  *
- * @see [Tile]
+ * @see [ExtendedListItem]
  */
 @Composable
 fun RadioTile(
@@ -99,7 +99,7 @@ fun RadioTile(
   headlineContent: @Composable () -> Unit,
   supportingContent: (@Composable () -> Unit)? = null,
   headlineTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
-) =
+) {
   ConstraintLayout(modifier) {
     val (leading, headline, supporting) = createRefs()
 
@@ -144,3 +144,4 @@ fun RadioTile(
       }
     }
   }
+}

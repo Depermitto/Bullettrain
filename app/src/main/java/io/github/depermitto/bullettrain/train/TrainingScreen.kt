@@ -38,11 +38,13 @@ import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
 import io.github.depermitto.bullettrain.components.DiscardConfirmationAlertDialog
 import io.github.depermitto.bullettrain.components.DropdownButton
+import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.NumberField
 import io.github.depermitto.bullettrain.components.Placeholder
 import io.github.depermitto.bullettrain.components.TextLink
-import io.github.depermitto.bullettrain.components.Tile
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
+import io.github.depermitto.bullettrain.database.daos.ExerciseDao
+import io.github.depermitto.bullettrain.database.daos.HistoryDao
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.exercises.ExerciseChooser
 import io.github.depermitto.bullettrain.exercises.WorkoutEntry
@@ -95,7 +97,7 @@ fun TrainingScreen(
         // Delete set
         onWorkoutEntryChange = { trainViewModel.setWorkoutEntry(exerciseIndex, it) },
         headline = {
-          Tile(
+          ExtendedListItem(
             headlineContent = {
               TextLink(
                 "${exerciseIndex + 1}. ${exerciseDescriptor.name}",

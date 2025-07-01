@@ -6,6 +6,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
+import io.github.depermitto.bullettrain.database.daos.HistoryDao
+import io.github.depermitto.bullettrain.database.daos.ProgramDao
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.util.smallListSet
 import java.time.Instant

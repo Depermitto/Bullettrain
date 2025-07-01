@@ -26,8 +26,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.ListAlertDialog
-import io.github.depermitto.bullettrain.components.Tile
+import io.github.depermitto.bullettrain.database.daos.HistoryDao
+import io.github.depermitto.bullettrain.database.daos.ProgramDao
 import io.github.depermitto.bullettrain.database.entities.*
 import io.github.depermitto.bullettrain.home.HomeViewModel
 import io.github.depermitto.bullettrain.train.TrainViewModel
@@ -167,7 +169,7 @@ fun Calendar(
           }
         },
       ) { program ->
-        Tile(
+        ExtendedListItem(
           headlineContent = { Text(program.name, maxLines = 2, overflow = TextOverflow.Ellipsis) }
         )
       }
@@ -183,7 +185,9 @@ fun Calendar(
           trainViewModel.startWorkout(day, program.id, date = longClickedDate)
         },
       ) { day ->
-        Tile(headlineContent = { Text(day.name, maxLines = 2, overflow = TextOverflow.Ellipsis) })
+        ExtendedListItem(
+          headlineContent = { Text(day.name, maxLines = 2, overflow = TextOverflow.Ellipsis) }
+        )
       }
     }
 
@@ -204,7 +208,7 @@ fun Calendar(
         var text = relatedProgram.name
         if (relatedProgram correspondsNot Program.EmptyWorkout) text += ", " + record.workout.name
 
-        Tile(
+        ExtendedListItem(
           headlineContent = { Text(text, maxLines = 2, overflow = TextOverflow.Ellipsis) },
           supportingContent = {
             val totalSets =
@@ -225,7 +229,7 @@ private fun CalendarItem(
   textAlpha: Float = 1f,
   underline: Boolean = false,
   backgroundColor: Color = Color.Unspecified,
-) =
+) {
   Box(modifier = modifier.background(backgroundColor)) {
     Text(
       text = text,
@@ -240,3 +244,4 @@ private fun CalendarItem(
       maxLines = 1,
     )
   }
+}

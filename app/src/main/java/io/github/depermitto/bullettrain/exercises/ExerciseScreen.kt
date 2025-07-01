@@ -14,11 +14,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.depermitto.bullettrain.components.DataPanel
-import io.github.depermitto.bullettrain.components.Tile
+import io.github.depermitto.bullettrain.components.ExtendedListItem
 import io.github.depermitto.bullettrain.components.encodeToStringOutput
+import io.github.depermitto.bullettrain.database.daos.HistoryDao
+import io.github.depermitto.bullettrain.database.daos.SettingsDao
 import io.github.depermitto.bullettrain.database.entities.ExerciseDescriptor
-import io.github.depermitto.bullettrain.database.entities.HistoryDao
-import io.github.depermitto.bullettrain.database.entities.SettingsDao
 import io.github.depermitto.bullettrain.theme.EmptyScrollSpace
 import io.github.depermitto.bullettrain.theme.Medium
 import io.github.depermitto.bullettrain.theme.Small
@@ -51,7 +51,7 @@ fun ExerciseScreen(
         items = exercise.getPerformedSets(),
         separateHeaderAndContent = false,
         headline = {
-          Tile(
+          ExtendedListItem(
             headlineContent = { Text(dateFormatter.format(doneDate)) },
             headlineTextStyle = MaterialTheme.typography.titleMedium,
             contentPadding = PaddingValues(Dp.Medium),
@@ -64,7 +64,7 @@ fun ExerciseScreen(
           Text("Completed", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
         },
       ) { setIndex, set ->
-        Tile(
+        ExtendedListItem(
           headlineContent = {
             Text("${setIndex + 1}", maxLines = 1, overflow = TextOverflow.Ellipsis)
           },

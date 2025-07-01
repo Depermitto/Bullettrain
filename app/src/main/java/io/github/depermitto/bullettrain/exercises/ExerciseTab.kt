@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import io.github.depermitto.bullettrain.Destination
-import io.github.depermitto.bullettrain.database.entities.ExerciseDao
-import io.github.depermitto.bullettrain.database.entities.HistoryDao
+import io.github.depermitto.bullettrain.database.daos.ExerciseDao
+import io.github.depermitto.bullettrain.database.daos.HistoryDao
 
 @Composable
 fun ExerciseTab(
